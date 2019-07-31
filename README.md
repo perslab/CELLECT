@@ -24,8 +24,8 @@ tar -xvf cellect-data.gz
 
 Finally, within your cloned version of this repository, modify the `config.yml` file so that it is specific to the system you are working on. The config file is divided up into two categories (plus model-specific sub categories):
 
-* RUN-SPECIFIC: These variables can change from run-to-run and affect how CELLECT processes its input data
-* CONSTANTS: These variables will generally remain constant and will includes things like paths to data and scripts
+* **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data
+* **CONSTANTS**: These variables will generally remain constant and will includes things like paths to data and scripts
 
 For now, only modify the CONSTANTS part to point to the cloned LDSC script and the data directory we just downloaded.
 
