@@ -1,0 +1,63 @@
+---
+
+############################################################################################################################
+############################################ RUN SPECIFIC VARIABLES ########################################################
+############################################################################################################################
+
+
+######### GENERAL ###########
+
+BASE_WORKING_DIR: 
+  ~/cellect-output/
+RUN_PREFIXES:
+  - mousebrain.ESmu.test1
+  - mousebrain.ESmu.test2
+CHROMOSOMES: 
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+DATASET_NAME:
+  mousebrain
+WGCNA:
+  False
+
+
+########### LDSC ############
+
+LDSC_MULTIGENESET_DIR:
+  ~/cellect-data/ldsc/multigenesets
+LDSC_GWAS_SUMSTATS:
+  - EA3_Lee2018
+  - HEIGHT_UKBB_Loh2018
+LDSC_WINDOW_SIZE_KB:
+  100
+LDSC_SNPSNAP_WINDOWS: # Will override LDSC_WINDOW_SIZE_KB if True
+  False
+
+
+
+############################################################################################################################
+################################################## CONSTANTS ###############################################################
+############################################################################################################################
+
+
+########### LDSC ############
+
+LDSC_BFILE_PATH:
+  ~/cellect-data/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC
+LDSC_PRINT_SNPS_FILE:
+  ~/cellect-data/ldsc/1000G_EUR_Phase3_baseline/print_snps.txt
+LDSC_SCRIPT:
+  ~/ldsc/ldsc.py
+LDSC_MOUSE_GENE_MAPPING:
+  ~/cellect-data/ldsc/gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz
+LDSC_GENE_COORD_FILE:
+  ~/cellect-data/ldsc/gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt
+LDSC_BASELINE:
+  ~/cellect-data/ldsc/baseline_v1.1/baseline.
+LDSC_LD_SCORE_WEIGHTS:
+  ~/cellect-data/ldsc/weights.hm3_noMHC.
+LDSC_GWAS_DIR:
+  ~/cellect-data/ldsc/gwas_sumstats_ldsc/
+LDSC_SNPSNAP_FILE:
+  ~/cellect-data/ldsc/ld0.5_collection.tab
+LDSC_NUMPY_MULTITHREADING:
+  1
