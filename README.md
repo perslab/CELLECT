@@ -1,6 +1,23 @@
 # CELLECT
 
-**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for identifying the probability of a cell type being involved in the genetic portion of complex traits. CELLECT uses a variety of models to assign genetic signal from a genome wide association study (GWAS) to single cell transcriptomic data. To integrate the two types of data, we must first calculate how important or specific each gene is to each cell type - the Expression Specificity (ES) of the cell type. Our group has developed a method for doing this called **CELL**-type **EX**pression specificity (**CELLEX**) which can be found [here](https://github.com/perslab/CELLEX).
+**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. 
+
+![fig-integration](https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png)
+
+
+### Update log 
+
+**August 1st 2019: v0.1**. Beta version. Currently CELLECT only support S-LDSC software for genetic identification of etiologic cell-types. We expect to release a pipeline for MAGMA, RolyPoly and DEPICT in the near future. 
+
+## How does it work?
+
+CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as S-LDSC (Hilary Kiyo Finucane et al., 2015), RolyPoly (Calderon et al., 2017), DEPICT (Pers et al., 2015) or MAGMA covariate analysis (Skene et al., 2018).
+
+CELLECT takes as input GWAS data and cell-type expression specificity (ES) estimates. In order to compute robust estimates of ES, we developed the computational method called **CELLEX** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  CELLEX can be found [here](https://github.com/perslab/CELLEX).
+
+![fig-CELLECT-conceptual-h2](https://user-images.githubusercontent.com/5487016/62282039-23599400-b44f-11e9-8f7c-465fc899e54c.png)
+
+Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease with multiple genetic components (G1 and G2). CELLECT integrates disease heritability estimates with cell-type expression specificity to identify the etiologic cell-types (C1 and C2) harboring disease heritability enrichment. CELLEX estimates expression specificity from single-cell transcriptomic atlases.
 
 
 ## Installation
