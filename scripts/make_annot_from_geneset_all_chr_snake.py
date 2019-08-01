@@ -227,7 +227,7 @@ annot_per_geneset = False
 binary = snakemake.params['binary']
 chromosome = snakemake.params['chromosome']
 annotations = snakemake.params['annotations']
-bimfile = '{}.{}.bim'.format(snakemake.config['BFILE_PATH'], chromosome)
+bimfile = '{}.{}.bim'.format(snakemake.config['LDSC_BFILE_PATH'], chromosome)
 dict_of_beds = {}
 
 print(snakemake.input)
@@ -236,22 +236,5 @@ for name_annot in annotations:
 	dict_of_beds[name_annot] = pybedtools.BedTool('{}/{}.{}.bed'.format(out_dir+'/bed', out_prefix, name_annot))
 
 make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, binary, annot_per_geneset, bimfile)
-# ^ this works for Python 2.7+. (Only Python 3.3+ includes pool.starmap() which makes it easier)
-# ^ Partial creates a new simplified version of a function with part of the arguments fixed to specific values.
-# REF "Python multiprocessing pool.map for multiple arguments": https://stackoverflow.com/a/5443941/6639640
-# pool.map(make_annot_file_per_chromosome_star, itertools.izip(list_chromosomes_to_run, itertools.repeat(dict_of_beds), itertools.repeat(args))) # ALTERNATIVE APPROACH, but requires making a 'make_annot_file_per_chromosome_star()' function
-
 
 print("Script is done!")
-
-
-###################################### Memory usage ######################################
-
-### Code for estimating memory usage of list_df_annot
-# n_snps = 780000 # average number of SNPs in .bim files is 450k (150k-780k)
-# n_annotations = 750
-# x_array = np.arange(n_snps).astype(float)
-# df = pd.DataFrame(np.array([x_array]*n_annotations).T)
-# mem_usage_gb = df.memory_usage(index=True, deep=True).sum()/(1024.0**3) # deep=If True, introspect the data deeply by interrogating object dtypes for system-level memory consumption, and include it in the returned values.
-# mem_usage_gb
-

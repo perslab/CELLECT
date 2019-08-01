@@ -21,7 +21,7 @@ def join_SNPsnap_bim_SNPs_to_input_bim(input_bim_path, output_dir, SNPsnap_file,
 	Returns:
 		None
 	'''
-	# Reading in both bim files as pandas
+	# Reading in both bim files as panda dataframes
 
 	SNPsnap_SNPs = pd.read_csv(SNPsnap_file, sep='\t')
 	print('There are {} SNPs in the SNPsnap file'.format(len(SNPsnap_SNPs)))
@@ -67,8 +67,8 @@ def join_SNPsnap_bim_SNPs_to_input_bim(input_bim_path, output_dir, SNPsnap_file,
 
 ###################################### MAIN ######################################
 
-bimfile_path = snakemake.config['BFILE_PATH']
-SNPsnap_file = snakemake.config['SNPSNAP_FILE']
+bimfile_path = snakemake.config['LDSC_BFILE_PATH']
+SNPsnap_file = snakemake.config['LDSC_SNPSNAP_FILE']
 
 out_dir = snakemake.params['out_dir']
 list_chromosomes = snakemake.params['chromosomes']

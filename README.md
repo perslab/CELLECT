@@ -10,7 +10,7 @@ After cloning this repository there are a few other things that need to be set-u
 
 One of the models used by CELLECT is LD score regression - it is vital that our forked version of this repository [(found here)](https://github.com/pascaltimshel/ldsc) is also cloned.
 
-CELLECT is built as a Snakemake pipeline and the pipeline utilises conda environments. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
+The models in CELLECT are built in Snakemake and the pipelines utilise conda environments. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
 conda install -c bioconda -c conda-forge snakemake
 conda install pandas
@@ -35,7 +35,7 @@ To run CELLECT-LDSC we must specify in the `config.yml` either one or multiple m
 
 The multigeneset file contains Expression Specificity values for every specific gene in each cell type and can be created by providing CELLEX with single cell count matrix and metadata.
 
-The GWAS summary statistics are pre-processed by the LDSC script `munge-sumstats.py`.
+The GWAS summary statistics are pre-processed by the LDSC script `munge_sumstats.py`.
 
 When multigeneset and summary statistic names have been saved in the config file we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
 
@@ -46,7 +46,7 @@ If you wish to use multiple threads you can pass the `-j` option followed by a n
 
 ### Example
 
-To demonstrate CELLECT we have a short example that takes roughly 30 minutes to run on ... 
+To demonstrate CELLECT-LDSC we have a short example that takes roughly 30 minutes to run on ... 
 
 Our single cell input for this example is the [Mouse Nervous System](https://www.sciencedirect.com/science/article/pii/S009286741830789X) processed with CELLEX to get specificity scores then a subset of cell types taken to speed up the running time. The GWAS input is the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3)
 

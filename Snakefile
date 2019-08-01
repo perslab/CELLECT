@@ -7,6 +7,10 @@ import os
 
 min_version("5.4")
 
+########################################################################################
+################################### VARIABLES ##########################################
+########################################################################################
+
 configfile: 'config.yml'
 
 BASE_WORKING_DIR = os.path.join(config['BASE_WORKING_DIR'],os.environ['USER'],'cellect-LDSC')
@@ -38,6 +42,59 @@ os.environ["MKL_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
 os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
 os.environ["OMP_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
 
+
+########################################################################################
+################################### FUNCTIONS ##########################################
+########################################################################################
+
+def get_annots(run_prefixes, wgcna):
+	"""
+	Pulls all the annotations from the first multigeneset file.
+	"""
+	# Should be changed to allow for different cell types in different multigeneset files.
+	prefix = run_prefix[0]
+	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
+	if wgcna:
+		df_multi_gene_set = pd.read_csv(file_multi_geneset, index_col=False)
+		annots = np.unique(df_multi_gene_set['module'])
+	else:
+		df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
+		annots = np.unique(df_multi_gene_set.iloc[:,0])
+	return(list(annots))
+
+
+def make_prefix__annotations(prefix):
+	"""
+	Makes a list containing the prefix appended to each annotation in the multigeneset file.
+	"""
+	pa_list = []
+	for annot in ANNOTATIONS:
+		pa_list.append(prefix+'__'+annot)
+	return(pa_list)
+
+def get_all_genes_ref_ld_chr_name(dataset, precomp_dir, SNPsnap_windows, windowsize_kb):
+	""" 
+	Function to get the ref_ld_chr_name for 'all genes annotation' for ldsc.py --h2/--h2-cts command
+	"""
+	# *IMPORTANT*: ldsc_all_genes_ref_ld_chr_name MUST be full file path PLUS trailing "." and prepended ","
+	window_suffix = ''
+	if SNPsnap_windows:
+		SNP_suffix = '_SNP'
+	else if windowsize_kb != 100:
+		windowsuffix = '_' + str(windowsize_kb)
+	ldsc_all_genes_ref_ld_chr_name = ",{precomp_dir}/control.all_genes_in_dataset{win_suffix}/per_annotation/\
+										control.all_genes_in_dataset{win_suffix}__all_genes_in_dataset.{dataset}.".format(precomp_dir = precomp_dir,
+																														 win_suffix = window_suffix,
+																														 dataset = dataset)
+	return(ldsc_all_genes_ref_ld_chr_name)
+
+########################################################################################
+################################### PIPELINE ##########################################
+########################################################################################
+
+
+ANNOTATIONS = get_annots(expand('{run_prefix}', run_prefix = RUN_PREFIX), WGCNA)
+
 rule all: 
 	'''
 	Defines the final target file to be generated.
@@ -49,21 +106,6 @@ rule all:
 			gwas = GWAS_SUMSTATS)
 
 
-
-def get_annots(run_prefixes, wgcna):
-	annots_dict = {}
-	for prefix in run_prefixes:
-		file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
-		if wgcna:
-			df_multi_gene_set = pd.read_csv(file_multi_geneset, index_col=False)
-			annots = np.unique(df_multi_gene_set['module'])
-		else:
-			df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
-			annots = np.unique(df_multi_gene_set.iloc[:,0])
-		annots_dict[prefix] = list(annots)
-	return(annots_dict[prefix])
-
-ANNOTATIONS = get_annots(expand('{run_prefix}', run_prefix = RUN_PREFIX), WGCNA)
 
 if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 
@@ -196,11 +238,6 @@ rule split_LD_scores:
 	script:
 		"scripts/split_ldscores_snake.py"
 
-def make_prefix__annotations(prefix):
-	pa_list = []
-	for annot in ANNOTATIONS:
-		pa_list.append(prefix+'__'+annot)
-	return(pa_list)
 
 rule make_cts_file:
 	'''
@@ -220,19 +257,6 @@ rule make_cts_file:
 	script:
 		"scripts/make_cts_file_snake.py"
 
-def get_all_genes_ref_ld_chr_name(dataset, precomp_dir, SNPsnap_windows, windowsize_kb):
-	""" Function to get the ref_ld_chr_name for 'all genes annotation' for ldsc.py --h2/--h2-cts command """
-	# *IMPORTANT*: ldsc_all_genes_ref_ld_chr_name MUST be full file path PLUS trailing "."
-	window_suffix = ''
-	if SNPsnap_windows:
-		SNP_suffix = '_SNP'
-	else if windowsize_kb != 100:
-		windowsuffix = '_' + str(windowsize_kb)
-	ldsc_all_genes_ref_ld_chr_name = ",{precomp_dir}/control.all_genes_in_dataset{win_suffix}/per_annotation/\
-										control.all_genes_in_dataset{win_suffix}__all_genes_in_dataset.{dataset}.".format(precomp_dir = precomp_dir,
-																														 win_suffix = window_suffix,
-																														 dataset = dataset)
-	return(ldsc_all_genes_ref_ld_chr_name)
 
 rule run_gwas:
 	'''Run LDSC with the provided list of GWAS'''

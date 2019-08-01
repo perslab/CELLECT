@@ -42,12 +42,7 @@ def read_SNP_gene_file(SNPs_to_genes_dir, chromosome, input_bim_path):
 	SNPs_to_genes_path = os.path.join(SNPs_to_genes_dir,
 		'SNPs_with_genes.{bim_name}.{chromosome}.txt'.format(bim_name = input_bim_filename,
 															chromosome = chromosome))
-	# SNPs_to_genes_names = ['snpID',
-	# 					'ID_genes_in_matched_locus',
-	# 					'Chromosome',
-	# 					'rsID_in',
-	# 					'rsID_snap',
-	# 					'BP coordinate']
+	
 	SNPs_to_genes = pd.read_csv(SNPs_to_genes_path, sep='\t', index_col=False)
 	# Splitting the rows on the gene column so that each row contains a single SNP and a single gene
 	# From https://stackoverflow.com/questions/12680754/ UPDATE: generic vectorized approach
@@ -101,7 +96,7 @@ def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_pa
 
 ###################################### MAIN ######################################
 
-bfile_path = snakemake.config['BFILE_PATH']
+bfile_path = snakemake.config['LDSC_BFILE_PATH']
 
 
 genes_and_ES = read_ES_gene_file(snakemake.input[0])

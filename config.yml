@@ -8,7 +8,7 @@
 ######### GENERAL ###########
 
 BASE_WORKING_DIR: 
-  ~/cellect-output/
+  ~/CELLECT-output/
 RUN_PREFIXES:
   - mousebrain.ESmu.test1
   - mousebrain.ESmu.test2
@@ -23,7 +23,7 @@ WGCNA:
 ########### LDSC ############
 
 LDSC_MULTIGENESET_DIR:
-  ~/cellect-data/ldsc/multigenesets
+  ~/CELLECT-data/ldsc/multigenesets
 LDSC_GWAS_SUMSTATS:
   - EA3_Lee2018
   - HEIGHT_UKBB_Loh2018
@@ -42,22 +42,22 @@ LDSC_SNPSNAP_WINDOWS: # Will override LDSC_WINDOW_SIZE_KB if True
 ########### LDSC ############
 
 LDSC_BFILE_PATH:
-  ~/cellect-data/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC
+  ~/CELLECT-data/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC
 LDSC_PRINT_SNPS_FILE:
-  ~/cellect-data/ldsc/1000G_EUR_Phase3_baseline/print_snps.txt
+  ~/CELLECT-data/ldsc/1000G_EUR_Phase3_baseline/print_snps.txt
 LDSC_SCRIPT:
   ~/ldsc/ldsc.py
 LDSC_MOUSE_GENE_MAPPING:
-  ~/cellect-data/ldsc/gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz
+  ~/CELLECT-data/ldsc/gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz
 LDSC_GENE_COORD_FILE:
-  ~/cellect-data/ldsc/gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt
+  ~/CELLECT-data/ldsc/gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt
 LDSC_BASELINE:
-  ~/cellect-data/ldsc/baseline_v1.1/baseline.
+  ~/CELLECT-data/ldsc/baseline_v1.1/baseline.
 LDSC_LD_SCORE_WEIGHTS:
-  ~/cellect-data/ldsc/weights.hm3_noMHC.
+  ~/CELLECT-data/ldsc/weights.hm3_noMHC.
 LDSC_GWAS_DIR:
-  ~/cellect-data/ldsc/gwas_sumstats_ldsc/
+  ~/CELLECT-data/ldsc/gwas_sumstats_ldsc/
 LDSC_SNPSNAP_FILE:
-  ~/cellect-data/ldsc/ld0.5_collection.tab
+  ~/CELLECT-data/ldsc/ld0.5_collection.tab
 LDSC_NUMPY_MULTITHREADING:
   1

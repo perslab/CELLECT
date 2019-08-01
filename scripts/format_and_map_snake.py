@@ -162,8 +162,8 @@ def multi_gene_sets_to_dict_of_beds(df_multi_gene_set, df_gene_coord, windowsize
 
 ###################################### MAIN ######################################
 
-mouse_to_gene_mapping = snakemake.config['MOUSE_GENE_MAPPING']
-gene_coords = snakemake.config['GENE_COORD_FILE']
+mouse_to_gene_mapping = snakemake.config['LDSC_MOUSE_GENE_MAPPING']
+gene_coords = snakemake.config['LDSC_GENE_COORD_FILE']
 
 wgcna = snakemake.params['wgcna']
 binary = snakemake.params['binary']
