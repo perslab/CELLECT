@@ -82,10 +82,10 @@ def get_all_genes_ref_ld_chr_name(dataset, precomp_dir, SNPsnap_windows, windows
 		SNP_suffix = '_SNP'
 	else if windowsize_kb != 100:
 		windowsuffix = '_' + str(windowsize_kb)
-	ldsc_all_genes_ref_ld_chr_name = ",{precomp_dir}/control.all_genes_in_dataset{win_suffix}/per_annotation/\
-										control.all_genes_in_dataset{win_suffix}__all_genes_in_dataset.{dataset}.".format(precomp_dir = precomp_dir,
-																														 win_suffix = window_suffix,
-																														 dataset = dataset)
+	ldsc_all_genes_ref_ld_chr_name = ",{precomp_dir}/control.all_genes_in_dataset{win_suffix}/per_annotation/control.all_genes_in_dataset{win_suffix}__all_genes_in_dataset.{dataset}."\
+										.format(precomp_dir = precomp_dir,
+											    win_suffix = window_suffix,
+												dataset = dataset)
 	return(ldsc_all_genes_ref_ld_chr_name)
 
 ########################################################################################
