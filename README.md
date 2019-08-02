@@ -15,7 +15,7 @@ CELLECT quantifies the association between common polygenetic GWAS signal (herit
 
 CELLECT takes as input GWAS data and cell-type expression specificity (ES) estimates. In order to compute robust estimates of ES, we developed the computational method called **CELLEX** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  CELLEX can be found [here](https://github.com/perslab/CELLEX).
 
-![fig-CELLECT-conceptual-h2](https://user-images.githubusercontent.com/5487016/62282039-23599400-b44f-11e9-8f7c-465fc899e54c.png)
+![fig-CELLECT-conceptual-h2](https://user-images.githubusercontent.com/5487016/62367093-e3ff7600-b528-11e9-8879-8f69005fbea5.png)
 
 Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease with multiple genetic components (G1 and G2). CELLECT integrates disease heritability estimates with cell-type expression specificity to identify the etiologic cell-types (C1 and C2) harboring disease heritability enrichment. CELLEX estimates expression specificity from single-cell transcriptomic atlases.
 
