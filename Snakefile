@@ -52,7 +52,7 @@ def get_annots(run_prefixes, wgcna):
 	Pulls all the annotations from the first multigeneset file.
 	"""
 	# Should be changed to allow for different cell types in different multigeneset files.
-	prefix = run_prefix[0]
+	prefix = run_prefixes[0]
 	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
 	if wgcna:
 		df_multi_gene_set = pd.read_csv(file_multi_geneset, index_col=False)
@@ -80,7 +80,7 @@ def get_all_genes_ref_ld_chr_name(dataset, precomp_dir, SNPsnap_windows, windows
 	window_suffix = ''
 	if SNPsnap_windows:
 		SNP_suffix = '_SNP'
-	else if windowsize_kb != 100:
+	elif windowsize_kb != 100:
 		windowsuffix = '_' + str(windowsize_kb)
 	ldsc_all_genes_ref_ld_chr_name = ",{precomp_dir}/control.all_genes_in_dataset{win_suffix}/per_annotation/control.all_genes_in_dataset{win_suffix}__all_genes_in_dataset.{dataset}."\
 										.format(precomp_dir = precomp_dir,
@@ -92,7 +92,8 @@ def get_all_genes_ref_ld_chr_name(dataset, precomp_dir, SNPsnap_windows, windows
 ################################### PIPELINE ##########################################
 ########################################################################################
 
-
+# Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
+# can have a different annotation set for each multigeneset file used as input
 ANNOTATIONS = get_annots(expand('{run_prefix}', run_prefix = RUN_PREFIX), WGCNA)
 
 rule all: 
@@ -271,7 +272,8 @@ rule run_gwas:
 		file_out_prefix = '{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}',
 		ldsc_all_genes_ref_ld_chr_name = get_all_genes_ref_ld_chr_name(expand("{dataset}", dataset=DATASET)[0],
 																		expand("{precomp_dir}", precomp_dir=PRECOMP_DIR)[0],
-																		SNP_WINDOWS)
+																		SNP_WINDOWS,
+																		WINDOWSIZE_KB)
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
