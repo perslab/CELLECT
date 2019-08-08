@@ -13,34 +13,43 @@ min_version("5.4")
 
 configfile: 'config.yml'
 
-BASE_WORKING_DIR = os.path.join(config['BASE_WORKING_DIR'],os.environ['USER'],'cellect-LDSC')
-BFILE_PATH = config['LDSC_BFILE_PATH']
-PRINT_SNPS_FILE = config['LDSC_PRINT_SNPS_FILE']
-LDSC_SCRIPT = config['LDSC_SCRIPT']
-MULTIGENESET_DIR = config['LDSC_MULTIGENESET_DIR']
-GENE_COORD_FILE = config['LDSC_GENE_COORD_FILE']
-GWAS_DIR = config['LDSC_GWAS_DIR']
-GWAS_SUMSTATS = config['LDSC_GWAS_SUMSTATS']
-LD_SCORE_WEIGHTS = config['LDSC_LD_SCORE_WEIGHTS']
-LDSC_BASELINE = config['LDSC_BASELINE']
-
-
-CHROMOSOMES = config['CHROMOSOMES']
-WINDOWSIZE_KB = config['LDSC_WINDOW_SIZE_KB']
-RUN_PREFIX = config['RUN_PREFIXES']
- 
-DATASET = config['DATASET_NAME']
-WGCNA = config['WGCNA']
-SNP_WINDOWS = config['LDSC_SNPSNAP_WINDOWS']
-
+BASE_WORKING_DIR = os.path.join(config['CELLECT'],os.environ['USER'],'CELLECT-LDSC')
 
 PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation')
 OUTPUT_DIR = os.path.join(BASE_WORKING_DIR, 'out')
 
+WINDOWSIZE_KB = config['LDSC']['WINDOW_SIZE_KB']
+ 
+DATASET = config['LDSC']['DATASET_NAME']
+WGCNA = config['LDSC']['WGCNA']
 
-os.environ["MKL_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
-os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
-os.environ["OMP_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
+
+
+
+
+########################################################################################
+################################### CONSTANTS ##########################################
+########################################################################################
+
+DATA_DIR = config['LDSC']['DATA_DIR']
+
+BFILE_PATH = os.path.join(DATA_DIR,"1000G_EUR_Phase3_plink/1000G.EUR.QC")
+PRINT_SNPS_FILE = os.path.join(DATA_DIR,"print_snps.txt")
+GENE_COORD_FILE =os.path.join(DATA_DIR,'gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt')
+LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
+LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1/baseline.")
+SNP_WINDOWS = os.path.join(DATA_DIR,"ld0.5_collection.tab")
+LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
+
+os.environ["MKL_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
+
+CHROMOSOMES = config['CHROMOSOMES']
+
+
+
+
 
 
 ########################################################################################
@@ -107,7 +116,7 @@ rule all:
 
 
 
-if SNP_WINDOWS == True: # Only use SNPs in LD with genes
+if SNP_WINDOWS == True: # Only use SNPs in LD with genes. 
 
 	rule join_snpsnap_bims:
 		'''
@@ -135,7 +144,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
 		'''
 		input:
-			expand("{MULTIGENESET_DIR}/multi_geneset.{{run_prefix}}.txt",
+			expand("{MULTIGENESET_DIR}/multi_geneset.{{run_prefix}}.txt", 
 			 		MULTIGENESET_DIR = MULTIGENESET_DIR),			
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
@@ -259,7 +268,9 @@ rule make_cts_file:
 
 
 rule run_gwas:
-	'''Run LDSC with the provided list of GWAS'''
+	'''
+	Run LDSC with the provided list of GWAS
+	'''
 	input:
 		expand("{PRECOMP_DIR}/{{run_prefix}}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR),
 		expand("{gwas_dir}/{{gwas}}.sumstats.gz", gwas_dir = GWAS_DIR)

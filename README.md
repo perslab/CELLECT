@@ -25,11 +25,11 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 After cloning this repository there are a few other things that need to be set-up before CELLECT can be run.
 
 
-One of the models used by CELLECT is LD score regression - it is vital that our forked version of this repository [(found here)](https://github.com/pascaltimshel/ldsc) is also cloned.
+One of the models used by CELLECT is LD score regression - it is vital that our forked version of this repository [(pascaltimshel/ldsc)](https://github.com/pascaltimshel/ldsc) is also cloned. TODO: make this clearer
 
 The models in CELLECT are built in Snakemake and the pipelines utilise conda environments. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
-conda install -c bioconda -c conda-forge snakemake
+conda install -c bioconda snakemake
 conda install pandas
 ```
 

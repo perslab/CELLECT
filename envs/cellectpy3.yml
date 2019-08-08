@@ -1,10 +1,10 @@
-name: cellectpy3
+name: cellectpy3 # USED FOR EVERYTHING ELSE
 channels:
   - anaconda
   - defaults
   - conda-forge
   - bioconda
-dependencies:
+dependencies:  
   - asn1crypto=0.24.0=py36_0
   - backports=1.0=py36_1
   - bcftools=1.9=ha228f0b_3
@@ -60,7 +60,6 @@ dependencies:
   - requests=2.14.2=py36_0
   - samtools=1.9=h8571acd_11
   - setuptools=41.0.1=py36_0
-  - statsmodels
   - six=1.12.0=py36_0
   - snakemake=3.13.3=py36_0
   - sqlite=3.28.0=h7b6447c_0

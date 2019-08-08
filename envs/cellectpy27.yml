@@ -1,4 +1,4 @@
-name: cellectpy27
+name: cellectpy27 # ONLY USED FOR LDSC
 channels:
   - anaconda
   - defaults
