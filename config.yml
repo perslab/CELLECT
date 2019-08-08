@@ -47,7 +47,7 @@ LDSC_SNPSNAP_WINDOWS: # Will override LDSC_WINDOW_SIZE_KB if True and map SNPs t
 LDSC_BFILE_PATH:
   /projects/alegbe/CELLECT-data/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC
 LDSC_PRINT_SNPS_FILE:
-  /projects/alegbe/CELLECT-data/ldsc/1000G_EUR_Phase3_baseline/print_snps.txt
+  /projects/alegbe/CELLECT-data/ldsc/print_snps.txt
 LDSC_SCRIPT:
   /projects/alegbe/ldsc/ldsc.py
 LDSC_MOUSE_GENE_MAPPING:
@@ -57,9 +57,9 @@ LDSC_GENE_COORD_FILE:
 LDSC_BASELINE:
   /projects/alegbe/CELLECT-data/ldsc/baseline_v1.1/baseline.
 LDSC_LD_SCORE_WEIGHTS:
-  /projects/alegbe/CELLECT-data/ldsc/weights.hm3_noMHC.
+  /projects/alegbe/CELLECT-data/ldsc/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.
 LDSC_GWAS_DIR:
-  /projects/alegbe/CELLECT-data/ldsc/gwas_sumstats_ldsc/
+  /projects/alegbe/CELLECT-data/ldsc/gwas_sumstats_ldsc
 LDSC_SNPSNAP_FILE:
   /projects/alegbe/CELLECT-data/ldsc/ld0.5_collection.tab
 LDSC_NUMPY_MULTITHREADING:

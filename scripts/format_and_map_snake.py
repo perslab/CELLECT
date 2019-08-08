@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pybedtools
 
-def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, flag_binary, flag_wgcna, print_log_files=True):
+def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, flag_wgcna, print_log_files=True):
 	""" 
 	Reads file_multi_gene_set and formats appropriately based on the argument flags 
 
@@ -26,20 +26,12 @@ def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, flag_bi
 	else:
 		df_multi_gene_set = pd.read_csv(file_multi_gene_set, sep=None, header=None, engine='python') # sep=None: automatically detect the separator
 		df_multi_gene_set.columns = df_multi_gene_set.columns.map(str) # because header=None, the .columns is of type integer (Int64Index(.., dtype='int64')). We need to map array to string before we can rename the columns below
-		if flag_binary:
-			df_multi_gene_set.columns.values[[0,1]] = ["annotation", "gene_input"] # .values() is needed to avoid TypeError
-			# ALTERNATIVE ---> https://stackoverflow.com/a/43759994/6639640: df.rename(columns={ df.columns[1]: "your value" })
-		else:
-			df_multi_gene_set.columns.values[[0,1,2]] = ["annotation", "gene_input", "annotation_value"]
-	if flag_binary:
-		print("Converting to binary encoding")
-		df_multi_gene_set["annotation_value"] = 1 # binary encoding. All genes get the value 1.
-	else:
-		if not np.issubdtype(df_multi_gene_set["annotation_value"].dtype, np.number): # REF: https://stackoverflow.com/a/38185759/6639640
-			raise Exception("ERROR: your df_multi_gene_set contains non-numeric annotation values. Will not create annotation files.")
-		if (df_multi_gene_set["annotation_value"] < 0).any():
-			# raise Exception("ERROR: your df_multi_gene_set contains negative annotation values. Will not create annotation files.")
-			print("WARNING: your df_multi_gene_set contains negative annotation values. Is this intentional?")
+		df_multi_gene_set.columns.values[[0,1,2]] = ["annotation", "gene_input", "annotation_value"]
+	if not np.issubdtype(df_multi_gene_set["annotation_value"].dtype, np.number): # REF: https://stackoverflow.com/a/38185759/6639640
+		raise Exception("ERROR: your df_multi_gene_set contains non-numeric annotation values. Will not create annotation files.")
+	if (df_multi_gene_set["annotation_value"] < 0).any():
+		# raise Exception("ERROR: your df_multi_gene_set contains negative annotation values. Will not create annotation files.")
+		print("WARNING: your df_multi_gene_set contains negative annotation values. Is this intentional?")
 	
 	### Check if annotation names are 'valid'
 	bool_invalid_annotation_names = df_multi_gene_set["annotation"].str.contains(r"[\s/]|__",regex=True) # character class of whitespace, forward slash and double underscore
@@ -166,11 +158,10 @@ mouse_to_gene_mapping = snakemake.config['LDSC_MOUSE_GENE_MAPPING']
 gene_coords = snakemake.config['LDSC_GENE_COORD_FILE']
 
 wgcna = snakemake.params['wgcna']
-binary = snakemake.params['binary']
 windowsize = snakemake.params['windowsize_kb'] * 1000
 bed_out_dir = snakemake.params['bed_out_dir']
 out_prefix = snakemake.params['run_prefix']
 
-df_multi_gene_set_human = format_multi_gene_set_file(snakemake.input[0], bed_out_dir, out_prefix, binary, wgcna)
+df_multi_gene_set_human = format_multi_gene_set_file(snakemake.input[0], bed_out_dir, out_prefix, wgcna)
 df_gene_coords = pd.read_csv(gene_coords, delim_whitespace = True)
 multi_gene_sets_to_dict_of_beds(df_multi_gene_set_human, df_gene_coords, windowsize, bed_out_dir + '/tmp', bed_out_dir, out_prefix)
