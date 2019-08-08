@@ -52,7 +52,7 @@ def get_annots(run_prefixes, wgcna):
 	Pulls all the annotations from the first multigeneset file.
 	"""
 	# Should be changed to allow for different cell types in different multigeneset files.
-	prefix = run_prefix[0]
+	prefix = run_prefixes[0]
 	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
 	if wgcna:
 		df_multi_gene_set = pd.read_csv(file_multi_geneset, index_col=False)
@@ -88,11 +88,13 @@ def make_prefix__annotations(prefix):
 # 												dataset = dataset)
 # 	return(ldsc_all_genes_ref_ld_chr_name)
 
+
 ########################################################################################
 ################################### PIPELINE ##########################################
 ########################################################################################
 
-
+# Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
+# can have a different annotation set for each multigeneset file used as input
 ANNOTATIONS = get_annots(expand('{run_prefix}', run_prefix = RUN_PREFIX), WGCNA)
 
 ANNOTATIONS_ALL_GENES = get_annots(expand('{run_prefix}', run_prefix = "all_genes_in_dataset"), WGCNA)
@@ -405,3 +407,4 @@ rule run_gwas:
         --w-ld-chr {LD_SCORE_WEIGHTS} \
         --ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \
         --out {params.file_out_prefix}"
+
