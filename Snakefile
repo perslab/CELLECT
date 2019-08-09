@@ -136,8 +136,6 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 		script:
 			"scripts/join_SNPsnap_and_bim_snake.py"
 
-
-
 	rule make_snpsnap_annot:
 		'''
 		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
@@ -155,7 +153,30 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 		params:
 			chromosome = "{chromosome}",
 			run_prefix = "{run_prefix}",
-			precomp_dir = "{PRECOMP_DIR}"
+			precomp_dir = "{PRECOMP_DIR}",
+			all_genes = False
+		script:
+			"scripts/generate_SNPsnap_windows_snake.py"
+
+	rule make_snpsnap_annot_all_genes:
+		'''
+		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
+		'''
+		input:
+			expand("{MULTIGENESET_DIR}/multi_geneset.all_genes_in_dataset.txt",
+			 		MULTIGENESET_DIR = MULTIGENESET_DIR),			
+			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
+					bfile_prefix = os.path.basename(BFILE_PATH),
+					chromosome = CHROMOSOMES)
+		output:
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.annot.gz"
+		conda:
+			"envs/cellectpy3.yml"
+		params:
+			chromosome = "{chromosome}",
+			run_prefix = "{run_prefix}",
+			precomp_dir = "{PRECOMP_DIR}",
+			all_genes = True
 		script:
 			"scripts/generate_SNPsnap_windows_snake.py"
 

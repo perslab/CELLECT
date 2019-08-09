@@ -61,7 +61,7 @@ def read_SNP_gene_file(SNPs_to_genes_dir, chromosome, input_bim_path):
 
 
 
-def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_path):
+def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_path, all_genes):
 	'''
 	Merges the dataframe of SNPs associated to genes with the dataframe of expression specificity
 	for a given gene to all cell types. 
@@ -88,6 +88,8 @@ def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_pa
 
 	out_chr_filename = '{prefix}.COMBINED_ANNOT.{chromosome}.annot.gz'.format(prefix=run_prefix,
  																			  chromosome=chromosome)
+	if all_genes == True:
+		run_prefix = 'control.' + run_prefix
 	max_all_annots[annot_names].to_csv(os.path.join(precomp_dir, run_prefix, out_chr_filename),
 										sep='\t', compression ='gzip', na_rep='0', index=False)
 
@@ -103,6 +105,7 @@ genes_and_ES = read_ES_gene_file(snakemake.input[0])
 chromosome = snakemake.params['chromosome']
 run_prefix = snakemake.params['run_prefix']
 precomp_dir = snakemake.params['precomp_dir']
+all_genes = snakemake.params['all_genes']
 
-create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bfile_path)
+create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bfile_path, all_genes)
 	
