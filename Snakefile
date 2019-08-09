@@ -174,7 +174,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 			"envs/cellectpy3.yml"
 		params:
 			chromosome = "{chromosome}",
-			run_prefix = "{run_prefix}",
+			run_prefix = "all_genes_in_dataset",
 			precomp_dir = "{PRECOMP_DIR}",
 			all_genes = True
 		script:
