@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pybedtools
 
-def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, flag_wgcna, print_log_files=True):
+def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, print_log_files=True):
 	""" 
 	Reads file_multi_gene_set and formats appropriately based on the argument flags 
 
@@ -11,22 +11,9 @@ def format_multi_gene_set_file(file_multi_gene_set, out_dir, out_prefix, flag_wg
 		file_multi_gene_set: file path to a text file (see format specs else where in this file). Supports compressed files  (will be infered from filename, e.g. .gz extension).
 
 	"""
-	if flag_wgcna:
-		df_multi_gene_set = pd.read_csv(file_multi_gene_set) # compression='infer' default
-		dict_rename_columns = {"module":"annotation", "ensembl":"gene_input", "pkME":"annotation_value"}
-		### Check if all the necessary column names are in the header. 
-		### We do this to generate a more helpful error message because pandas .rename() does not throw an error if the keys of the 'rename dict' are not in the column names of the data frame. So the script will fail downstream.
-		if not np.all(np.isin(list(dict_rename_columns.keys()), df_multi_gene_set.columns.values)): # list(dict.keys()) needed for py3 compatibility
-			print("File_multi_gene_set header:")
-			print(df_multi_gene_set.head(10))
-			raise ValueError("Could not find all of the expected header names in file_multi_gene_set={}. The following column headers must be in the file: {}. Found the following headers in the file:\n{}".format(file_multi_gene_set, list(dict_rename_columns.keys()), "\n".join([str(x) for x in df_multi_gene_set.columns.tolist()])))
-		df_multi_gene_set.rename(columns=dict_rename_columns, inplace=True) # df.rename(columns={'oldName1': 'newName1', 'oldName2': 'newName2'})
-		# ^ 'module' = first column; will later be renamed to 'annotation'
-		# ^ 'ensembl' = second column; will later be renamed to 'gene'
-	else:
-		df_multi_gene_set = pd.read_csv(file_multi_gene_set, sep=None, header=None, engine='python') # sep=None: automatically detect the separator
-		df_multi_gene_set.columns = df_multi_gene_set.columns.map(str) # because header=None, the .columns is of type integer (Int64Index(.., dtype='int64')). We need to map array to string before we can rename the columns below
-		df_multi_gene_set.columns.values[[0,1,2]] = ["annotation", "gene_input", "annotation_value"]
+	df_multi_gene_set = pd.read_csv(file_multi_gene_set, sep=None, header=None, engine='python') # sep=None: automatically detect the separator
+	df_multi_gene_set.columns = df_multi_gene_set.columns.map(str) # because header=None, the .columns is of type integer (Int64Index(.., dtype='int64')). We need to map array to string before we can rename the columns below
+	df_multi_gene_set.columns.values[[0,1,2]] = ["annotation", "gene_input", "annotation_value"]
 	if not np.issubdtype(df_multi_gene_set["annotation_value"].dtype, np.number): # REF: https://stackoverflow.com/a/38185759/6639640
 		raise Exception("ERROR: your df_multi_gene_set contains non-numeric annotation values. Will not create annotation files.")
 	if (df_multi_gene_set["annotation_value"] < 0).any():
@@ -157,11 +144,11 @@ def multi_gene_sets_to_dict_of_beds(df_multi_gene_set, df_gene_coord, windowsize
 mouse_to_gene_mapping = snakemake.config['LDSC_MOUSE_GENE_MAPPING']
 gene_coords = snakemake.config['LDSC_GENE_COORD_FILE']
 
-wgcna = snakemake.params['wgcna']
+
 windowsize = snakemake.params['windowsize_kb'] * 1000
 bed_out_dir = snakemake.params['bed_out_dir']
 out_prefix = snakemake.params['run_prefix']
 
-df_multi_gene_set_human = format_multi_gene_set_file(snakemake.input[0], bed_out_dir, out_prefix, wgcna)
+df_multi_gene_set_human = format_multi_gene_set_file(snakemake.input[0], bed_out_dir, out_prefix)
 df_gene_coords = pd.read_csv(gene_coords, delim_whitespace = True)
 multi_gene_sets_to_dict_of_beds(df_multi_gene_set_human, df_gene_coords, windowsize, bed_out_dir + '/tmp', bed_out_dir, out_prefix)

@@ -30,7 +30,6 @@ WINDOWSIZE_KB = config['LDSC_WINDOW_SIZE_KB']
 RUN_PREFIX = config['RUN_PREFIXES']
  
 DATASET = config['DATASET_NAME']
-WGCNA = config['WGCNA']
 SNP_WINDOWS = config['LDSC_SNPSNAP_WINDOWS']
 
 
@@ -47,19 +46,15 @@ os.environ["OMP_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-def get_annots(run_prefixes, wgcna):
+def get_annots(run_prefixes):
 	"""
 	Pulls all the annotations from the first multigeneset file.
 	"""
 	# Should be changed to allow for different cell types in different multigeneset files.
 	prefix = run_prefixes[0]
 	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
-	if wgcna:
-		df_multi_gene_set = pd.read_csv(file_multi_geneset, index_col=False)
-		annots = np.unique(df_multi_gene_set['module'])
-	else:
-		df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
-		annots = np.unique(df_multi_gene_set.iloc[:,0])
+	df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
+	annots = np.unique(df_multi_gene_set.iloc[:,0])
 	return(list(annots))
 
 
@@ -95,9 +90,9 @@ def make_prefix__annotations(prefix, annotations):
 
 # Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
 # can have a different annotation set for each multigeneset file used as input
-ANNOTATIONS = get_annots(RUN_PREFIX, WGCNA)
+ANNOTATIONS = get_annots(RUN_PREFIX)
 
-ANNOTATIONS_ALL_GENES = get_annots(["all_genes_in_dataset"], WGCNA)
+ANNOTATIONS_ALL_GENES = get_annots(["all_genes_in_dataset"])
 
 rule all: 
 	'''
@@ -195,7 +190,6 @@ else: # Use SNPs in a fixed window size around genes
 		conda:
 			"envs/cellectpy3.yml"
 		params:
-			wgcna =  WGCNA,
 			run_prefix = "{run_prefix}",
 			windowsize_kb =  WINDOWSIZE_KB,
 			bed_out_dir =  "{PRECOMP_DIR}/{run_prefix}/bed"
@@ -219,7 +213,6 @@ else: # Use SNPs in a fixed window size around genes
 	    conda:
 	        "envs/cellectpy3.yml"
 	    params:
-	        wgcna =  WGCNA,
 	        run_prefix = "all_genes_in_dataset",
 	        windowsize_kb =  WINDOWSIZE_KB,
 	        bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed"
