@@ -27,7 +27,7 @@ LDSC_BASELINE = config['LDSC_BASELINE']
 
 CHROMOSOMES = config['CHROMOSOMES']
 WINDOWSIZE_KB = config['LDSC_WINDOW_SIZE_KB']
-RUN_PREFIX = config['RUN_PREFIXES']
+RUN_PREFIXES = config['RUN_PREFIXES']
  
 DATASET = config['DATASET_NAME']
 SNP_WINDOWS = config['LDSC_SNPSNAP_WINDOWS']
@@ -46,16 +46,16 @@ os.environ["OMP_NUM_THREADS"] = str(config['LDSC_NUMPY_MULTITHREADING'])
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-def get_annots(run_prefixes):
-	"""
-	Pulls all the annotations from the first multigeneset file.
-	"""
-	# Should be changed to allow for different cell types in different multigeneset files.
-	prefix = run_prefixes[0]
-	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(MULTIGENESET_DIR, prefix)
-	df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
-	annots = np.unique(df_multi_gene_set.iloc[:,0])
-	return(list(annots))
+# def get_annots(run_prefixes, multigeneset_dir):
+# 	"""
+# 	Pulls all the annotations from the first multigeneset file.
+# 	"""
+# 	# Should be changed to allow for different cell types in different multigeneset files.
+# 	prefix = run_prefixes[0]
+# 	file_multi_geneset = '{}/multi_geneset.{}.txt'.format(multigeneset_dir, prefix)
+# 	df_multi_gene_set = pd.read_csv(file_multi_geneset, sep="\t", index_col=False)
+# 	annots = np.unique(df_multi_gene_set.iloc[:,0])
+# 	return(list(annots))
 
 
 def make_prefix__annotations(prefix, annotations):
@@ -88,11 +88,11 @@ def make_prefix__annotations(prefix, annotations):
 ################################### PIPELINE ##########################################
 ########################################################################################
 
-# Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
-# can have a different annotation set for each multigeneset file used as input
-ANNOTATIONS = get_annots(RUN_PREFIX)
+# # Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
+# # can have a different annotation set for each multigeneset file used as input
+# ANNOTATIONS = get_annots(RUN_PREFIXES)
 
-ANNOTATIONS_ALL_GENES = get_annots(["all_genes_in_dataset"])
+# ANNOTATIONS_ALL_GENES = get_annots(["all_genes_in_dataset"])
 
 rule all: 
 	'''
@@ -100,7 +100,7 @@ rule all:
 	'''
 	input:
 		expand("{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt",
-			run_prefix = RUN_PREFIX,
+			run_prefix = RUN_PREFIXES,
 			OUTPUT_DIR = OUTPUT_DIR,
 			gwas = GWAS_SUMSTATS),
         expand("{PRECOMP_DIR}/control.all_genes_in_dataset/per_annotation/all_genes_in_dataset__{annotation}.{chromosome}.l2.ldscore.gz", 
@@ -108,6 +108,24 @@ rule all:
             annotation = ANNOTATIONS_ALL_GENES,
             chromosome=CHROMOSOMES)
 
+rule make_multigenesets:
+	'''
+	Makes a specificity input multigeneset and an all genes background multigeneset from each specificty input matrix.
+	'''
+	input:
+		expand("{SPECIFICITY_MATRIX_DIR}/{{run_prefix}}.txt",
+				SPECIFICITY_MATRIX_DIR = SPECIFICITY_MATRIX_DIR)
+	output:
+		"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.txt",
+		"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.all_genes.txt"
+	conda:
+		"envs/cellectpy3.yml"
+	params:
+		out_dir = "{PRECOMP_DIR}/multi_genesets",
+		specificity_matrix_file = "{SPECIFICITY_MATRIX_DIR}/{run_prefix}.txt",
+		specificity_matrix_name = "{run_prefix}"
+	script:
+		"scripts/make_multigenesets_snake.py"
 
 
 if SNP_WINDOWS == True: # Only use SNPs in LD with genes
@@ -136,8 +154,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
 		'''
 		input:
-			expand("{MULTIGENESET_DIR}/multi_geneset.{{run_prefix}}.txt",
-			 		MULTIGENESET_DIR = MULTIGENESET_DIR),			
+			"{PRECOMP_DIR}/multi_geneset/multi_geneset.{run_prefix}.txt",
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
 					chromosome = CHROMOSOMES)
@@ -158,13 +175,12 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
 		'''
 		input:
-			expand("{MULTIGENESET_DIR}/multi_geneset.all_genes_in_dataset.txt",
-			 		MULTIGENESET_DIR = MULTIGENESET_DIR),			
+			"{PRECOMP_DIR}/multi_geneset/all_genes.multi_geneset.{run_prefix}.txt",		
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
 					chromosome = CHROMOSOMES)
 		output:
-			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.annot.gz"
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -182,8 +198,7 @@ else: # Use SNPs in a fixed window size around genes
 		Read the multigeneset file, parse and make bed files for each annotation geneset
 		'''
 		input:
-			expand("{MULTIGENESET_DIR}/multi_geneset.{{run_prefix}}.txt",
-			 MULTIGENESET_DIR = MULTIGENESET_DIR)
+			"{PRECOMP_DIR}/multi_geneset/multi_geneset.{run_prefix}.txt",
 		output:
 			expand("{{PRECOMP_DIR}}/{{run_prefix}}/bed/{{run_prefix}}.{annotation}.bed",
 					annotation = ANNOTATIONS)
@@ -205,11 +220,9 @@ else: # Use SNPs in a fixed window size around genes
 	    and on the (control) all_genes_in_dataset
 	    '''
 	    input:
-	        expand("{MULTIGENESET_DIR}/multi_geneset.all_genes_in_dataset.txt",
-	                MULTIGENESET_DIR = MULTIGENESET_DIR)
+			"{PRECOMP_DIR}/multi_geneset/all_genes.multi_geneset.{run_prefix}.txt",
 	    output:
-	        expand("{{PRECOMP_DIR}}/control.all_genes_in_dataset/bed/all_genes_in_dataset.{annotation}.bed",
-	            annotation = ANNOTATIONS_ALL_GENES)  
+	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed"  
 	    conda:
 	        "envs/cellectpy3.yml"
 	    params:
@@ -224,8 +237,8 @@ else: # Use SNPs in a fixed window size around genes
 		Make the annotation files fit for input to LDSC from multigeneset files
 		'''
 		input:
-			expand("{{PRECOMP_DIR}}/{{run_prefix}}/bed/{{run_prefix}}.{annotation}.bed",
-					annotation = ANNOTATIONS),
+			lambda wildcards: expand("{{PRECOMP_DIR}}/{{run_prefix}}/bed/{{run_prefix}}.{annotation}.bed",
+					annotation = ANNOTATIONS[wildcards.run_prefix]),
 			expand("{bfile_path}.{chromosome}.bim",
 					bfile_path = BFILE_PATH,
 					chromosome = CHROMOSOMES)
@@ -246,21 +259,20 @@ else: # Use SNPs in a fixed window size around genes
 	    Make the annotation files fit for input to to LDSC from multigeneset files
 	    '''
 	    input:
-	        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_dataset.{annotation}.bed",
-	                PRECOMP_DIR = PRECOMP_DIR,
-	                annotation = ANNOTATIONS_ALL_GENES),
+	        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed",
+	                PRECOMP_DIR = PRECOMP_DIR),
 	        expand("{bfile_prefix}.{chromosome}.bim",
 	                bfile_prefix = BFILE_PATH,
 	                chromosome = CHROMOSOMES)
 	    output:
-	        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.annot.gz"
+	        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
 	    conda:
 	        "envs/cellectpy3.yml"
 	    params:
-	        run_prefix = "all_genes_in_dataset",
+	        run_prefix = "all_genes_in_{run_prefix}",
 	        chromosome = "{chromosome}",
 	        out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
-	        annotations = ANNOTATIONS_ALL_GENES
+	        annotations = ["all_genes_in_{run_prefix}"]
 	    script:
 	        "scripts/make_annot_from_geneset_all_chr_snake.py"
 
@@ -284,19 +296,22 @@ rule compute_LD_scores:
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
-		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 --annot {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome}.annot.gz --thin-annot --out {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome} --print-snps {PRINT_SNPS_FILE}"
+		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
+		--annot {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome}.annot.gz \
+		--thin-annot --out {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome} \
+		--print-snps {PRINT_SNPS_FILE}"
 
 rule compute_LD_scores_all: 
 	'''
 	Computing the LD scores prior to running LDSC.
 	'''
 	input:
-		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.annot.gz"
+		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
 	output:
-		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",
-		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.M",
-		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
-		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.log"
+		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz",
+		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.M",
+		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.M_5_50",
+		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.log"
 	wildcard_constraints:
 		chromosome="\d+" # chromosome must be only a number, not sure if redundant (also have placed it in this rule arbitrarily)
 	params:
@@ -304,7 +319,10 @@ rule compute_LD_scores_all:
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
-		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 --annot {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{params.chromosome}.annot.gz --thin-annot --out {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{params.chromosome} --print-snps {PRINT_SNPS_FILE}"
+		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
+		--annot {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{params.chromosome}.annot.gz \
+		--thin-annot --out {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{params.chromosome} \
+		 --print-snps {PRINT_SNPS_FILE}"
 
 
 
@@ -327,28 +345,6 @@ rule split_LD_scores:
 		out_dir = "{PRECOMP_DIR}/{run_prefix}"
 	script:
 		"scripts/split_ldscores_snake.py"
-
-rule split_ldscores_all_genes: 
-    '''
-    Splits the previously made LD score files by annotation.
-    '''
-    input:
-        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",
-        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.M",
-        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
-        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_dataset.COMBINED_ANNOT.{chromosome}.log"
-    output:
-        expand("{{PRECOMP_DIR}}/control.all_genes_in_dataset/per_annotation/all_genes_in_dataset__{annotation}.{{chromosome}}.l2.ldscore.gz",
-                annotation = ANNOTATIONS_ALL_GENES)
-    conda:
-        "envs/cellectpy3.yml"
-    params:
-        chromosome = '{chromosome}',
-        run_prefix = "all_genes_in_dataset",
-        out_dir = "{PRECOMP_DIR}/control.all_genes_in_dataset"
-    script:
-        "scripts/split_ldscores_snake.py"
-
 
 rule make_cts_file:
 	'''
@@ -413,7 +409,7 @@ rule run_gwas:
     input:
         expand("{PRECOMP_DIR}/{{run_prefix}}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR),
         expand("{gwas_dir}/{{gwas}}.sumstats.gz", gwas_dir = GWAS_DIR),
-        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/per_annotation/all_genes_in_dataset__all_genes_in_dataset.{dataset}.{chromosome}.l2.ldscore.gz", 
+        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz", 
             PRECOMP_DIR=PRECOMP_DIR,
             dataset = DATASET,
             chromosome=CHROMOSOMES)
@@ -423,8 +419,7 @@ rule run_gwas:
         gwas = '{gwas}',
         run_prefix = '{run_prefix}',
         file_out_prefix = '{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}',
-        ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/per_annotation/all_genes_in_dataset__all_genes_in_dataset.{dataset}.", 
-                                                dataset = DATASET,
+        ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}",
                                                 PRECOMP_DIR=PRECOMP_DIR)
     conda: # Need python 2 for LDSC
         "envs/cellectpy27.yml"
