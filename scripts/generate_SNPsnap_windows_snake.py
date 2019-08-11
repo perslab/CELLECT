@@ -85,13 +85,17 @@ def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_pa
 	max_all_annots = combined_ES2SNP_Gene2ES_df.groupby('snpID').max()
 	max_all_annots.sort_values(by='BP coordinate', inplace=True, ascending=True)
 	annot_names = genes_and_ES.columns
-
-	out_chr_filename = '{prefix}.COMBINED_ANNOT.{chromosome}.annot.gz'.format(prefix=run_prefix,
- 																			  chromosome=chromosome)
 	if all_genes == True:
-		run_prefix = 'control.' + run_prefix
-	max_all_annots[annot_names].to_csv(os.path.join(precomp_dir, run_prefix, out_chr_filename),
-										sep='\t', compression ='gzip', na_rep='0', index=False)
+		out_chr_filename = 'all_genes_in_{prefix}.{chromosome}.annot.gz'.format(prefix=run_prefix,
+																				chromosome=chromosome)
+		run_prefix = "control.all_genes_in_dataset"
+	else:
+		out_chr_filename = '{prefix}.COMBINED_ANNOT.{chromosome}.annot.gz'.format(prefix=run_prefix,
+																				  chromosome=chromosome)
+	max_all_annots[annot_names].to_csv(os.path.join(precomp_dir,
+													run_prefix,
+													out_chr_filename),
+									sep='\t', compression ='gzip', na_rep='0', index=False)
 
 	print('Finished making SNP to gene file for chromosome' + str(chromosome))
 

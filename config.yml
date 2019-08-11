@@ -11,8 +11,8 @@ BASE_WORKING_DIR: # This is the output directory. Snakemake will make a new dire
   /scratch
 
 RUN_PREFIXES: # The run prefixes is the unique part of the multigeneset file i.e. multigeneset.{RUN_PREFIX}.txt 
-  - tabula_muris-spec-matric-190811
-  - mousebrain-spec-matric-190811
+  - tabula_muris-spec-matrix-190811
+  - mousebrain-spec-matrix-190811
 
 CHROMOSOMES: 
   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
