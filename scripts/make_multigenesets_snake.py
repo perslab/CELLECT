@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
 
-out_dir = snakemake.params['out_dir']
+output_dir = snakemake.params['out_dir']
 specificity_matrix_name = snakemake.params['specificity_matrix_name']
 specificity_matrix_file = snakemake.params['specificity_matrix_file']
 
 
-specificity_df = pd.read_csv(specificity_matrix_file)
-
+specificity_df = pd.read_csv(specificity_matrix_file, index_col=None)
+print(specificity_df.head())
 # Convert the specificty dataframe into the long multigeneset format
 # required as input for LD score regression
 multi_geneset = pd.melt(specificity_df,
@@ -30,7 +30,7 @@ mgs_path = '{out_dir}/multi_geneset.{sm_name}.txt'.format(
 multi_geneset.to_csv(mgs_path,
 					 header=None, index=False,sep='\t')
 
-mgs_all_genes_path = '{out_dir}/multi_geneset.{sm_name}.all_genes.txt'.format(
+mgs_all_genes_path = '{out_dir}/all_genes.multi_geneset.{sm_name}.txt'.format(
 					  out_dir = output_dir,
 					  sm_name = specificity_matrix_name)
 multi_geneset_all_genes.to_csv(mgs_all_genes_path,
