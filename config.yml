@@ -9,12 +9,12 @@ BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_WORKING_DIR}/{USERN
 
 # Replaces RUN_PREFIXES and multigeneset_dir
 SPECIFICITY_INPUT:
-  - name: Mousebrain.ESmu190806 # The name give to the output files
-    path: ~/CELLECT-data/ldsc/multigenesets/mousebrain.ESmu.test1.txt # The path to the file containing the multigeneset
-  # - name: # if left blank can we try to use the filename without extension as name?
-  #   path: ~/CELLECT-data/ldsc/multigenesets/tabula_muris.ESmu.test2.txt
+  - name: Mousebrain.ESmu190811 # The name give to the output files
+    path: /projects/alegbe/specificity_matrices/mousebrain-spec-matrix-190811.csv # The path to the matrix containing specificity scores for each genomic region
+  - name: Tabula_Muris.ESmu190811
+    path: /projects/alegbe/specificity_matrices/tabula_muris-spec-matrix-190811.csv
 
-# Input must be munged for LDSC
+# To use sumstats with LDSC must be munged first by the munge_sumstats.py script found in the LDSC repo.
   GWAS_SUMSTATS:
   - name: EA3_Lee2018
     path: /path/to/EA3_Lees2018.sumstats.gz 
@@ -26,11 +26,6 @@ LDSC: # Options for LDSC
   100
   SNPSNAP_WINDOWS: # Will override WINDOW_SIZE_KB if True
   False
-  WGCNA: # Will be deprecated
-    False
-  DATASET_NAME:
-    "mousebrain"
-
 
 ############################################################################################################################
 ################################################## CONSTANTS ###############################################################
@@ -42,8 +37,9 @@ CHROMOSOMES:
 
 LDSC:
   DATA_DIR: # All the unchanging data needed to run CELLECT-LDSC is in this directory. It must be downloaded via the link in the repo.
-    /project/alegbe/CELLECT-data/ldsc 
+    /projects/alegbe/CELLECT-data/ldsc 
   LDSC_DIR: # This path should point to the a cloned version of the github repo pascaltimshel/ldsc
-    /project/alegbe/ldsc
+    /projects/alegbe/ldsc
   NUMPY_CORES: # Numpy by default uses all cores available to it. This variable limits the amount of cores numpy can use to 1 so snakemake has full control over multicore processing via ithe '-j' flag.
     1 
+

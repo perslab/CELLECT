@@ -44,7 +44,7 @@ import psutil
 
 ###################################### Functions ######################################
 
-def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, binary, annot_per_geneset, bimfile):
+def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile):
 	""" 
 	Input
 		chromosome: integer (1..22)
@@ -182,11 +182,7 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 			# df[name_annotation] or df.loc[:, name_annotation] --> returns series
 		df_annot.fillna(0, inplace=True) # SNPs not in df_annot_overlap_bp will have NA values in name_annotation
 		# Do data type conversion AFTER .fillna() to avoid problems with NA (float) that cannot be converted to int.
-		if binary == True:
-			df_annot[name_annotation] = df_annot[name_annotation].astype(int)
-			# ALTERNATIVE if you want to handle NANs: df_annot[name_annotation] = pd.to_numeric(df_annot[name_annotation], errors='raise')
-		else:
-			df_annot[name_annotation] = df_annot[name_annotation].astype(float)
+		df_annot[name_annotation] = df_annot[name_annotation].astype(float)
 		list_df_annot.append(df_annot)
 		if annot_per_geneset == True: # write annot file per annotation per chromosome
 			file_out_annot = "{}/{}.{}.{}.annot.gz".format(out_dir, out_prefix, name_annotation, chromosome) # set output filename. ${prefix}.${chr}.annot.gz
@@ -224,7 +220,6 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 out_dir = snakemake.params['out_dir']
 out_prefix = snakemake.params['run_prefix']
 annot_per_geneset = False
-binary = snakemake.params['binary']
 chromosome = snakemake.params['chromosome']
 annotations = snakemake.params['annotations']
 bimfile = '{}.{}.bim'.format(snakemake.config['LDSC_BFILE_PATH'], chromosome)
@@ -235,6 +230,6 @@ print(snakemake.input)
 for name_annot in annotations:
 	dict_of_beds[name_annot] = pybedtools.BedTool('{}/{}.{}.bed'.format(out_dir+'/bed', out_prefix, name_annot))
 
-make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, binary, annot_per_geneset, bimfile)
+make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile)
 
 print("Script is done!")
