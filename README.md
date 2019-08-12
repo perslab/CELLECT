@@ -87,4 +87,4 @@ The config file is pre-configured to run an example which uses two expression sp
 
 The GWAS input are the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3) and 674 thousand individual study on Height (refrence missing).
 
-If you have downloaded the CELLECT data then the config file is already set-up to run this example - it should take about an hour or two to complete.
+If you have downloaded the CELLECT data then the config file is already set-up to run this example - it should take about an hour or two to complete (with SNPsnap windows this time may double or triple).

@@ -7,7 +7,11 @@ specificity_matrix_file = snakemake.params['specificity_matrix_file']
 
 
 specificity_df = pd.read_csv(specificity_matrix_file, index_col=None)
+
+# Rename the first column to gene
+specificity_df.rename(columns={ specificity_df.columns[0]: "gene" }, inplace = True) 
 print(specificity_df.head())
+
 # Convert the specificty dataframe into the long multigeneset format
 # required as input for LD score regression
 multi_geneset = pd.melt(specificity_df,

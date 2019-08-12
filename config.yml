@@ -7,7 +7,7 @@
 ############################################################################################################################
 
 BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_WORKING_DIR}/{USERNAME}/cellect-LDSC where all the output made by the pipeline is saved e.g. LD scores, pvals result files, etc.
-  /scratch
+  /scratch/tobi/
 
 # Replaces RUN_PREFIXES and multigeneset_dir
 SPECIFICITY_INPUT:
@@ -27,7 +27,7 @@ LDSC_VAR: # Options for LDSC
   WINDOW_SIZE_KB:
     100
   SNPSNAP_WINDOWS: # Will override WINDOW_SIZE_KB if True and map SNPs to genes that they are in LD with using SNPsnap
-    True
+    False
 
 
 ############################################################################################################################
