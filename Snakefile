@@ -65,6 +65,7 @@ SNP_WINDOWS = config['LDSC_VAR']['SNPSNAP_WINDOWS']
 SPECIFICITY_INPUT = build_dict_of_dicts(config['SPECIFICITY_INPUT'])
 GWAS_SUMSTATS = build_dict_of_dicts(config['GWAS_SUMSTATS'])
 
+# Output file prefixes
 RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
 
 # Reads the first line of each specificity matrix and saves the annotations
@@ -84,9 +85,11 @@ GENE_COORD_FILE =os.path.join(DATA_DIR,'gene_annotation.hsapiens_all_genes.GRCh3
 LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
 LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1/baseline.")
 SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab")
-LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
-MOUSE_GENE_MAPPING = os.path.join(LDSC_DIR, 'gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz')
+MOUSE_GENE_MAPPING = os.path.join(DATA_DIR, 'gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz')
 
+LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
+
+# These environment variables control how many cores numpy can use
 os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
@@ -246,7 +249,7 @@ else: # Use SNPs in a fixed window size around genes
 
 	rule make_annot:
 		'''
-		Make the annotation files fit for input to LDSC from multigeneset files
+		Make the annotation files used to generate LD scores from multigeneset files
 		'''
 		input:
 			lambda wildcards: expand("{{PRECOMP_DIR}}/{{run_prefix}}/bed/{{run_prefix}}.{annotation}.bed",
@@ -270,7 +273,7 @@ else: # Use SNPs in a fixed window size around genes
 
 	rule make_annot_all_genes:
 	    '''
-	    Make the annotation files fit for input to to LDSC from multigeneset files
+	    Make the annotation files used to generate LD scores for all genes from the all genes multigeneset files
 	    '''
 	    input: 
 	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{{run_prefix}}.all_genes_in_dataset.bed".format(PRECOMP_DIR = PRECOMP_DIR), # PRECOMP_DIR should work with just wildcard but doesn't ??
@@ -294,7 +297,7 @@ else: # Use SNPs in a fixed window size around genes
 
 rule compute_LD_scores: 
 	'''
-	Computing the LD scores prior to running LDSC.
+	Compute the LD scores prior to running LD score regression
 	'''
 	input:
 		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
@@ -318,7 +321,7 @@ rule compute_LD_scores:
 
 rule compute_LD_scores_all: 
 	'''
-	Computing the LD scores prior to running LDSC.
+	Compute the LD scores prior to running LD score regression
 	'''
 	input:
 		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
@@ -348,7 +351,7 @@ for prefix in RUN_PREFIXES:
 	ANNOTATIONS = ANNOTATIONS_DICT[prefix]
 	rule: # split_LD_scores 
 		'''
-		Splits the previously made LD score files by annotation.
+		Splits the files made during the compute LD scores step by annotation
 		'''
 		input:
 			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",
@@ -368,7 +371,7 @@ for prefix in RUN_PREFIXES:
 
 rule make_cts_file:
 	'''
-	Makes the cell-type specific file for LDSC cts flag.
+	Makes the cell-type specific file for LDSC cts option
 	'''
 	input:
 		lambda wildcards : expand("{{PRECOMP_DIR}}/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{chromosome}.l2.ldscore.gz",

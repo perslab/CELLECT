@@ -8,12 +8,14 @@ import csv
 
 def read_ES_gene_file(multi_gene_set_path):
 	'''
-	Takes two paths (strings) as input and returns two panda dataframes of the files needed.
+	Takes a path to a multigeneset as input and returns two panda dataframes of the files needed.
 	Args:
 		multi_gene_set_path (str): The path to a multigeneset file.
 	Returns:
 		A dataframe where annotations are columns and genes are rows.
 	'''
+	# This function seems redundant now we take a matrix as input - I go from matrix -> long format -> matrix again here
+
 	# Reading the gene to ES file into a panda dataframe
 	genes_to_ES = pd.read_csv(multi_gene_set_path, sep='\t',
 		names=['annotation','gene', 'annotation_value'])
