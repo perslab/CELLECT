@@ -28,7 +28,7 @@ LDSC_GWAS_SUMSTATS: # This is the unique name of the GWAS sumstats file i.e. {LD
 LDSC_WINDOW_SIZE_KB: # This parameter specifies the size (in KB) of the window that will be created around all genes when mapping SNPs to genes
   100
 LDSC_SNPSNAP_WINDOWS: # Will override LDSC_WINDOW_SIZE_KB if True and map SNPs to genes that they are in LD with using SNPsnap
-  True
+  False
 
 
 

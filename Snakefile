@@ -201,7 +201,6 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes
 			"scripts/generate_SNPsnap_windows_snake.py"
 
 else: # Use SNPs in a fixed window size around genes
-	
 
 	for prefix in RUN_PREFIXES:
 	# Need to use a loop to generate this rule and not wildcards because the output depends
@@ -213,39 +212,39 @@ else: # Use SNPs in a fixed window size around genes
 			Read the multigeneset file, parse and make bed files for each annotation geneset
 			'''
 			input:
-				"{{PRECOMP_DIR}}/multi_genesets/multi_geneset.{prefix}.txt".format(prefix=prefix),
+				"{{PRECOMP_DIR}}/multi_genesets/multi_geneset.{prefix}.txt".format(prefix=prefix)
 			output:
 				expand("{{PRECOMP_DIR}}/{{prefix}}/bed/{{prefix}}.{annotation}.bed",
 						annotation = ANNOTATIONS)
 			conda:
 				"envs/cellectpy3.yml"
 			params:
-				run_prefix = "{run_prefix}",
+				run_prefix = prefix,
 				windowsize_kb =  WINDOWSIZE_KB,
-				bed_out_dir =  "{PRECOMP_DIR}/{run_prefix}/bed"
+				bed_out_dir =  "{{PRECOMP_DIR}}/{prefix}/bed".format(prefix=prefix)
 			script:
 				"scripts/format_and_map_snake.py"
 
 	rule format_and_map_all_genes:
-	    '''
-	    Works exactly the same way as format_and_map_genes, 
-	    but this version was a workaround to overcome
-	    the awkward wildcards and to make snakemake 
-	    run the same rule twice - on our dataset of interest (fx tabula muris)
-	    and on the (control) all_genes_in_dataset
-	    '''
-	    input:
+		'''
+		Works exactly the same way as format_and_map_genes, 
+		but this version was a workaround to overcome
+		the awkward wildcards and to make snakemake 
+		run the same rule twice - on our dataset of interest (fx tabula muris)
+		and on the (control) all_genes_in_dataset
+		'''
+		input:
 			"{PRECOMP_DIR}/multi_genesets/all_genes.multi_geneset.{run_prefix}.txt"
-	    output:
-	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed"  
-	    conda:
-	        "envs/cellectpy3.yml"
-	    params:
-	        run_prefix = "all_genes_in_dataset",
-	        windowsize_kb =  WINDOWSIZE_KB,
-	        bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed"
-	    script:
-	        "scripts/format_and_map_snake.py"
+		output:
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{run_prefix}.all_genes_in_dataset.bed"  
+		conda:
+			"envs/cellectpy3.yml"
+		params:
+			run_prefix = "{run_prefix}",
+			windowsize_kb =  WINDOWSIZE_KB,
+			bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed"
+		script:
+			"scripts/format_and_map_snake.py"
 
 	rule make_annot:
 		'''
@@ -274,8 +273,7 @@ else: # Use SNPs in a fixed window size around genes
 	    Make the annotation files fit for input to to LDSC from multigeneset files
 	    '''
 	    input:
-	        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed",
-	                PRECOMP_DIR = PRECOMP_DIR),
+	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{{run_prefix}}.all_genes_in_dataset.bed".format(PRECOMP_DIR = PRECOMP_DIR),
 	        expand("{bfile_prefix}.{chromosome}.bim",
 	                bfile_prefix = BFILE_PATH,
 	                chromosome = CHROMOSOMES)
@@ -284,10 +282,10 @@ else: # Use SNPs in a fixed window size around genes
 	    conda:
 	        "envs/cellectpy3.yml"
 	    params:
-	        run_prefix = "all_genes_in_{run_prefix}",
+	        run_prefix = "{run_prefix}",
 	        chromosome = "{chromosome}",
 	        out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
-	        annotations = ["all_genes_in_{run_prefix}"]
+	        annotations = ["all_genes_in_dataset"]
 	    script:
 	        "scripts/make_annot_from_geneset_all_chr_snake.py"
 
@@ -438,8 +436,7 @@ rule run_gwas:
         gwas = '{gwas}',
         run_prefix = '{run_prefix}',
         file_out_prefix = '{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}',
-        ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}",
-                                                PRECOMP_DIR=PRECOMP_DIR)
+        ldsc_all_genes_ref_ld_chr_name = ',{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
     conda: # Need python 2 for LDSC
         "envs/cellectpy27.yml"
     shell: 
