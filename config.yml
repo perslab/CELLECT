@@ -26,8 +26,9 @@ GWAS_SUMSTATS:
 LDSC: # Options for LDSC
   WINDOW_SIZE_KB:
   100
-  SNPSNAP_WINDOWS: # Will override WINDOW_SIZE_KB if True
+  SNPSNAP_WINDOWS: # Will override WINDOW_SIZE_KB if True and map SNPs to genes that they are in LD with using SNPsnap
   False
+
 
 ############################################################################################################################
 ################################################## CONSTANTS ###############################################################

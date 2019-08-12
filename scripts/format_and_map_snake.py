@@ -135,7 +135,8 @@ def multi_gene_sets_to_dict_of_beds(df_multi_gene_set, df_gene_coord, windowsize
 		df['END'] = df['END'] + windowsize
 		list_of_lists = [['chr'+(str(chrom).lstrip('chr')), str(start), str(end), str(name), str(score)] for (chrom,start,end,name,score) in np.array(df[['CHR', 'START', 'END', 'GENE', 'annotation_value']])]
 		bed_for_annot = pybedtools.BedTool(list_of_lists).sort().merge(c=[4,5], o=["distinct","max"]) 
-		bed_for_annot.saveas('{}/{}.{}.bed'.format(out_dir, out_prefix, name_annotation))
+		out_file_name = '{}/{}.{}.bed'.format(out_dir, out_prefix, name_annotation)
+		bed_for_annot.saveas(out_file_name)
 	return None
 
 
