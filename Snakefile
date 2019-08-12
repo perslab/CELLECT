@@ -1,11 +1,46 @@
 from snakemake.utils import min_version
 
-import pandas as pd
-import numpy as np
 import glob
 import os
 
 min_version("5.4")
+
+########################################################################################
+################################### FUNCTIONS ##########################################
+########################################################################################
+
+def get_annots(specificity_input_dict):
+	"""
+	Pulls all the annotations from each multigeneset file and saves them into a dictionary.
+	"""
+	annots_dict = {}
+	for key, dictionary in specificity_input_dict.items():
+		with open(dictionary['path']) as f:
+			# Don't save the first string because it should be 'gene'
+			annotations = f.readline().strip().split(',')[1:]
+			annots_dict[key] = annotations
+	return(annots_dict)
+
+
+def make_prefix__annotations(prefix, annotations):
+	"""
+	Makes a list containing the prefix appended to each annotation in the multigeneset file.
+	"""
+	# This function should possibly be moved into make_cts_file_snake.py - I can't remember
+	# why I decided to put it here
+	pa_list = []
+	for annot in annotations:
+		pa_list.append(prefix+'__'+annot)
+	return(pa_list)
+
+def build_dict_of_dicts(list_of_dicts):
+	'''
+	Uses the name in a list of dictionaries as the key to make a dictionary of dictionaries.
+	'''
+	out_dict = {}
+	for d in list_of_dicts:
+		out_dict[d['name']] = d
+	return(out_dict)
 
 ########################################################################################
 ################################### VARIABLES ##########################################
@@ -14,12 +49,23 @@ min_version("5.4")
 configfile: 'config.yml'
 
 
-BASE_WORKING_DIR = os.path.join(config['BASE_OUTPUT_DIR'],os.environ['USER'],'cellect-LDSC')
+BASE_WORKING_DIR = os.path.join(config['BASE_OUTPUT_DIR'],os.environ['USER'],'CELLECT-LDSC')
 
-PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation')
-OUTPUT_DIR = os.path.join(BASE_WORKING_DIR, 'out')
+PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation') # Where most files are made
+OUTPUT_DIR = os.path.join(BASE_WORKING_DIR, 'out') # Where only the final cell-type results are saved
 
-WINDOWSIZE_KB = config['LDSC']['WINDOW_SIZE_KB']
+WINDOWSIZE_KB = config['LDSC']['WINDOW_SIZE_KB'] 
+
+# Takes the list of dictionaries and makes it into a new dictionary where the keys are the name values
+# from each dictionary and the values are each dictionary
+# e.g. [{"name":"a", "value": 1}, {"name":"b","value":2}] ->
+# {"a":{"name":"a", "value": 1}, "b":{"name":"b","value":2}}
+SPECIFICITY_INPUT = build_dict_of_dicts(config['SPECIFICITY_INPUT'])
+GWAS_SUMSTATS = build_dict_of_dicts(config['GWAS_SUMSTATS'])
+
+# Reads the first line of each specificity matrix and saves the annotations
+# as lists where the key is the assigned run prefix
+ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 ########################################################################################
 ################################### CONSTANTS ##########################################
@@ -43,38 +89,9 @@ CHROMOSOMES = config['CHROMOSOMES']
 
 
 ########################################################################################
-################################### FUNCTIONS ##########################################
-########################################################################################
-
-def get_annots(run_prefixes, spec_mat_dir):
-	"""
-	Pulls all the annotations from the first multigeneset file.
-	"""
-	annots_dict = {}
-	for prefix in run_prefixes:
-		with open(os.path.join(spec_mat_dir, prefix+'.csv')) as f:
-			annotations = f.readline().strip().split(',')[1:]
-			annots_dict[prefix] = annotations
-	return(annots_dict)
-
-
-def make_prefix__annotations(prefix, annotations):
-	"""
-	Makes a list containing the prefix appended to each annotation in the multigeneset file.
-	"""
-	pa_list = []
-	for annot in annotations:
-		pa_list.append(prefix+'__'+annot)
-	return(pa_list)
-
-
-########################################################################################
 ################################### PIPELINE ##########################################
 ########################################################################################
 
-# Saves the annotations from the first multigeneset as a variable - this should be made into a dictionary so we
-# can have a different annotation set for each multigeneset file used as input
-ANNOTATIONS_DICT = get_annots(RUN_PREFIXES, SPECIFICITY_MATRIX_DIR)
 
 
 rule all: 
@@ -83,21 +100,16 @@ rule all:
 	'''
 	input:
 		expand("{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt",
-			run_prefix = RUN_PREFIXES,
+			run_prefix = list(SPECIFICITY_INPUT.keys()),
 			OUTPUT_DIR = OUTPUT_DIR,
-			gwas = GWAS_SUMSTATS)#,
-        # expand("{PRECOMP_DIR}/control.all_genes_in_dataset/per_annotation/all_genes_in_dataset__{annotation}.{chromosome}.l2.ldscore.gz", 
-        #     PRECOMP_DIR=PRECOMP_DIR,
-        #     annotation = ANNOTATIONS_ALL_GENES,
-        #     chromosome=CHROMOSOMES)
+			gwas = list(GWAS_SUMSTATS.keys()))
 
 rule make_multigenesets:
 	'''
 	Makes a specificity input multigeneset and an all genes background multigeneset from each specificty input matrix.
 	'''
 	input:
-		expand("{SPECIFICITY_MATRIX_DIR}/{{run_prefix}}.csv",
-				SPECIFICITY_MATRIX_DIR = SPECIFICITY_MATRIX_DIR)
+		lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path']
 	output:
 		"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.txt",
 		"{PRECOMP_DIR}/multi_genesets/all_genes.multi_geneset.{run_prefix}.txt"
@@ -105,8 +117,7 @@ rule make_multigenesets:
 		"envs/cellectpy3.yml"
 	params:
 		out_dir = "{PRECOMP_DIR}/multi_genesets",
-		specificity_matrix_file = expand("{SPECIFICITY_MATRIX_DIR}/{{run_prefix}}.csv",
-										SPECIFICITY_MATRIX_DIR = SPECIFICITY_MATRIX_DIR)[0],
+		specificity_matrix_file = lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
 		specificity_matrix_name = "{run_prefix}"
 	script:
 		"scripts/make_multigenesets_snake.py"
@@ -119,8 +130,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 		Joins SNPsnap file with genes to input BIM file for all chromosomes
 		'''
 		input:
-			expand("{bfile_path}.CHR_1_22.bim",
-					bfile_path = BFILE_PATH)
+			"{bfile_path}.CHR_1_22.bim".format(bfile_path = BFILE_PATH)
 		output:
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
@@ -139,8 +149,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 		'''
 		input:
 			"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.txt",
-			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{{chromosome}}.txt",
-					bfile_prefix = os.path.basename(BFILE_PATH))
+			"{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{{chromosome}}.txt".format(bfile_prefix = os.path.basename(BFILE_PATH))
 		output:
 			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
 		conda:
@@ -248,8 +257,7 @@ else: # Use SNPs in a fixed window size around genes
 	    Make the annotation files fit for input to to LDSC from multigeneset files
 	    '''
 	    input:
-	        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed",
-	                PRECOMP_DIR = PRECOMP_DIR),
+	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/all_genes_in_{run_prefix}.bed",
 	        expand("{bfile_prefix}.{chromosome}.bim",
 	                bfile_prefix = BFILE_PATH,
 	                chromosome = CHROMOSOMES)
@@ -346,8 +354,8 @@ rule make_cts_file:
 	'''
 	input:
 		lambda wildcards : expand("{{PRECOMP_DIR}}/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{chromosome}.l2.ldscore.gz",
-			annotation=ANNOTATIONS_DICT[wildcards.run_prefix],
-			chromosome=CHROMOSOMES)
+									annotation=ANNOTATIONS_DICT[wildcards.run_prefix],
+									chromosome=CHROMOSOMES)
 	output:
 		"{PRECOMP_DIR}/{run_prefix}.ldcts.txt"
 	conda:
@@ -364,7 +372,7 @@ rule run_gwas:
     '''
     input:
         expand("{PRECOMP_DIR}/{{run_prefix}}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR),
-        expand("{gwas_dir}/{{gwas}}.sumstats.gz", gwas_dir = GWAS_DIR),
+        lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
         expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", 
             PRECOMP_DIR=PRECOMP_DIR,
             chromosome=CHROMOSOMES)
@@ -372,14 +380,15 @@ rule run_gwas:
         "{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt"
     params:
         gwas = '{gwas}',
+        gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
         run_prefix = '{run_prefix}',
         file_out_prefix = '{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}',
-        ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}",
+        ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.",
                                                 PRECOMP_DIR=PRECOMP_DIR)
     conda: # Need python 2 for LDSC
         "envs/cellectpy27.yml"
     shell: 
-        "{LDSC_SCRIPT} --h2-cts {GWAS_DIR}/{params.gwas}.sumstats.gz \
+        "{LDSC_SCRIPT} --h2-cts {param.gwas_path} \
         --ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name} \
         --w-ld-chr {LD_SCORE_WEIGHTS} \
         --ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \

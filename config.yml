@@ -1,5 +1,7 @@
 ---
 
+# Please use absolute paths, ~ and environment variables are not processed
+
 ############################################################################################################################
 ############################################ RUN SPECIFIC VARIABLES ########################################################
 ############################################################################################################################
@@ -9,17 +11,17 @@ BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_WORKING_DIR}/{USERN
 
 # Replaces RUN_PREFIXES and multigeneset_dir
 SPECIFICITY_INPUT:
-  - name: Mousebrain.ESmu190811 # The name give to the output files
-    path: /projects/alegbe/specificity_matrices/mousebrain-spec-matrix-190811.csv # The path to the matrix containing specificity scores for each genomic region
+  - name: Mousebrain.ESmu190811 # The name give to the output files, MUST be unique and NO double underscores allowed
+    path: /projects/alegbe/CELLECT-data/specificity_matrices/mousebrain-spec-matrix-190811.csv # The path to the matrix containing specificity scores for each genomic region, does not need to be unique
   - name: Tabula_Muris.ESmu190811
-    path: /projects/alegbe/specificity_matrices/tabula_muris-spec-matrix-190811.csv
+    path: /projects/alegbe/CELLECT-data/specificity_matrices/tabula_muris-spec-matrix-190811.csv
 
 # To use sumstats with LDSC must be munged first by the munge_sumstats.py script found in the LDSC repo.
-  GWAS_SUMSTATS:
+GWAS_SUMSTATS:
   - name: EA3_Lee2018
-    path: /path/to/EA3_Lees2018.sumstats.gz 
+    path: /projects/alegbe/CELLECT-data/gwas/EA3_Lees2018.sumstats.gz 
   - name: HEIGHT_UKBB_Loh2018
-    path: /path/to/HEIGHT_UKBB_Loh2018.sumstats.gz
+    path: /projects/alegbe/CELLECT-data/gwas/HEIGHT_UKBB_Loh2018.sumstats.gz
 
 LDSC: # Options for LDSC
   WINDOW_SIZE_KB:

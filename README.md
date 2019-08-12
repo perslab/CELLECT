@@ -25,12 +25,11 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 After cloning this repository there are a few other things that need to be set-up before CELLECT can be run.
 
 
-One of the models used by CELLECT is LD score regression - it is vital that our forked version of this repository [(pascaltimshel/ldsc)](https://github.com/pascaltimshel/ldsc) is also cloned. TODO: make this clearer
+Our forked version of this repository [(pascaltimshel/ldsc)](https://github.com/pascaltimshel/ldsc) **must also be cloned** for CELLECT-LDSC to work.
 
-The models in CELLECT are built in Snakemake and the pipelines utilise conda environments. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
+The models in CELLECT are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
 conda install -c bioconda snakemake
-conda install pandas
 ```
 
 There are several data files (roughly 6GB after unpacking) which are required to use CELLECT they can be downloaded as follows:
@@ -41,20 +40,40 @@ tar -xvf cellect-data.gz
 
 Finally, within your cloned version of this repository, modify the `config.yml` file so that it is specific to the system you are working on. The config file is divided up into two categories (plus model-specific sub categories):
 
-* **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data
-* **CONSTANTS**: These variables will generally remain constant and will includes things like paths to data and scripts
+* **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data.
+* **CONSTANTS**: These will includes things like paths to data and scripts that we do not expect to change between runs.
 
 For now, only modify the CONSTANTS part to point to the cloned LDSC script and the data directory we just downloaded.
 
 ## Usage of CELLECT-LDSC
 
-To run CELLECT-LDSC we must specify in the `config.yml` either one or multiple multigeneset files as well as one or multiple GWAS summary statistics.
+To run CELLECT-LDSC we must specify in the `config.yml` several things:
 
-The multigeneset file contains Expression Specificity values for every specific gene in each cell type and can be created by providing CELLEX with single cell count matrix and metadata.
+### Specificity input
 
-The GWAS summary statistics are pre-processed by the LDSC script `munge_sumstats.py`.
+This is one or several matrices containing genes in the index/first column and annotations in the subsequent columns. The gene names must be in **Ensembl human** format and the values in each cell should be between **0 and 1** e.g.
 
-When multigeneset and summary statistic names have been saved in the config file we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
+| gene 			  | Bladder.bladder_cell  | ... | Trachea.mesenchymal_cell |
+|-----------------|-----------------------|-----|--------------------------|
+| ENSG00000081791 | 0.43                  | ... | 0.11                     |
+| ...             | ...                   | ... | ...                      |
+| ENSG00000101440 | 0.21                  | ... | 0.89                     |
+
+During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used as an indepedent variable.
+
+In the `config.yml` pleas provide this as what you would like your output to be named and a path to the matrix.
+
+###GWAS summary statistics
+
+This must be one of several already munged (using the `munge-sumstats.py` script found in LD score regression) summary statistics for a given trait.
+
+###Output directory
+
+This is a path to a directory where you would like your output to be saved. Ideally use a path to a SSD to speed up computation. **2-3 GBs of space are usually needed** for each Specificity Input but additional GWAS summary stats will not take up much more storage.
+
+
+
+When the config file contains the above we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
 
 ```bash
 snakemake --use-conda
@@ -63,8 +82,8 @@ If you wish to use multiple threads you can pass the `-j` option followed by a n
 
 ### Example
 
-To demonstrate CELLECT-LDSC we have a short example that takes roughly 30 minutes to run on ... 
+The config file is pre-configured to run an example which uses two expression specificity inputs created with [CELLEX](https://github.com/perslab/CELLEX) from two single cell expression atlases: [Mouse Nervous System](https://www.sciencedirect.com/science/article/pii/S009286741830789X) and Tabula Muris(https://www.nature.com/articles/s41586-018-0590-4).
 
-Our single cell input for this example is the [Mouse Nervous System](https://www.sciencedirect.com/science/article/pii/S009286741830789X) processed with CELLEX to get specificity scores then a subset of cell types taken to speed up the running time. The GWAS input is the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3)
+The GWAS input are the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3) and 674 thousand individual study on Height (refrence missing).
 
-If you have downloaded the CELLECT data then the config file is already set-up to run this example.
+If you have downloaded the CELLECT data then the config file is already set-up to run this example - it should take about an hour or two to complete.
