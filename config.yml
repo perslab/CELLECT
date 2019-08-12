@@ -7,7 +7,7 @@
 ############################################################################################################################
 
 BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_WORKING_DIR}/{USERNAME}/cellect-LDSC where all the output made by the pipeline is saved e.g. LD scores, pvals result files, etc.
-  /scratch/tobi/
+  /scratch
 
 # Replaces RUN_PREFIXES and multigeneset_dir
 SPECIFICITY_INPUT:
