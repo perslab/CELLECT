@@ -16,8 +16,9 @@ def get_annots(specificity_input_dict):
 	annots_dict = {}
 	for key, dictionary in specificity_input_dict.items():
 		with open(dictionary['path']) as f:
-			# Don't save the first string because it should be 'gene'
-			annotations = f.readline().strip().split(',')[1:]
+			annotations = f.readline().strip().split(',')
+			if annotations[0] =='gene':
+				annotations = annotations[1:]
 			annots_dict[key] = annotations
 	return(annots_dict)
 
@@ -54,7 +55,8 @@ BASE_WORKING_DIR = os.path.join(config['BASE_OUTPUT_DIR'],os.environ['USER'],'CE
 PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation') # Where most files are made
 OUTPUT_DIR = os.path.join(BASE_WORKING_DIR, 'out') # Where only the final cell-type results are saved
 
-WINDOWSIZE_KB = config['LDSC']['WINDOW_SIZE_KB'] 
+WINDOWSIZE_KB = config['LDSC_VAR']['WINDOW_SIZE_KB']
+SNP_WINDOWS = config['LDSC_VAR']['SNPSNAP_WINDOWS']
 
 # Takes the list of dictionaries and makes it into a new dictionary where the keys are the name values
 # from each dictionary and the values are each dictionary
@@ -62,6 +64,8 @@ WINDOWSIZE_KB = config['LDSC']['WINDOW_SIZE_KB']
 # {"a":{"name":"a", "value": 1}, "b":{"name":"b","value":2}}
 SPECIFICITY_INPUT = build_dict_of_dicts(config['SPECIFICITY_INPUT'])
 GWAS_SUMSTATS = build_dict_of_dicts(config['GWAS_SUMSTATS'])
+
+RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
 
 # Reads the first line of each specificity matrix and saves the annotations
 # as lists where the key is the assigned run prefix
@@ -71,19 +75,21 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 ################################### CONSTANTS ##########################################
 ########################################################################################
 
-DATA_DIR = config['LDSC']['DATA_DIR']
+DATA_DIR = config['LDSC_CONST']['DATA_DIR']
+LDSC_DIR = config['LDSC_CONST']['LDSC_DIR']
 
 BFILE_PATH = os.path.join(DATA_DIR,"1000G_EUR_Phase3_plink/1000G.EUR.QC")
 PRINT_SNPS_FILE = os.path.join(DATA_DIR,"print_snps.txt")
 GENE_COORD_FILE =os.path.join(DATA_DIR,'gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt')
 LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
 LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1/baseline.")
-SNP_WINDOWS = os.path.join(DATA_DIR,"ld0.5_collection.tab")
+SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab")
 LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
+MOUSE_GENE_MAPPING = os.path.join(LDSC_DIR, 'gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz')
 
-os.environ["MKL_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
-os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
-os.environ["OMP_NUM_THREADS"] = str(config['LDSC']['NUMPY_CORES'])
+os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 
 CHROMOSOMES = config['CHROMOSOMES']
 
@@ -100,7 +106,7 @@ rule all:
 	'''
 	input:
 		expand("{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt",
-			run_prefix = list(SPECIFICITY_INPUT.keys()),
+			run_prefix = RUN_PREFIXES,
 			OUTPUT_DIR = OUTPUT_DIR,
 			gwas = list(GWAS_SUMSTATS.keys()))
 
@@ -130,7 +136,8 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 		Joins SNPsnap file with genes to input BIM file for all chromosomes
 		'''
 		input:
-			"{bfile_path}.CHR_1_22.bim".format(bfile_path = BFILE_PATH)
+			"{bfile_path}.CHR_1_22.bim".format(bfile_path = BFILE_PATH),
+			"{SNPSNAP_FILE}".format(SNPSNAP_FILE = SNPSNAP_FILE)
 		output:
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
@@ -139,7 +146,9 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 			"envs/cellectpy3.yml"
 		params:
 			out_dir = "{PRECOMP_DIR}/SNPsnap",
-			chromosomes = CHROMOSOMES
+			chromosomes = CHROMOSOMES,
+			snpsnap_file = SNPSNAP_FILE,
+			bfile = BFILE_PATH
 		script:
 			"scripts/join_SNPsnap_and_bim_snake.py"
 
@@ -158,7 +167,8 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 			chromosome = "{chromosome}",
 			run_prefix = "{run_prefix}",
 			precomp_dir = "{PRECOMP_DIR}",
-			all_genes = False
+			all_genes = False,
+			bfile = BFILE_PATH
 		script:
 			"scripts/generate_SNPsnap_windows_snake.py"
 
@@ -179,7 +189,8 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 			chromosome = "{chromosome}",
 			run_prefix = "{run_prefix}",
 			precomp_dir = "{PRECOMP_DIR}",
-			all_genes = True
+			all_genes = True,
+			bfile = BFILE_PATH
 		script:
 			"scripts/generate_SNPsnap_windows_snake.py"
 
@@ -204,7 +215,9 @@ else: # Use SNPs in a fixed window size around genes
 			params:
 				run_prefix = prefix,
 				windowsize_kb =  WINDOWSIZE_KB,
-				bed_out_dir =  "{{PRECOMP_DIR}}/{prefix}/bed".format(prefix=prefix)
+				bed_out_dir = "{{PRECOMP_DIR}}/{prefix}/bed".format(prefix=prefix),
+				mouse_mapping = MOUSE_GENE_MAPPING,
+				gene_coords = GENE_COORD_FILE
 			script:
 				"scripts/format_and_map_snake.py"
 
@@ -225,7 +238,9 @@ else: # Use SNPs in a fixed window size around genes
 		params:
 			run_prefix = "{run_prefix}",
 			windowsize_kb =  WINDOWSIZE_KB,
-			bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed"
+			bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed",
+			mouse_mapping = MOUSE_GENE_MAPPING,
+			gene_coords = GENE_COORD_FILE
 		script:
 			"scripts/format_and_map_snake.py"
 
@@ -247,6 +262,7 @@ else: # Use SNPs in a fixed window size around genes
 			run_prefix = "{run_prefix}",
 			chromosome = "{chromosome}",
 			out_dir = "{PRECOMP_DIR}/{run_prefix}",
+			bfile = BFILE_PATH,
 			all_genes = False,
 			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix]
 		script:
@@ -270,7 +286,8 @@ else: # Use SNPs in a fixed window size around genes
 	        all_genes = True,
 	        chromosome = "{chromosome}",
 	        out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
-	        annotations = ["all_genes_in_dataset"]
+	        annotations = ["all_genes_in_dataset"],
+	        bfile = BFILE_PATH
 	    script:
 	        "scripts/make_annot_from_geneset_all_chr_snake.py"
 
@@ -388,7 +405,7 @@ rule run_gwas:
     conda: # Need python 2 for LDSC
         "envs/cellectpy27.yml"
     shell: 
-        "{LDSC_SCRIPT} --h2-cts {param.gwas_path} \
+        "{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
         --ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name} \
         --w-ld-chr {LD_SCORE_WEIGHTS} \
         --ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \

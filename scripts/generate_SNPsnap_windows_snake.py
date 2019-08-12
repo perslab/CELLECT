@@ -102,14 +102,12 @@ def create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bim_pa
 
 ###################################### MAIN ######################################
 
-bfile_path = snakemake.config['LDSC_BFILE_PATH']
-
-
 genes_and_ES = read_ES_gene_file(snakemake.input[0])
 chromosome = snakemake.params['chromosome']
 run_prefix = snakemake.params['run_prefix']
 precomp_dir = snakemake.params['precomp_dir']
 all_genes = snakemake.params['all_genes']
+bfile_path = snakemake.params['bfile']
 
 create_annot_file_per_chromosome(chromosome, run_prefix, precomp_dir, bfile_path, all_genes)
 	

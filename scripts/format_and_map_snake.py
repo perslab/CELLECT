@@ -142,10 +142,8 @@ def multi_gene_sets_to_dict_of_beds(df_multi_gene_set, df_gene_coord, windowsize
 
 ###################################### MAIN ######################################
 
-mouse_to_gene_mapping = snakemake.config['LDSC_MOUSE_GENE_MAPPING']
-gene_coords = snakemake.config['LDSC_GENE_COORD_FILE']
-
-
+mouse_to_gene_mapping = snakemake.params['mouse_mapping']
+gene_coords = snakemake.params['gene_coords']
 windowsize = snakemake.params['windowsize_kb'] * 1000
 bed_out_dir = snakemake.params['bed_out_dir']
 out_prefix = snakemake.params['run_prefix']

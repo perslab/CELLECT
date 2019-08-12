@@ -67,8 +67,8 @@ def join_SNPsnap_bim_SNPs_to_input_bim(input_bim_path, output_dir, SNPsnap_file,
 
 ###################################### MAIN ######################################
 
-bimfile_path = snakemake.config['LDSC_BFILE_PATH']
-SNPsnap_file = snakemake.config['LDSC_SNPSNAP_FILE']
+bimfile_path = snakemake.params['bfile']
+SNPsnap_file = snakemake.params['snpsnap_file']
 
 out_dir = snakemake.params['out_dir']
 list_chromosomes = snakemake.params['chromosomes']

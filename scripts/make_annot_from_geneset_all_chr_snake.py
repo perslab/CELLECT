@@ -226,7 +226,7 @@ annot_per_geneset = False
 chromosome = snakemake.params['chromosome']
 annotations = snakemake.params['annotations']
 all_genes = snakemake.params['all_genes']
-bimfile = '{}.{}.bim'.format(snakemake.config['LDSC_BFILE_PATH'], chromosome)
+bimfile = '{}.{}.bim'.format(snakemake.params['bfile'], chromosome)
 dict_of_beds = {}
 
 for name_annot in annotations:
