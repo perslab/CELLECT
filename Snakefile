@@ -247,6 +247,7 @@ else: # Use SNPs in a fixed window size around genes
 			run_prefix = "{run_prefix}",
 			chromosome = "{chromosome}",
 			out_dir = "{PRECOMP_DIR}/{run_prefix}",
+			all_genes = False,
 			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix]
 		script:
 			"scripts/make_annot_from_geneset_all_chr_snake.py"
@@ -266,6 +267,7 @@ else: # Use SNPs in a fixed window size around genes
 	        "envs/cellectpy3.yml"
 	    params:
 	        run_prefix = "{run_prefix}",
+	        all_genes = True,
 	        chromosome = "{chromosome}",
 	        out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
 	        annotations = ["all_genes_in_dataset"]
