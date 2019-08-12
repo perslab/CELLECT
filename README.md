@@ -7,7 +7,8 @@
 
 ### Update log 
 
-**August 1st 2019: v0.1**. Beta version. Currently CELLECT only support S-LDSC software for genetic identification of etiologic cell-types. We expect to release a pipeline for MAGMA, RolyPoly and DEPICT in the near future. 
+**August 1st 2019: v0.1**. Beta version. Currently CELLECT only support S-LDSC software for genetic identification of etiologic cell-types. We expect to release a pipeline for MAGMA, RolyPoly and DEPICT in the near future.
+**August 12th 2019: v0.1.1**. CELLECT now takes a matrix as input and CELLECT-LDSC does not require an all_genes background as this is generated from the matrix.
 
 ## How does it work?
 
@@ -27,7 +28,7 @@ After cloning this repository there are a few other things that need to be set-u
 
 Our forked version of this repository [(pascaltimshel/ldsc)](https://github.com/pascaltimshel/ldsc) **must also be cloned** for CELLECT-LDSC to work.
 
-The models in CELLECT are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
+The models in CELLECT (currentlyjust CELLECT-LDSC) are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
 conda install -c bioconda snakemake
 ```
@@ -51,7 +52,7 @@ To run CELLECT-LDSC we must specify in the `config.yml` several things:
 
 ### Specificity input
 
-This is one or several matrices containing genes in the index/first column and annotations in the subsequent columns. The gene names must be in **Ensembl human** format and the values in each cell should be between **0 and 1** e.g.
+This is one or several matrices containing genes in the index/first column and annotations in the subsequent columns. The gene names must be in **Ensembl human** format and the specificity values in should be between **0 and 1** e.g.
 
 | gene 			  | Bladder.bladder_cell  | ... | Trachea.mesenchymal_cell |
 |-----------------|-----------------------|-----|--------------------------|
@@ -61,7 +62,7 @@ This is one or several matrices containing genes in the index/first column and a
 
 During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used as an indepedent variable.
 
-In the `config.yml` pleas provide this as what you would like your output to be named and a path to the matrix.
+In the `config.yml` please provide this as what you would like your output to be named and a path to the matrix.
 
 ###GWAS summary statistics
 
@@ -78,7 +79,7 @@ When the config file contains the above we can run CELLECT-LDSC by navigating to
 ```bash
 snakemake --use-conda
 ```
-If you wish to use multiple threads you can pass the `-j` option followed by a number to specify how many.
+If you wish to use multiple cores you can pass the `-j` option followed by a number to specify how many otherwise CELLECT will be limited to one core for the most part.
 
 ### Example
 
