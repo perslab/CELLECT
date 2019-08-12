@@ -60,15 +60,15 @@ This is one or several matrices containing genes in the index/first column and a
 | ...             | ...                   | ... | ...                      |
 | ENSG00000101440 | 0.21                  | ... | 0.89                     |
 
-During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used as an indepedent variable.
+During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used  to create an 'all genes' multigeneset to use as an indepedent variable.
 
 In the `config.yml` please provide this as what you would like your output to be named and a path to the matrix.
 
-###GWAS summary statistics
+### GWAS summary statistics
 
 This must be one of several already munged (using the `munge-sumstats.py` script found in LD score regression) summary statistics for a given trait.
 
-###Output directory
+### Output directory
 
 This is a path to a directory where you would like your output to be saved. Ideally use a path to a SSD to speed up computation. **2-3 GBs of space are usually needed** for each Specificity Input but additional GWAS summary stats will not take up much more storage.
 
