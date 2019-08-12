@@ -44,7 +44,7 @@ import psutil
 
 ###################################### Functions ######################################
 
-def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile):
+def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile, all_genes):
 	""" 
 	Input
 		chromosome: integer (1..22)
@@ -207,10 +207,13 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 	### chocolate       0.0     5
 
 	print("CHR={} | Writing annotations...".format(chromosome))
-	file_out_annot_combined = "{}/{}.{}.{}.annot.gz".format(out_dir, out_prefix, "COMBINED_ANNOT", chromosome) 
+	if all_genes == True:
+		file_out_annot_combined = "{}/all_genes_in_{}.{}.annot.gz".format(out_dir, out_prefix, chromosome)
+	else:
+		file_out_annot_combined = "{}/{}.{}.{}.annot.gz".format(out_dir, out_prefix, "COMBINED_ANNOT", chromosome)
+
 	df_annot_combined.to_csv(file_out_annot_combined, sep="\t", index=False, compression="gzip")
 	
-	# return (annotbed, df_annot_combined)
 	return None
 
 
@@ -222,14 +225,13 @@ out_prefix = snakemake.params['run_prefix']
 annot_per_geneset = False
 chromosome = snakemake.params['chromosome']
 annotations = snakemake.params['annotations']
+all_genes = snakemake.params['all_genes']
 bimfile = '{}.{}.bim'.format(snakemake.config['LDSC_BFILE_PATH'], chromosome)
 dict_of_beds = {}
-
-print(snakemake.input)
 
 for name_annot in annotations:
 	dict_of_beds[name_annot] = pybedtools.BedTool('{}/{}.{}.bed'.format(out_dir+'/bed', out_prefix, name_annot))
 
-make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile)
+make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix, annot_per_geneset, bimfile, all_genes)
 
-print("Script is done!")
+print("Make annot script is done!")
