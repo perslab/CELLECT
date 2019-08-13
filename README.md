@@ -8,6 +8,7 @@
 ### Update log 
 
 **August 1st 2019: v0.1**. Beta version. Currently CELLECT only support S-LDSC software for genetic identification of etiologic cell-types. We expect to release a pipeline for MAGMA, RolyPoly and DEPICT in the near future.
+
 **August 12th 2019: v0.1.1**. CELLECT now takes a matrix as input and CELLECT-LDSC does not require an all_genes background as this is generated from the matrix.
 
 ## How does it work?
@@ -26,7 +27,7 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 After cloning this repository there are a few other things that need to be set-up before CELLECT can be run.
 
 
-Our forked version of this repository [(pascaltimshel/ldsc)](https://github.com/pascaltimshel/ldsc) **must also be cloned** for CELLECT-LDSC to work.
+Our forked version of this repository ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)) **must also be cloned** for CELLECT-LDSC to work.
 
 The models in CELLECT (currentlyjust CELLECT-LDSC) are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
@@ -35,7 +36,7 @@ conda install -c bioconda snakemake
 
 There are several data files (roughly 6GB after unpacking) which are required to use CELLECT they can be downloaded as follows:
 ```bash
-wget www.linktocellect.com/cellect-data.gz
+wget www.WILLADDLINKLATER.com/cellect-data.gz
 tar -xvf cellect-data.gz
 ```
 
@@ -74,6 +75,7 @@ This is a path to a directory where you would like your output to be saved. Idea
 
 
 
+
 When the config file contains the above we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
 
 ```bash
@@ -81,10 +83,10 @@ snakemake --use-conda
 ```
 If you wish to use multiple cores you can pass the `-j` option followed by a number to specify how many otherwise CELLECT will be limited to one core for the most part.
 
-### Example
+## Example
 
-The config file is pre-configured to run an example which uses two expression specificity inputs created with [CELLEX](https://github.com/perslab/CELLEX) from two single cell expression atlases: [Mouse Nervous System](https://www.sciencedirect.com/science/article/pii/S009286741830789X) and Tabula Muris(https://www.nature.com/articles/s41586-018-0590-4).
+The config file is pre-configured to run an example which uses two expression specificity inputs created with [CELLEX](https://github.com/perslab/CELLEX) from two single cell expression atlases: [Mouse Nervous System](https://www.sciencedirect.com/science/article/pii/S009286741830789X) and [Tabula Muris](https://www.nature.com/articles/s41586-018-0590-4).
 
-The GWAS input are the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3) and 674 thousand individual study on Height (refrence missing).
+The GWAS input are the UK Biobank's 1.1 million individual study on [Educational Attainment](https://www.nature.com/articles/s41588-018-0147-3) and 674 thousand individual study on [Height](https://www.nature.com/articles/s41588-018-0144-6).
 
-If you have downloaded the CELLECT data then the config file is already set-up to run this example - it should take about an hour or two to complete (with SNPsnap windows this time may double or triple).
+If you have downloaded the CELLECT data then the config file is already set-up to run this example - it should take about an hour or two to complete with 20 cores (with SNPsnap windows this time may double or triple).
