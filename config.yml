@@ -1,12 +1,13 @@
 ---
 
 # Please use absolute paths, ~ and environment variables are not processed
+# (Could this be fixed within the python file, probably...)
 
 ############################################################################################################################
 ############################################ RUN SPECIFIC VARIABLES ########################################################
 ############################################################################################################################
 
-BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_WORKING_DIR}/{USERNAME}/cellect-LDSC where all the output made by the pipeline is saved e.g. LD scores, pvals result files, etc.
+BASE_OUTPUT_DIR: # Snakemake will make a new directory {BASE_OUTPUT_DIR}/{USERNAME}/cellect-LDSC where all the output made by the pipeline is saved e.g. LD scores, pval result files, etc.
   /scratch
 
 # Replaces RUN_PREFIXES and multigeneset_dir

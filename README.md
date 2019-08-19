@@ -27,9 +27,9 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 After cloning this repository there are a few other things that need to be set-up before CELLECT can be run.
 
 
-Our forked version of this repository ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)) **must also be cloned** for CELLECT-LDSC to work.
+Our forked version of LDSC ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)) **must also be cloned** for CELLECT-LDSC to work.
 
-The models in CELLECT (currentlyjust CELLECT-LDSC) are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
+The models in CELLECT (currently just CELLECT-LDSC) are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
 ```bash
 conda install -c bioconda snakemake
 ```
@@ -51,27 +51,31 @@ For now, only modify the CONSTANTS part to point to the cloned LDSC script and t
 
 To run CELLECT-LDSC we must specify in the `config.yml` several things:
 
-### Specificity input
+### Specificity Input
 
 This is one or several matrices containing genes in the index/first column and annotations in the subsequent columns. The gene names must be in **Ensembl human** format and the specificity values in should be between **0 and 1** e.g.
 
-| gene 			  | Bladder.bladder_cell  | ... | Trachea.mesenchymal_cell |
-|-----------------|-----------------------|-----|--------------------------|
-| ENSG00000081791 | 0.43                  | ... | 0.11                     |
-| ...             | ...                   | ... | ...                      |
-| ENSG00000101440 | 0.21                  | ... | 0.89                     |
+| **gene** 			  | **Bladder.bladder_cell**  | ... | **Trachea.mesenchymal_cell** |
+|---------------------|---------------------------|-----|------------------------------|
+| **ENSG00000081791** | 0.43                      | ... | 0.11                         |
+| ...                 | ...                       | ... | ...                          |
+| **ENSG00000101440** | 0.21                      | ... | 0.89                         |
+
+
+In the `config.yml` please provide specificity input as both the name you would like your output files to have and a path to the matrix.
 
 During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used  to create an 'all genes' multigeneset to use as an indepedent variable.
-
-In the `config.yml` please provide this as what you would like your output to be named and a path to the matrix.
 
 ### GWAS summary statistics
 
 This must be one of several already munged (using the `munge-sumstats.py` script found in LD score regression) summary statistics for a given trait.
 
+
+In the `config.yml` please provide GWAS summary stats as both the name would like your output files to have and a path to the summary statistic file.
+
 ### Output directory
 
-This is a path to a directory where you would like your output to be saved. Ideally use a path to a SSD to speed up computation. **2-3 GBs of space are usually needed** for each Specificity Input but additional GWAS summary stats will not take up much more storage.
+This is a path to a directory where you would like your output to be saved. Ideally use a path to a solid state drive to speed up computation. **2-3 GBs of space are usually needed** for each Specificity Input but additional GWAS summary stats will not take up much more storage.
 
 
 

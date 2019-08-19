@@ -1,6 +1,5 @@
 from snakemake.utils import min_version
 
-import glob
 import os
 
 min_version("5.4")
@@ -11,15 +10,17 @@ min_version("5.4")
 
 def get_annots(specificity_input_dict):
 	"""
-	Pulls all the annotations from each multigeneset file and saves them into a dictionary.
+	Pulls all the annotations from each specificity matrix file and saves them into a dictionary.
 	"""
+	# Snakemake rules need to know the output files before the rule executes - this function gets the names
+	# of annotations because the "COMBINED_ANNOT" files are split into "{annotation name}" files
 	annots_dict = {}
 	for key, dictionary in specificity_input_dict.items():
 		with open(dictionary['path']) as f:
 			annotations = f.readline().strip().split(',')
-			if annotations[0] =='gene':
+			if annotations[0] =='gene': # Checks if there is a name for the index or not - currently only works if index name is 'gene', needs to be more robust
 				annotations = annotations[1:]
-			annots_dict[key] = annotations
+			annots_dict[key] = annotations # key is dataset name
 	return(annots_dict)
 
 
@@ -40,7 +41,7 @@ def build_dict_of_dicts(list_of_dicts):
 	'''
 	out_dict = {}
 	for d in list_of_dicts:
-		out_dict[d['name']] = d
+		out_dict[d['name']] = d 
 	return(out_dict)
 
 ########################################################################################
@@ -49,7 +50,7 @@ def build_dict_of_dicts(list_of_dicts):
 
 configfile: 'config.yml'
 
-
+# Where all CELLECT-LDSC output will be saved
 BASE_WORKING_DIR = os.path.join(config['BASE_OUTPUT_DIR'],os.environ['USER'],'CELLECT-LDSC')
 
 PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation') # Where most files are made
@@ -90,6 +91,7 @@ MOUSE_GENE_MAPPING = os.path.join(DATA_DIR, 'gene_annotation.hsapiens_mmusculus_
 LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
 
 # These environment variables control how many cores numpy can use
+# Setting to 1 allows snakemakme to use 1 core per active rule i.e. snakemake core usage = actual core usage
 os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
@@ -204,7 +206,7 @@ else: # Use SNPs in a fixed window size around genes
 	# on the run prefix used 
 	# https://stackoverflow.com/questions/48993241/varying-known-number-of-outputs-in-snakemake
 		ANNOTATIONS = ANNOTATIONS_DICT[prefix]
-		rule: # format_and_map_all_genes
+		rule: # format_and_map_genes
 			'''
 			Read the multigeneset file, parse and make bed files for each annotation geneset
 			'''
