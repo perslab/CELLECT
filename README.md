@@ -26,8 +26,10 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 
 1. **Clone CELLECT repository**
     ```
-    git clone https://github.com/perslab/CELLECT.git
+    git clone --recurse-submodules https://github.com/perslab/CELLECT.git
     ```
+The `--recurse-submodules` is needed to clone the git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) 'ldsc' ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)), which is a modfied version of the original ldsc repository.
+
 2. **Install Snakemake via conda**
 
    CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
