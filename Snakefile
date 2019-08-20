@@ -1,6 +1,7 @@
 from snakemake.utils import min_version
 
 import os
+import csv
 
 min_version("5.4")
 
@@ -17,9 +18,7 @@ def get_annots(specificity_input_dict):
 	annots_dict = {}
 	for key, dictionary in specificity_input_dict.items():
 		with open(dictionary['path']) as f:
-			annotations = f.readline().strip().split(',')
-			if annotations[0] =='gene': # Checks if there is a name for the index or not - currently only works if index name is 'gene', needs to be more robust
-				annotations = annotations[1:]
+			annotations = next(csv.reader(f))[1:]
 			annots_dict[key] = annotations # key is dataset name
 	return(annots_dict)
 
