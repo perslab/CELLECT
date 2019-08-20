@@ -5,13 +5,13 @@
 ![fig-integration](https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png)
 
 
-### Update log 
+## Update log 
 
 **August 1st 2019: v0.1**. Beta version. Currently CELLECT only support S-LDSC software for genetic identification of etiologic cell-types. We expect to release a pipeline for MAGMA, RolyPoly and DEPICT in the near future.
 
 **August 12th 2019: v0.1.1**. CELLECT now takes a matrix as input and CELLECT-LDSC does not require an all_genes background as this is generated from the matrix.
 
-## How does it work?
+## How does CELLECT work?
 
 CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as S-LDSC (Hilary Kiyo Finucane et al., 2015), RolyPoly (Calderon et al., 2017), DEPICT (Pers et al., 2015) or MAGMA covariate analysis (Skene et al., 2018).
 
@@ -24,23 +24,28 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 
 ## Installation
 
-After cloning this repository there are a few other things that need to be set-up before CELLECT can be run.
+1. **Clone CELLECT repository**
+    ```
+    git clone https://github.com/perslab/CELLECT.git
+    ```
+2. **Install Snakemake via conda**
 
+   CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
+   
+    ```bash
+    conda install -c bioconda snakemake
+    ```
+3. **Download CELLECT-data**
+    
+    There are several data files (roughly 6GB after unpacking) which are required to use CELLECT they can be downloaded as follows:
+    
+    ```bash
+    wget www.WILLADDLINKLATER.com/cellect-data.gz
+    tar -xvf cellect-data.gz
+    ```
 
-Our forked version of LDSC ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)) **must also be cloned** for CELLECT-LDSC to work.
-
-The models in CELLECT (currently just CELLECT-LDSC) are built in **Snakemake** and the pipelines utilise **conda environments**. Therefore the easiest way to get started would be to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then either within base conda or a conda environment:
-```bash
-conda install -c bioconda snakemake
-```
-
-There are several data files (roughly 6GB after unpacking) which are required to use CELLECT they can be downloaded as follows:
-```bash
-wget www.WILLADDLINKLATER.com/cellect-data.gz
-tar -xvf cellect-data.gz
-```
-
-Finally, within your cloned version of this repository, modify the `config.yml` file so that it is specific to the system you are working on. The config file is divided up into two categories (plus model-specific sub categories):
+## Getting started
+modify the `config.yml` file so that it is specific to the system you are working on. The config file is divided up into two categories (plus model-specific sub categories):
 
 * **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data.
 * **CONSTANTS**: These will includes things like paths to data and scripts that we do not expect to change between runs.
