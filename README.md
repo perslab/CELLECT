@@ -27,6 +27,7 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease o
 
 1. **Install git lsf**
 We use [`git lfs`](https://git-lfs.github.com/) to store the [CELLECT data files](https://github.com/perslab/CELLECT/data) on github. To download the files you need to have `git lfs` setup before you clone the repository.
+
 Mac:
 ```
 brew update
@@ -46,7 +47,7 @@ For other operating systems, follow [this guide](https://github.com/git-lfs/git-
 git clone --recurse-submodules https://github.com/perslab/CELLECT.git
 ```
 The `--recurse-submodules` is needed to clone the [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) 'ldsc' ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)), which is a modfied version of the original ldsc repository.
-(This might take few minutes as the CELLECT data files (> 1 GB) will be downloaded using git lfs. To skip downloading the data files, use `GIT_LFS_SKIP_SMUDGE=1 git clone --recurse-submodules https://github.com/perslab/CELLECT.git` instead.)
+(Cloning the repo might take few minutes as the CELLECT data files (> 1-3 GB) will be downloaded. To skip downloading the data files, use `GIT_LFS_SKIP_SMUDGE=1 git clone --recurse-submodules https://github.com/perslab/CELLECT.git` instead.)
 
 3. **Install Snakemake via conda**
 
@@ -59,13 +60,9 @@ conda install -c bioconda snakemake
 ## Getting started with CELLECT-LDSC
 
 
-1. **Modify the `config-ldsc.yml` file**. The config file is divided up into two categories:
+1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity.
 
-* **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data.
-* **CONSTANTS**: These variables include things like paths to CELLECT data and libraries that generally do not need to be changed. 
-
-
-2. When the config file contains the above we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
+2. **Run CELLECT-LDSC workflow**:
 
 ```bash
 snakemake --use-conda -j 4 -s cellect-ldsc.snakefile
@@ -75,22 +72,7 @@ This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all
 
 ### CELLECT-LDSC Example: 
 
-This example with run CELLECT on two 
-The example should take 5-15 minutes to run depending on the available number of cores on your system.
-```
-COMING SOONG
-
-cd CELLECT
-wget www.ssgac.com/some_sumstats.gz example/XXX.gwassumstats.gz
-(munge?)
-snakemake --use-conda --configfile -j example/cellect-ldsc.yml
-```
-
-```
-TODO: add data/example/{...} containing example CELLEX output
-TODO: add info for downloading 1 GWAS sum stat. 
-TODO: add example/cellect-ldsc.yml config file with preconfigured variables
-```
+See our [**github wiki**](https://github.com/perslab/CELLECT/wiki).
 
 ## Documentation
 
