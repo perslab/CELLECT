@@ -20,7 +20,7 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 ![fig-CELLECT-conceptual-h2](https://user-images.githubusercontent.com/5487016/62367093-e3ff7600-b528-11e9-8879-8f69005fbea5.png)
 
-Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease with multiple genetic components (G1-G4). CELLECT integrates disease heritability estimates with cell-type expression specificity to identify the etiologic cell-types (T1 and T4) underlying the genetic components (G1 and G4). CELLEX estimates expression specificity from single-cell transcriptomic atlases.
+Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease or trait with multiple genetic components (G1-G4). CELLECT integrates disease heritability estimates with cell-type expression specificity to identify the etiologic cell-types (T1 and T4) underlying the genetic components (G1 and G4). CELLEX estimates expression specificity from single-cell transcriptomic data.
 
 
 ## Installation
@@ -59,10 +59,10 @@ conda install -c bioconda snakemake
 ## Getting started with CELLECT-LDSC
 
 
-1. **Modify the `config-ldsc.yml` file**. The config file is divided up into two categories (plus model-specific sub categories):
+1. **Modify the `config-ldsc.yml` file**. The config file is divided up into two categories:
 
 * **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data.
-* **CONSTANTS**: These variables include things like paths to data and scripts that generally do not change between runs. Thus you typically only need to update them once for each system.
+* **CONSTANTS**: These variables include things like paths to CELLECT data and libraries that generally do not need to be changed. 
 
 
 2. When the config file contains the above we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
@@ -75,6 +75,8 @@ This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all
 
 ### CELLECT-LDSC Example: 
 
+This example with run CELLECT on two 
+The example should take 5-15 minutes to run depending on the available number of cores on your system.
 ```
 COMING SOONG
 
@@ -90,6 +92,14 @@ TODO: add info for downloading 1 GWAS sum stat.
 TODO: add example/cellect-ldsc.yml config file with preconfigured variables
 ```
 
+## Documentation
 
+Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for additional documentation.
+
+## Authors
+
+Pascal Nordgren Timshel (University of Copenhagen)
+Tobi Alegby (University of Copenhagen)
+Ben Nielsen (University of Copenhagen)
 
 
