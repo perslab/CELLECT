@@ -1,15 +1,16 @@
 # CELLECT
 
-**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. Currently we have only implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization.
+**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. Currently we have only implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-MAGMA, CELLECT-RolyPoly and CELLECT-DEPICT in the near future.
 
+<!---
 ![fig-integration](https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png)
+--->
+
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png" width="600"/>
+</p>
 
 
-## Update log 
-
-**August 1st 2019: v0.1**. Beta version implementing CELLECT-LDSC. We expect to release CELLECT-MAGMA, CELLECT-RolyPoly and CELLECT-DEPICT in the near future.
-
-**August 12th 2019: v0.1.1**. CELLECT now takes a matrix as input and CELLECT-LDSC does not require an all_genes background as this is generated from the matrix.
 
 ## How does CELLECT work?
 
@@ -24,32 +25,41 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease w
 
 ## Installation
 
-1. **Clone CELLECT repository**
-    ```
-    git clone --recurse-submodules https://github.com/perslab/CELLECT.git
-    ```
+1. **Install git lsf**
+We use [`git lfs`](https://git-lfs.github.com/) to store the [CELLECT data files](https://github.com/perslab/CELLECT/data) on github. To download the files you need to have `git lfs` setup before you clone the repository.
+Mac:
+```
+brew update
+brew install git-lfs
+git lfs install
+```
+Ubuntu:
+```
+sudo apt-get install git-lfs
+git lfs install
+```
+For other operating systems, follow [this guide](https://github.com/git-lfs/git-lfs/wiki/Installation).
+
+
+2. **Clone CELLECT repository**
+```
+git clone --recurse-submodules https://github.com/perslab/CELLECT.git
+```
 The `--recurse-submodules` is needed to clone the [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) 'ldsc' ([pascaltimshel/ldsc](https://github.com/pascaltimshel/ldsc)), which is a modfied version of the original ldsc repository.
+(This might take few minutes as the CELLECT data files (> 1 GB) will be downloaded using git lfs. To skip downloading the data files, use `GIT_LFS_SKIP_SMUDGE=1 git clone --recurse-submodules https://github.com/perslab/CELLECT.git` instead.)
 
-2. **Install Snakemake via conda**
+3. **Install Snakemake via conda**
 
-   CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
+CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
    
-    ```bash
-    conda install -c bioconda snakemake
-    ```
-3. **Download CELLECT-data**
-    
-    There are several data files (roughly 6GB after unpacking) which are required to use CELLECT they can be downloaded as follows:
-    
-    ```bash
-    wget www.WILLADDLINKLATER.com/cellect-data.gz
-    tar -xvf cellect-data.gz
-    ```
+```bash
+conda install -c bioconda snakemake
+```
 
 ## Getting started with CELLECT-LDSC
 
 
-1. **Modify the `config.yml` file**. The config file is divided up into two categories (plus model-specific sub categories):
+1. **Modify the `config-ldsc.yml` file**. The config file is divided up into two categories (plus model-specific sub categories):
 
 * **RUN-SPECIFIC**: These variables can change from run-to-run and affect how CELLECT processes its input data.
 * **CONSTANTS**: These variables include things like paths to data and scripts that generally do not change between runs. Thus you typically only need to update them once for each system.
@@ -58,7 +68,7 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 2. When the config file contains the above we can run CELLECT-LDSC by navigating to the cloned CELLECT directory and entering the following:
 
 ```bash
-snakemake --use-conda -j 4
+snakemake --use-conda -j 4 -s cellect-ldsc.snakefile
 ```
 This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all available cores pass just the `-j` flag.
 
@@ -80,35 +90,6 @@ TODO: add info for downloading 1 GWAS sum stat.
 TODO: add example/cellect-ldsc.yml config file with preconfigured variables
 ```
 
-## Documentation
-
-See the below sections for relevant documentation and information about parameters, input and output formats.
-
-### `SPECIFICITY_INPUT`: Expression specificity
-
-This is one or several matrices containing genes in the index/first column and annotations in the subsequent columns. The gene names must be in **Ensembl human** format and the specificity values in should be between **0 and 1** e.g.
-
-| **gene** 			  | **Bladder.bladder_cell**  | ... | **Trachea.mesenchymal_cell** |
-|---------------------|---------------------------|-----|------------------------------|
-| **ENSG00000081791** | 0.43                      | ... | 0.11                         |
-| ...                 | ...                       | ... | ...                          |
-| **ENSG00000101440** | 0.21                      | ... | 0.89                         |
-
-
-In the `config.yml` please provide specificity input as both the name you would like your output files to have and a path to the matrix.
-
-During the LD score regression, the list of genes in the index column (with each gene assigned a value of 1) will be used  to create an 'all genes' multigeneset to use as an indepedent variable.
-
-### `GWAS_SUMSTATS`: GWAS summary statistics
-
-This must be one of several already munged (using the `munge-sumstats.py` script found in LD score regression) summary statistics for a given trait.
-
-
-In the `config.yml` please provide GWAS summary stats as both the name would like your output files to have and a path to the summary statistic file.
-
-### `BASE_OUTPUT_DIR`: Output directory
-
-This is a path to a directory where you would like your output to be saved. Ideally use a path to a solid state drive to speed up computation. **2-3 GBs of space are usually needed** for each Specificity Input but additional GWAS summary stats will not take up much more storage.
 
 
 
