@@ -34,36 +34,38 @@ def make_prefix__annotations(prefix, annotations):
 		pa_list.append(prefix+'__'+annot)
 	return(pa_list)
 
-def build_dict_of_dicts(list_of_dicts):
+def build_dict_from_id_filepath_key_value_pairs(list_of_dicts):
 	'''
-	Uses the name in a list of dictionaries as the key to make a dictionary of dictionaries.
+	Each dict in the list in MUST contain the keys 'id' and 'path'.
+	path will be converted to absolute paths.
+	Takes the list of dictionaries and makes it into a new dictionary where the keys are the id values from each dictionary and the values are each dictionary
+	e.g. [{"id":"a", "value": 1}, {"id":"b","value":2}] ->
+	{"a":{"id":"a", "value": 1}, "b":{"id":"b","value":2}}
 	'''
 	out_dict = {}
 	for d in list_of_dicts:
-		out_dict[d['name']] = d 
+		d['path'] = os.path.abspath(d['path'])
+		out_dict[d['id']] = d 
 	return(out_dict)
 
 ########################################################################################
 ################################### VARIABLES ##########################################
 ########################################################################################
 
-configfile: 'config.yml'
+configfile: 'config-ldsc.yml'
 
 # Where all CELLECT-LDSC output will be saved
-BASE_WORKING_DIR = os.path.join(config['BASE_OUTPUT_DIR'],os.environ['USER'],'CELLECT-LDSC')
+BASE_WORKING_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
 
 PRECOMP_DIR = os.path.join(BASE_WORKING_DIR, 'pre-computation') # Where most files are made
 OUTPUT_DIR = os.path.join(BASE_WORKING_DIR, 'out') # Where only the final cell-type results are saved
 
 WINDOWSIZE_KB = config['LDSC_VAR']['WINDOW_SIZE_KB']
-SNP_WINDOWS = config['LDSC_VAR']['SNPSNAP_WINDOWS']
+SNP_WINDOWS = config['LDSC_VAR']['WINDOW_LD_BASED']
 
-# Takes the list of dictionaries and makes it into a new dictionary where the keys are the name values
-# from each dictionary and the values are each dictionary
-# e.g. [{"name":"a", "value": 1}, {"name":"b","value":2}] ->
-# {"a":{"name":"a", "value": 1}, "b":{"name":"b","value":2}}
-SPECIFICITY_INPUT = build_dict_of_dicts(config['SPECIFICITY_INPUT'])
-GWAS_SUMSTATS = build_dict_of_dicts(config['GWAS_SUMSTATS'])
+
+SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
+GWAS_SUMSTATS = build_dict_from_id_filepath_key_value_pairs(config['GWAS_SUMSTATS'])
 
 # Output file prefixes
 RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
@@ -76,16 +78,15 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 ################################### CONSTANTS ##########################################
 ########################################################################################
 
-DATA_DIR = config['LDSC_CONST']['DATA_DIR']
-LDSC_DIR = config['LDSC_CONST']['LDSC_DIR']
+DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
+LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
 
 BFILE_PATH = os.path.join(DATA_DIR,"1000G_EUR_Phase3_plink/1000G.EUR.QC")
 PRINT_SNPS_FILE = os.path.join(DATA_DIR,"print_snps.txt")
 GENE_COORD_FILE =os.path.join(DATA_DIR,'gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt')
 LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
-LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1/baseline.")
-SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab")
-MOUSE_GENE_MAPPING = os.path.join(DATA_DIR, 'gene_annotation.hsapiens_mmusculus_unique_orthologs.GRCh37.ens_v91.txt.gz')
+LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1_thin_annot/baseline.")
+SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab.gz")
 
 LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
 
@@ -96,6 +97,7 @@ os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 
 CHROMOSOMES = config['CHROMOSOMES']
+
 
 
 ########################################################################################
@@ -109,7 +111,7 @@ rule all:
 	Defines the final target files to be generated.
 	'''
 	input:
-		expand("{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt",
+		expand("{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
 			run_prefix = RUN_PREFIXES,
 			OUTPUT_DIR = OUTPUT_DIR,
 			gwas = list(GWAS_SUMSTATS.keys()))
@@ -220,7 +222,6 @@ else: # Use SNPs in a fixed window size around genes
 				run_prefix = prefix,
 				windowsize_kb =  WINDOWSIZE_KB,
 				bed_out_dir = "{{PRECOMP_DIR}}/{prefix}/bed".format(prefix=prefix),
-				mouse_mapping = MOUSE_GENE_MAPPING,
 				gene_coords = GENE_COORD_FILE
 			script:
 				"scripts/format_and_map_snake.py"
@@ -243,7 +244,6 @@ else: # Use SNPs in a fixed window size around genes
 			run_prefix = "{run_prefix}",
 			windowsize_kb =  WINDOWSIZE_KB,
 			bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed",
-			mouse_mapping = MOUSE_GENE_MAPPING,
 			gene_coords = GENE_COORD_FILE
 		script:
 			"scripts/format_and_map_snake.py"
@@ -399,12 +399,12 @@ rule run_gwas:
             PRECOMP_DIR=PRECOMP_DIR,
             chromosome=CHROMOSOMES)
     output:
-        "{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}.cell_type_results.txt"
+        "{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt"
     params:
         gwas = '{gwas}',
         gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
         run_prefix = '{run_prefix}',
-        file_out_prefix = '{OUTPUT_DIR}/out.ldsc/{run_prefix}__{gwas}',
+        file_out_prefix = '{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}',
         ldsc_all_genes_ref_ld_chr_name = ',{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
     conda: # Need python 2 for LDSC
         "envs/cellectpy27.yml"
