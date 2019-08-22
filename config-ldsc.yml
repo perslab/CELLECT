@@ -1,0 +1,61 @@
+---
+
+############################################################################################################################
+################################################ INFORMATION ################################################################
+############################################################################################################################
+
+# All file paths accept absolute and relative paths. 
+# Environment variables (incl. '~') are not processed, so don't use them in this config.
+
+
+############################################################################################################################
+############################################ RUN SPECIFIC VARIABLES ########################################################
+############################################################################################################################
+
+BASE_OUTPUT_DIR: # Folder where all the output is saved (LD scores, prioritization results files, etc.) Directory will be created if it does not exists.
+  /scratch/timshel/CELLECT-LDSC
+
+### SPECIFICITY_INPUT: list of dictionaries
+# id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
+# path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
+SPECIFICITY_INPUT:
+  - id: mousebrain-test
+    path: example/mousebrain-test.csv 
+  # - id: mousebrain-test
+  #   path: example/tabula_muris-test.csv
+
+### GWAS_SUMSTATS: list of dictionaries
+# id: identifier for GWAS. MUST be unique and NO double underscores allowed
+# path: filepath for munged GWAS sumstats.
+# OBS: sumstats MUST be munged using the munge_sumstats.py script found in the LDSC repo.
+GWAS_SUMSTATS:
+  - id: EA3_Lee2018
+    path: /projects/alegbe/CELLECT-data/gwas/EA3_Lee2018.sumstats.gz 
+  - id: HEIGHT_UKBB_Loh2018
+    path: /projects/alegbe/CELLECT-data/gwas/HEIGHT_UKBB_Loh2018.sumstats.gz
+
+LDSC_VAR: # Options for LDSC
+  WINDOW_SIZE_KB:
+    100
+  WINDOW_LD_BASED: # Will override WINDOW_SIZE_KB if True. If True, use LD-based 'window' to map SNPs to genes. 
+    False
+
+
+############################################################################################################################
+################################################## CONSTANTS ###############################################################
+############################################################################################################################
+
+# You generally do not need to change these variables.
+
+
+CHROMOSOMES: # what chromosomes to analyze. If you want to test the workflow in a quick-and-dirty run, then use less chromosomes.
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+
+
+LDSC_CONST:
+  DATA_DIR: # Path to the data used for CELLECT-LDSC (baseline model, gene mapping etc).
+    data/ldsc
+  LDSC_DIR: # Path to the a cloned version of the github repo pascaltimshel/ldsc. This is included as a git submodule.
+    ldsc
+  NUMPY_CORES: # Numpy by default uses all cores available to it. This variable limits the amount of cores numpy can use to 1 so snakemake has full control over multicore processing via ithe '-j' flag.
+    1

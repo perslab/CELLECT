@@ -23,7 +23,7 @@ def join_SNPsnap_bim_SNPs_to_input_bim(input_bim_path, output_dir, SNPsnap_file,
 	'''
 	# Reading in both bim files as panda dataframes
 
-	SNPsnap_SNPs = pd.read_csv(SNPsnap_file, sep='\t')
+	SNPsnap_SNPs = pd.read_csv(SNPsnap_file, sep='\t') # auto-detect compression
 	print('There are {} SNPs in the SNPsnap file'.format(len(SNPsnap_SNPs)))
 
 	full_bim_path = input_bim_path + '.CHR_1_22.bim'
