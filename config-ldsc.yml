@@ -4,16 +4,17 @@
 ################################################ INFORMATION ################################################################
 ############################################################################################################################
 
-# All file paths accept absolute and relative paths. 
-# Environment variables (incl. '~') are not processed, so don't use them in this config.
+# All file paths accept absolute and relative paths
+# Environment variables (including ~) are not processed, so don't use them in this config.
 
 
 ############################################################################################################################
 ############################################ RUN SPECIFIC VARIABLES ########################################################
 ############################################################################################################################
 
-BASE_OUTPUT_DIR: # Folder where all the output is saved (LD scores, prioritization results files, etc.) Directory will be created if it does not exists.
-  /scratch/timshel/CELLECT-LDSC
+BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC # for currect working directory use: ./CELLECT-LDSC
+# Folder where all the output is saved (LD scores, prioritization results files, etc.) Directory will be created if it does not exists.
+  
 
 ### SPECIFICITY_INPUT: list of dictionaries
 # id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
@@ -21,8 +22,8 @@ BASE_OUTPUT_DIR: # Folder where all the output is saved (LD scores, prioritizati
 SPECIFICITY_INPUT:
   - id: mousebrain-test
     path: example/mousebrain-test.csv 
-  # - id: mousebrain-test
-  #   path: example/tabula_muris-test.csv
+  #- id: tabula_muris-test
+  #  path: example/tabula_muris-test.csv
 
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
@@ -30,9 +31,16 @@ SPECIFICITY_INPUT:
 # OBS: sumstats MUST be munged using the munge_sumstats.py script found in the LDSC repo.
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
-    path: /projects/alegbe/CELLECT-data/gwas/EA3_Lee2018.sumstats.gz 
-  - id: HEIGHT_UKBB_Loh2018
-    path: /projects/alegbe/CELLECT-data/gwas/HEIGHT_UKBB_Loh2018.sumstats.gz
+    path: example/EA3_Lee2018.sumstats.gz 
+  - id: BMI_Yengo2018
+    path: example/BMI_Yengo2018.sumstats.gz
+
+
+ANALYSIS_MODE: # specify what analysis modes to run. At least one mode needs to be specified.
+  prioritization: True # prioritizes all cell-type annotations in the SPECIFICITY_INPUT datasets
+  conditional: True # performs conditional analysis for selected annotations.
+  heritability: False # estimates heritability for selected annotations.
+
 
 LDSC_VAR: # Options for LDSC
   WINDOW_SIZE_KB:
@@ -42,15 +50,40 @@ LDSC_VAR: # Options for LDSC
 
 
 ############################################################################################################################
+############################################## conditional analysis ########################################################
+############################################################################################################################
+
+### CONDITIONAL_INPUT: list of dictionaries
+# id: dataset input - must correspond to an id in SPECIFICITY_INPUT.
+# annotations: annotations to condition on
+# NOTE: you can delete or leave these dicts blank if 'mode' is not activated
+CONDITIONAL_INPUT:
+  - id: mousebrain-test
+    annotations: ['ABC', 'ACBG']
+  # - id: tabula_muris-test
+  #   annotations: ['XX']
+
+
+############################################################################################################################
+############################################## heritability analysis ########################################################
+############################################################################################################################
+
+### HERITABILITY_INPUT: list of dictionaries
+# id: dataset input - must correspond to an id in SPECIFICITY_INPUT.
+# annotations: annotations to estimate heritability for
+# NOTE: you can delete or leave these dicts blank if 'mode' is not activated
+HERITABILITY_INPUT:
+  - id: mousebrain-test
+    annotations: ['TEGLU23', 'DEINH3', 'MEGLU1', 'MEINH2', 'DEGLU5', 'MEGLU10', 'TEGLU17', 'MEGLU11', 'TEGLU4', 'DEGLU4', 'TEINH12']
+  - id: tabula_muris-test
+    annotations: ['Spleen.T_cell', 'Thymus.immature_T_cell', 'Fat.T_cell', 'Spleen.B_cell']
+
+
+############################################################################################################################
 ################################################## CONSTANTS ###############################################################
 ############################################################################################################################
 
 # You generally do not need to change these variables.
-
-
-CHROMOSOMES: # what chromosomes to analyze. If you want to test the workflow in a quick-and-dirty run, then use less chromosomes.
-  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-
 
 LDSC_CONST:
   DATA_DIR: # Path to the data used for CELLECT-LDSC (baseline model, gene mapping etc).

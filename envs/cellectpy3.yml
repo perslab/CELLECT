@@ -1,4 +1,4 @@
-name: cellectpy3 # USED FOR EVERYTHING ELSE
+name: cellectpy3 # USED FOR EVERYTHING BUT LDSC
 channels:
   - anaconda
   - defaults
@@ -70,3 +70,16 @@ dependencies:
   - xz=5.2.4=h14c3975_4
   - yaml=0.1.7=had09818_2
   - zlib=1.2.11=h7b6447c_3
+
+###################################### REDUCED DEPENDENCIES [did not work, August 2019] ######################################
+# name: cellectpy3 
+# channels:
+#   - anaconda
+#   - defaults
+#   - conda-forge
+#   - bioconda
+# dependencies:  # this possible that newer versions of the below packages will work, but we cannot guarantee it.
+#   - python=3.6
+#   - pybedtools=0.8 # has bedtools (and htslib?) as dependency
+#   - pandas=0.24.2
+#   - numpy=1.16.3
