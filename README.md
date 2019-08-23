@@ -69,6 +69,7 @@ snakemake --use-conda -j 4 -s cellect-ldsc.snakefile
 ```
 This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all available cores pass just the `-j` flag.
 
+The first time you run the workflow, snakemake will download and install two local conda environments in `CELLECT/.snakemake`. These environments ensure that all dependencies are correctly installed.
 
 ### CELLECT-LDSC Example: 
 
@@ -80,8 +81,12 @@ Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for ad
 
 ## Authors
 
-Pascal Nordgren Timshel (University of Copenhagen)
-Tobi Alegby (University of Copenhagen)
-Ben Nielsen (University of Copenhagen)
+- Pascal Nordgren Timshel (University of Copenhagen)
+- Tobi Alegby (University of Copenhagen)
+- Ben Nielsen (University of Copenhagen)
 
+## Contact
+
+Please create and issue on the github repo if you encounter any problems using CELLECT. 
+Alternatively, you may write an email to timshel <at> sund.ku.dk
 
