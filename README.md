@@ -88,5 +88,5 @@ Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for ad
 ## Contact
 
 Please create and issue on the github repo if you encounter any problems using CELLECT. 
-Alternatively, you may write an email to timshel <at> sund.ku.dk
+Alternatively, you may write an email to timshel(at)sund.ku.dk
 
