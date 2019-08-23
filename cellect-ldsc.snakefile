@@ -2,6 +2,7 @@ from snakemake.utils import min_version
 
 import os
 import re
+import csv
 
 min_version("5.4")
 
