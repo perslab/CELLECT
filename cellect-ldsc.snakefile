@@ -1,12 +1,51 @@
 from snakemake.utils import min_version
 
 import os
+import re
 
 min_version("5.4")
+
+
+
+_ILLEGAL_ID_PATTERN = r"\s|__|/"
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
 ########################################################################################
+
+def check_safe_id(list_of_strings):
+	"""
+	Returns False if any string in list_of_strings contains the patterns defined in _ILLEGAL_ID_PATTERN.
+	"""
+	for val in list_of_strings:
+		if re.search(_ILLEGAL_ID_PATTERN, val):
+			return False
+	return True
+
+	# for val in list_of_strings:
+	# 	if any(val in ILLEGAL for ILLEGAL in _ILLEGAL_ID_PATTERN):
+	# 		return False
+	# return True
+	
+
+def check_conditional_and_heritability_inputs(dict_dataset_annotations, annotations_dict):
+	"""
+	dict_dataset_annotations: keys are dataset ids, values are list of 'selected' annotations to perform analysis on (e.g. conditional or h2)
+	Checks:
+		1. check that dict_dataset_annotations['id'] matches SPECIFICITY_INPUT id's
+		2. check that dict_dataset_annotations['annotations'] exists in annotations
+	Returns False if does not pass checks, otherwise True
+	"""
+	for key in dict_dataset_annotations:
+		if not key in annotations_dict:
+			raise Exception("[dataset id = {}] used for conditional or heritability analysis but the id was not found in the SPECIFICITY_INPUT. Check your config file".format(key))
+		# if not all(dict_dataset_annotations[key] in annotations_dict[key]):
+		for annotation in dict_dataset_annotations[key]:
+			if annotation not in annotations_dict[key]:
+				raise Exception("[annotation={}] in [dataset id = {}] in conditional or heritability analysis was not found in the annotations of the SPECIFICITY_INPUT. Check your config file".format(annotation, key))
+
+
+
 
 def get_annots(specificity_input_dict):
 	"""
@@ -18,9 +57,9 @@ def get_annots(specificity_input_dict):
 	for key, dictionary in specificity_input_dict.items():
 		with open(dictionary['path']) as f:
 			annotations = f.readline().strip().split(',')
-			if annotations[0] =='gene': # Checks if there is a name for the index or not - currently only works if index name is 'gene', needs to be more robust
-				annotations = annotations[1:]
-			annots_dict[key] = annotations # key is dataset name
+			# if annotations[0] =='gene': # Checks if there is a name for the index or not - currently only works if index name is 'gene', needs to be more robust
+			# 	annotations = annotations[1:]
+			annots_dict[key] = annotations[1:] # key is dataset name | [1:] skip first column because it the the 'gene' column
 	return(annots_dict)
 
 
@@ -49,6 +88,18 @@ def build_dict_from_id_filepath_key_value_pairs(list_of_dicts):
 		out_dict[d['id']] = d 
 	return(out_dict)
 
+def build_dict_of_dataset_selected_annotations(list_of_dicts):
+	"""
+	list_of_dicts: list of dicts. Each dict in the list in MUST contain the keys 'id' and 'annotations'.
+		list_of_dicts[0]['id']: string
+		list_of_dicts[0]['annotations']: list
+	returns dict[<id>] = [annotations]
+	"""
+	dataset_annots_dict = {}
+	for d in list_of_dicts:
+		dataset_annots_dict[d['id']] = d['annotations']
+	return(dataset_annots_dict)
+
 ########################################################################################
 ################################### VARIABLES ##########################################
 ########################################################################################
@@ -74,6 +125,16 @@ RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
 # Reads the first line of each specificity matrix and saves the annotations
 # as lists where the key is the assigned run prefix
 ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
+
+
+### Conditional
+CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config['CONDITIONAL_INPUT'])
+RUN_PREFIXES_COND = list(CONDITIONAL_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
+
+### Heritability
+HERITABILITY_INPUT = build_dict_of_dataset_selected_annotations(config['HERITABILITY_INPUT'])
+RUN_PREFIXES_H2 = list(HERITABILITY_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
+
 
 ########################################################################################
 ################################### CONSTANTS ##########################################
@@ -103,9 +164,66 @@ CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 # 	   hence the rule 'run_gwas' will fail if not running on all chromosomes.
 
 
+
+########################################################################################
+############################# Pre-check of inputs #######################################
+########################################################################################
+
+if not os.access(BASE_WORKING_DIR, os.W_OK):
+	raise IOError("BASE_WORKING_DIR is not writable.")
+
+if not (config['ANALYSIS_MODE']['prioritization'] or config['ANALYSIS_MODE']['conditional'] or config['ANALYSIS_MODE']['heritability']):
+	raise Exception("At least one ANALYSIS_MODE must be true.")
+
+### Check names/ids
+if not check_safe_id(list(GWAS_SUMSTATS.keys())):
+	raise Exception("Illegal charecters in GWAS SUMSTATS id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
+	raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+for key in ANNOTATIONS_DICT:
+	if not check_safe_id(ANNOTATIONS_DICT[key]):
+		raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
+
+
+if config['ANALYSIS_MODE']['conditional']: 
+	check_conditional_and_heritability_inputs(CONDITIONAL_INPUT, ANNOTATIONS_DICT)
+
+if config['ANALYSIS_MODE']['heritability']: 
+	check_conditional_and_heritability_inputs(RUN_PREFIXES_H2, ANNOTATIONS_DICT)
+
+########################################################################################
+################################### Target files ##########################################
+########################################################################################
+
+
+list_target_files = []
+
+if config['ANALYSIS_MODE']['prioritization']: 
+	tmp = expand("{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
+				run_prefix = RUN_PREFIXES,
+				OUTPUT_DIR = OUTPUT_DIR,
+				gwas = list(GWAS_SUMSTATS.keys()))
+	list_target_files.extend(tmp)
+
+
+if config['ANALYSIS_MODE']['conditional']: 
+	for prefix in RUN_PREFIXES_COND:
+		tmp = expand("{OUTPUT_DIR}/conditional/{run_prefix}__{gwas}__CONDITIONAL__{annotation_cond}.cell_type_results.txt",
+									run_prefix = prefix,
+									OUTPUT_DIR = OUTPUT_DIR,
+									gwas = list(GWAS_SUMSTATS.keys()),
+									annotation_cond = CONDITIONAL_INPUT[prefix])
+		list_target_files.extend(tmp)
+
+if config['ANALYSIS_MODE']['heritability']: 
+	raise Exception("Not implemented yet")
+
+
+
 ########################################################################################
 ################################### PIPELINE ##########################################
 ########################################################################################
+
 
 
 
@@ -114,10 +232,7 @@ rule all:
 	Defines the final target files to be generated.
 	'''
 	input:
-		expand("{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
-			run_prefix = RUN_PREFIXES,
-			OUTPUT_DIR = OUTPUT_DIR,
-			gwas = list(GWAS_SUMSTATS.keys()))
+		list_target_files
 
 rule make_multigenesets:
 	'''
@@ -137,6 +252,7 @@ rule make_multigenesets:
 	script:
 		"scripts/make_multigenesets_snake.py"
 
+###################################### CREATE ANNOTATIONS ######################################
 
 if SNP_WINDOWS == True: # Only use SNPs in LD with genes. 
 
@@ -275,28 +391,30 @@ else: # Use SNPs in a fixed window size around genes
 			"scripts/make_annot_from_geneset_all_chr_snake.py"
 
 	rule make_annot_all_genes:
-	    '''
-	    Make the annotation files used to generate LD scores for all genes from the all genes multigeneset files
-	    '''
-	    input: 
-	        "{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{{run_prefix}}.all_genes_in_dataset.bed".format(PRECOMP_DIR = PRECOMP_DIR), # PRECOMP_DIR should work with just wildcard but doesn't ??
-	        expand("{bfile_prefix}.{chromosome}.bim",
-	                bfile_prefix = BFILE_PATH,
-	                chromosome = CHROMOSOMES)
-	    output:
-	        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regrssion
-	    conda:
-	        "envs/cellectpy3.yml"
-	    params:
-	        run_prefix = "{run_prefix}",
-	        all_genes = True,
-	        chromosome = "{chromosome}",
-	        out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
-	        annotations = ["all_genes_in_dataset"],
-	        bfile = BFILE_PATH
-	    script:
-	        "scripts/make_annot_from_geneset_all_chr_snake.py"
+		'''
+		Make the annotation files used to generate LD scores for all genes from the all genes multigeneset files
+		'''
+		input: 
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{{run_prefix}}.all_genes_in_dataset.bed".format(PRECOMP_DIR = PRECOMP_DIR), # PRECOMP_DIR should work with just wildcard but doesn't ??
+			expand("{bfile_prefix}.{chromosome}.bim",
+					bfile_prefix = BFILE_PATH,
+					chromosome = CHROMOSOMES)
+		output:
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regrssion
+		conda:
+			"envs/cellectpy3.yml"
+		params:
+			run_prefix = "{run_prefix}",
+			all_genes = True,
+			chromosome = "{chromosome}",
+			out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
+			annotations = ["all_genes_in_dataset"],
+			bfile = BFILE_PATH
+		script:
+			"scripts/make_annot_from_geneset_all_chr_snake.py"
 
+
+###################################### COMPUTE LDSC SCORES ######################################
 
 rule compute_LD_scores: 
 	'''
@@ -371,6 +489,8 @@ for prefix in RUN_PREFIXES:
 		script:
 			"scripts/split_ldscores_snake.py"
 
+###################################### PRIORITIZATION + CONDITIONAL ######################################
+
 rule make_cts_file:
 	'''
 	Makes the cell-type specific file for LDSC cts option
@@ -389,30 +509,72 @@ rule make_cts_file:
 	script:
 		"scripts/make_cts_file_snake.py"
 
-rule run_gwas:
-    '''
-    Run LDSC with the provided list of GWAS
-    '''
-    input:
-        expand("{PRECOMP_DIR}/{{run_prefix}}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR),
-        lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-        expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", 
-            PRECOMP_DIR=PRECOMP_DIR,
-            chromosome=CHROMOSOMES)
-    output:
-        "{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt"
-    params:
-        gwas = '{gwas}',
-        gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-        run_prefix = '{run_prefix}',
-        file_out_prefix = '{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}',
-        ldsc_all_genes_ref_ld_chr_name = ',{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
-    conda: # Need python 2 for LDSC
-        "envs/cellectpy27.yml"
-    shell: 
-        "{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
-        --ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name} \
-        --w-ld-chr {LD_SCORE_WEIGHTS} \
-        --ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \
-        --out {params.file_out_prefix}"
+rule prioritize_annotations:
+	'''
+	Run LDSC in CTS mode with the provided list of GWAS
+	'''
+	input:
+		expand("{PRECOMP_DIR}/{{run_prefix}}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR),
+		lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+		expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", 
+			PRECOMP_DIR=PRECOMP_DIR,
+			chromosome=CHROMOSOMES)
+	output:
+		"{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt"
+	params:
+		gwas = '{gwas}',
+		gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+		run_prefix = '{run_prefix}',
+		file_out_prefix = '{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}',
+		ldsc_all_genes_ref_ld_chr_name = ',{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
+	conda: # Need python 2 for LDSC
+		"envs/cellectpy27.yml"
+	shell: 
+		"{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
+		--ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name} \
+		--w-ld-chr {LD_SCORE_WEIGHTS} \
+		--ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \
+		--out {params.file_out_prefix}"
 
+
+### Conditional
+for run_prefix_cond in RUN_PREFIXES_COND:
+	for annot_cond in CONDITIONAL_INPUT[run_prefix_cond]:
+	# Need to loop over each annot bc shell() uses whole list of annots as input rather than iterate over each annot
+		rule: # run_gwas_conditional:
+			'''
+			Run LDSC with a list of provided GWAS sum stats but now conditioned on a set of annotations
+			''' 
+			input:
+				expand("{PRECOMP_DIR}/{run_prefix_cond}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR, run_prefix_cond = run_prefix_cond),
+				lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+				expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix_cond}.{chromosome}.l2.ldscore.gz", 
+					PRECOMP_DIR=PRECOMP_DIR,
+					run_prefix_cond = run_prefix_cond,
+					chromosome=CHROMOSOMES)
+			output:
+				expand("{{OUTPUT_DIR}}/conditional/{run_prefix_cond}__{{gwas}}__CONDITIONAL__{annotation_cond}.cell_type_results.txt", 
+					  run_prefix_cond = run_prefix_cond,
+					  annotation_cond = annot_cond)
+			params:
+				gwas = '{gwas}',
+				gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+				run_prefix_cond = run_prefix_cond,
+				file_out_prefix = '{{OUTPUT_DIR}}/conditional/{run_prefix_cond}__{{gwas}}__CONDITIONAL__{annotation_cond}'.format(
+											run_prefix_cond = run_prefix_cond,
+											annotation_cond = annot_cond),
+				ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix_cond}.", 
+														PRECOMP_DIR=PRECOMP_DIR, 
+														run_prefix_cond = run_prefix_cond), 
+				cond_ref_ld_chr_name = ",{PRECOMP_DIR}/{run_prefix_cond}/per_annotation/{run_prefix_cond}__{annotation_cond}".format(
+												PRECOMP_DIR = PRECOMP_DIR, 
+												run_prefix_cond = run_prefix_cond, 
+												annotation_cond = annot_cond),
+			conda: # Need python 2 for LDSC
+				"envs/cellectpy27.yml"
+			shell: 
+				"{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
+				--ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name}{params.cond_ref_ld_chr_name}. \
+				--w-ld-chr {LD_SCORE_WEIGHTS} \
+				--ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix_cond}.ldcts.txt \
+				--out {params.file_out_prefix}"
