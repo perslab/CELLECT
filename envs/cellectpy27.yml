@@ -35,3 +35,18 @@ dependencies:
   - tk=8.6.8=hbc83047_0
   - wheel=0.33.4=py27_0
   - zlib=1.2.11=h7b6447c_3
+
+
+###################################### REDUCED DEPENDENCY. Have not tested if it works ######################################
+# name: cellectpy27
+# channels:
+#   - anaconda
+#   - defaults
+#   - conda-forge
+#   - bioconda
+# dependencies:
+#   - python=2.7
+#   - bitarray=0.8
+#   - numpy=1.12
+#   - pandas=0.20
+#   - scipy=0.18

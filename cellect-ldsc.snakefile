@@ -97,8 +97,10 @@ os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 
-CHROMOSOMES = config['CHROMOSOMES']
-
+CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
+# OBS: this workflow supports computing LDSC scores for the chromosomes specified in this list. 
+# 	   but due to the LDSC software (_N_CHR variable) the LDSC regression have to be run on all chromosomes to work.
+# 	   hence the rule 'run_gwas' will fail if not running on all chromosomes.
 
 
 ########################################################################################
@@ -148,7 +150,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 		output:
 			expand("{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
 					bfile_prefix = os.path.basename(BFILE_PATH),
-					chromosome = CHROMOSOMES)
+					chromosome = CHROMOSOMES) # we don't delete this 'tmp file' because it can be reused for other runs?
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -167,7 +169,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 			"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.txt",
 			"{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{{chromosome}}.txt".format(bfile_prefix = os.path.basename(BFILE_PATH))
 		output:
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
+			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" # *TEMP FILE*
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -189,7 +191,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 					bfile_prefix = os.path.basename(BFILE_PATH),
 					chromosome = CHROMOSOMES)
 		output:
-			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # *TEMP FILE*
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -215,8 +217,7 @@ else: # Use SNPs in a fixed window size around genes
 			input:
 				"{{PRECOMP_DIR}}/multi_genesets/multi_geneset.{prefix}.txt".format(prefix=prefix)
 			output:
-				expand("{{PRECOMP_DIR}}/{{prefix}}/bed/{{prefix}}.{annotation}.bed",
-						annotation = ANNOTATIONS)
+				expand("{{PRECOMP_DIR}}/{{prefix}}/bed/{{prefix}}.{annotation}.bed",annotation = ANNOTATIONS) # *TEMP FILE*
 			conda:
 				"envs/cellectpy3.yml"
 			params:
@@ -260,7 +261,7 @@ else: # Use SNPs in a fixed window size around genes
 					bfile_path = BFILE_PATH,
 					chromosome = CHROMOSOMES)
 		output:
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
+			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" # *TEMP FILE*
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -283,7 +284,7 @@ else: # Use SNPs in a fixed window size around genes
 	                bfile_prefix = BFILE_PATH,
 	                chromosome = CHROMOSOMES)
 	    output:
-	        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz"
+	        "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regrssion
 	    conda:
 	        "envs/cellectpy3.yml"
 	    params:
@@ -304,10 +305,10 @@ rule compute_LD_scores:
 	input:
 		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
 	output:
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M",
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log"
+		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",  # *TEMP FILE*
+		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M", # *TEMP FILE*
+		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50", # *TEMP FILE*
+		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log" # *TEMP FILE*
 	wildcard_constraints:
 		chromosome="\d+" # chromosome must be only a number, not sure if redundant (also have placed it in this rule arbitrarily)
 	params:
@@ -321,7 +322,7 @@ rule compute_LD_scores:
 		--thin-annot --out {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome} \
 		--print-snps {PRINT_SNPS_FILE}"
 
-rule compute_LD_scores_all: 
+rule compute_LD_scores_all_genes: 
 	'''
 	Compute the LD scores prior to running LD score regression
 	'''
@@ -347,8 +348,7 @@ rule compute_LD_scores_all:
 
 
 for prefix in RUN_PREFIXES:
-# Need to use a loop to generate this rule and not wildcards because the output depends
-# on the run prefix used 
+# Need to use a loop to generate this rule and not wildcards because the output depends on the run prefix used 
 # https://stackoverflow.com/questions/48993241/varying-known-number-of-outputs-in-snakemake
 	ANNOTATIONS = ANNOTATIONS_DICT[prefix]
 	rule: # split_LD_scores 
