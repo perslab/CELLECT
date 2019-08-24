@@ -21,7 +21,7 @@ BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC # for currect working directory u
 # path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
 SPECIFICITY_INPUT:
   - id: mousebrain-test
-    path: example/mousebrain-test.csv 
+    path: example/mousebrain-test.csv.gz
   #- id: tabula_muris-test
   #  path: example/tabula_muris-test.csv
 

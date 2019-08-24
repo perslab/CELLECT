@@ -3,6 +3,7 @@ from snakemake.utils import min_version
 import os
 import re
 import csv
+import gzip
 
 min_version("5.4")
 
@@ -56,9 +57,13 @@ def get_annots(specificity_input_dict):
 	# of annotations because the "COMBINED_ANNOT" files are split into "{annotation name}" files
 	annots_dict = {}
 	for key, dictionary in specificity_input_dict.items():
-		with open(dictionary['path']) as f:
-			annotations = next(csv.reader(f))[1:] # [1:] skip first column because it the the 'gene' column
-			annots_dict[key] = annotations # key is dataset name
+		if dictionary['path'].endswith('.gz'):
+			fh = gzip.open(dictionary['path'], 'rt') # open in text mode
+		else:
+			fh = open(dictionary['path'])
+		annotations = next(csv.reader(fh))[1:] # [1:] skip first column because it the the 'gene' column
+		annots_dict[key] = annotations # key is dataset name
+		fh.close()
 	return(annots_dict)
 
 
