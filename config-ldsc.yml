@@ -39,8 +39,8 @@ GWAS_SUMSTATS:
 ANALYSIS_MODE: # specify what analysis modes to run. At least one mode needs to be specified.
   prioritization: True # prioritizes all cell-type annotations in the SPECIFICITY_INPUT datasets
   conditional: True # performs conditional analysis for selected annotations.
-  heritability: False # estimates heritability for selected annotations.
-  heritability_intervals: False # estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
+  heritability: True # estimates heritability for selected annotations.
+  heritability_intervals: True # estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
 
 
 LDSC_VAR: # Options for LDSC
@@ -75,9 +75,7 @@ CONDITIONAL_INPUT:
 # NOTE: you can delete or leave these dicts blank if 'mode' is not activated
 HERITABILITY_INPUT:
   - id: mousebrain-test
-    annotations: ['TEGLU23', 'DEINH3', 'MEGLU1', 'MEINH2', 'DEGLU5', 'MEGLU10', 'TEGLU17', 'MEGLU11', 'TEGLU4', 'DEGLU4', 'TEINH12']
-  - id: tabula_muris-test
-    annotations: ['Spleen.T_cell', 'Thymus.immature_T_cell', 'Fat.T_cell', 'Spleen.B_cell']
+    annotations: ['ABC']
 
 
 ############################################################################################################################

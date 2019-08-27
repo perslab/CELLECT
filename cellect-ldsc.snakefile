@@ -168,6 +168,12 @@ CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 # 	   hence the rule 'run_gwas' will fail if not running on all chromosomes.
 
 
+H2_INTERVAL_ARG_DICT = { # key=mode/out_suffix ; value=cmd_argument
+	"qfixed":"--fixed-quantiles",
+	"q5_exclude_zero":"--exclude0",
+	"q5_with_zero":""
+	}
+
 
 ########################################################################################
 ############################# Pre-check of inputs #######################################
@@ -193,7 +199,7 @@ if config['ANALYSIS_MODE']['conditional']:
 	check_conditional_and_heritability_inputs(CONDITIONAL_INPUT, ANNOTATIONS_DICT)
 
 if config['ANALYSIS_MODE']['heritability']: 
-	check_conditional_and_heritability_inputs(RUN_PREFIXES_H2, ANNOTATIONS_DICT)
+	check_conditional_and_heritability_inputs(HERITABILITY_INPUT, ANNOTATIONS_DICT)
 
 
 if (config['ANALYSIS_MODE']['heritability_intervals']) and (not config['ANALYSIS_MODE']['heritability']): 
@@ -225,17 +231,24 @@ if config['ANALYSIS_MODE']['conditional']:
 
 if config['ANALYSIS_MODE']['heritability']: 
 	for prefix in RUN_PREFIXES_H2:
-		tmp = expand("{OUTPUT_DIR}/h2/{run_prefix}__{gwas}__h2__{annotation_h2}.results",
+		tmp = expand("{OUTPUT_DIR}/h2/{run_prefix}__{gwas}__h2__{annotation}.results",
 						run_prefix = prefix,
 						OUTPUT_DIR = OUTPUT_DIR,
 						gwas = list(GWAS_SUMSTATS.keys()),
-						annotation_h2 = HERITABILITY_INPUT[prefix],
+						annotation = HERITABILITY_INPUT[prefix],
 						suffix = ["results", "cov", "delete", "part_delete", "log"])
 		list_target_files.extend(tmp)
 
 
 if config['ANALYSIS_MODE']['heritability_intervals']: 
-	raise Exception("Not implemented yet")
+	for prefix in RUN_PREFIXES_H2:
+		tmp = expand('{OUTPUT_DIR}/h2/{run_prefix}__{gwas}__h2_intervals__{annotation}.{mode}.results_intervals',
+											run_prefix = prefix,
+											OUTPUT_DIR = OUTPUT_DIR,
+											gwas = list(GWAS_SUMSTATS.keys()),
+											annotation = HERITABILITY_INPUT[prefix],
+											mode=list(H2_INTERVAL_ARG_DICT.keys())),
+		list_target_files.extend(tmp)
 
 
 ########################################################################################
@@ -636,5 +649,5 @@ for run_prefix in RUN_PREFIXES_COND:
 ################################### Load rules ##########################################
 ########################################################################################
 
-# include: "rules/ldsc_h2_intervals.smk"
+include: "rules/ldsc_h2.smk"
 
