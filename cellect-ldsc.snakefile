@@ -154,7 +154,7 @@ LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weight
 LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1_thin_annot/baseline.")
 SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab.gz")
 
-LDSC_SCRIPT = os.path.join(LDSC_DIR,'ldsc.py')
+SCRIPT_LDSC = os.path.join(LDSC_DIR,'ldsc.py')
 
 # These environment variables control how many cores numpy can use
 # Setting to 1 allows snakemakme to use 1 core per active rule i.e. snakemake core usage = actual core usage
@@ -173,8 +173,8 @@ CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 ############################# Pre-check of inputs #######################################
 ########################################################################################
 
-if not os.access(BASE_WORKING_DIR, os.W_OK):
-	raise IOError("BASE_WORKING_DIR is not writable.")
+# if not os.access(BASE_WORKING_DIR, os.W_OK):
+# 	raise IOError("BASE_WORKING_DIR is not writable.")
 
 if not (config['ANALYSIS_MODE']['prioritization'] or config['ANALYSIS_MODE']['conditional'] or config['ANALYSIS_MODE']['heritability']):
 	raise Exception("At least one ANALYSIS_MODE must be true.")
@@ -194,6 +194,10 @@ if config['ANALYSIS_MODE']['conditional']:
 
 if config['ANALYSIS_MODE']['heritability']: 
 	check_conditional_and_heritability_inputs(RUN_PREFIXES_H2, ANNOTATIONS_DICT)
+
+
+if (config['ANALYSIS_MODE']['heritability_intervals']) and (not config['ANALYSIS_MODE']['heritability']): 
+	raise Exception("Mode 'heritability_intervals' is enabled. This mode requires 'heritability' mode to also be enabled.")
 
 ########################################################################################
 ################################### Target files ##########################################
@@ -220,14 +224,23 @@ if config['ANALYSIS_MODE']['conditional']:
 		list_target_files.extend(tmp)
 
 if config['ANALYSIS_MODE']['heritability']: 
-	raise Exception("Not implemented yet")
+	for prefix in RUN_PREFIXES_H2:
+		tmp = expand("{OUTPUT_DIR}/h2/{run_prefix}__{gwas}__h2__{annotation_h2}.results",
+						run_prefix = prefix,
+						OUTPUT_DIR = OUTPUT_DIR,
+						gwas = list(GWAS_SUMSTATS.keys()),
+						annotation_h2 = HERITABILITY_INPUT[prefix],
+						suffix = ["results", "cov", "delete", "part_delete", "log"])
+		list_target_files.extend(tmp)
 
+
+if config['ANALYSIS_MODE']['heritability_intervals']: 
+	raise Exception("Not implemented yet")
 
 
 ########################################################################################
 ################################### PIPELINE ##########################################
 ########################################################################################
-
 
 
 
@@ -237,6 +250,7 @@ rule all:
 	'''
 	input:
 		list_target_files
+		#TODO maybe: add PRECOMP_DIR and other targets to allow for wildcards usage
 
 rule make_multigenesets:
 	'''
@@ -289,7 +303,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 			"{PRECOMP_DIR}/multi_genesets/multi_geneset.{run_prefix}.txt",
 			"{{PRECOMP_DIR}}/SNPsnap/SNPs_with_genes.{bfile_prefix}.{{chromosome}}.txt".format(bfile_prefix = os.path.basename(BFILE_PATH))
 		output:
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" # *TEMP FILE*
+			temp("{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz") # *TEMP FILE*
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -311,7 +325,7 @@ if SNP_WINDOWS == True: # Only use SNPs in LD with genes.
 					bfile_prefix = os.path.basename(BFILE_PATH),
 					chromosome = CHROMOSOMES)
 		output:
-			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # *TEMP FILE*
+			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # NOT TEMP FILE. May be used for h2
 		conda:
 			"envs/cellectpy3.yml"
 		params:
@@ -337,9 +351,11 @@ else: # Use SNPs in a fixed window size around genes
 			input:
 				"{{PRECOMP_DIR}}/multi_genesets/multi_geneset.{prefix}.txt".format(prefix=prefix)
 			output:
-				expand("{{PRECOMP_DIR}}/{{prefix}}/bed/{{prefix}}.{annotation}.bed",annotation = ANNOTATIONS) # *TEMP FILE*
+				temp(expand("{{PRECOMP_DIR}}/{prefix}/bed/{prefix}.{annotation}.bed",prefix=prefix, annotation=ANNOTATIONS)) # *TEMP FILE*
 			conda:
 				"envs/cellectpy3.yml"
+			log:
+				"{{PRECOMP_DIR}}/logs/log.format_and_map_snake.{prefix}.txt".format(prefix=prefix) # for some reason PRECOMP_DIR is needed in filename.
 			params:
 				run_prefix = prefix,
 				windowsize_kb =  WINDOWSIZE_KB,
@@ -350,23 +366,23 @@ else: # Use SNPs in a fixed window size around genes
 
 	rule format_and_map_all_genes:
 		'''
-		Works exactly the same way as format_and_map_genes, 
-		but this version was a workaround to overcome
-		the awkward wildcards and to make snakemake 
-		run the same rule twice - on our dataset of interest (fx tabula muris)
+		Works exactly the same way as format_and_map_genes, but this version was a workaround to overcome
+		the awkward wildcards and to make snakemake run the same rule twice - on our dataset of interest (fx tabula muris)
 		and on the (control) all_genes_in_dataset
 		'''
 		input:
 			"{PRECOMP_DIR}/multi_genesets/all_genes.multi_geneset.{run_prefix}.txt"
 		output:
-			"{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{run_prefix}.all_genes_in_dataset.bed"  
-		conda:
-			"envs/cellectpy3.yml"
+			temp("{PRECOMP_DIR}/control.all_genes_in_dataset/bed/{run_prefix}.all_genes_in_dataset.bed")  # *TEMP FILE*
+		log:
+			"{PRECOMP_DIR}/logs/log.format_and_map_snake.all_genes_in_dataset.{run_prefix}.txt" # for some reason PRECOMP_DIR is needed in filename.
 		params:
 			run_prefix = "{run_prefix}",
 			windowsize_kb =  WINDOWSIZE_KB,
 			bed_out_dir =  "{PRECOMP_DIR}/control.all_genes_in_dataset/bed",
 			gene_coords = GENE_COORD_FILE
+		conda:
+			"envs/cellectpy3.yml"
 		script:
 			"scripts/format_and_map_snake.py"
 
@@ -381,16 +397,18 @@ else: # Use SNPs in a fixed window size around genes
 					bfile_path = BFILE_PATH,
 					chromosome = CHROMOSOMES)
 		output:
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" # *TEMP FILE*
-		conda:
-			"envs/cellectpy3.yml"
+			temp("{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz") # *TEMP FILE*
+		log:
+			"{PRECOMP_DIR}/logs/log.make_annot_from_geneset_all_chr_snake.{run_prefix}.{chromosome}.txt"
 		params:
-			run_prefix = "{run_prefix}",
+			run_prefix = "{run_prefix}", # better alternative: wildcards.run_prefix?
 			chromosome = "{chromosome}",
 			out_dir = "{PRECOMP_DIR}/{run_prefix}",
 			bfile = BFILE_PATH,
 			all_genes = False,
 			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix]
+		conda:
+			"envs/cellectpy3.yml"
 		script:
 			"scripts/make_annot_from_geneset_all_chr_snake.py"
 
@@ -405,8 +423,8 @@ else: # Use SNPs in a fixed window size around genes
 					chromosome = CHROMOSOMES)
 		output:
 			"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regrssion
-		conda:
-			"envs/cellectpy3.yml"
+		log:
+			"{PRECOMP_DIR}/logs/log.make_annot_from_geneset_all_chr_snake.all_genes_in_dataset.{run_prefix}.{chromosome}.txt"
 		params:
 			run_prefix = "{run_prefix}",
 			all_genes = True,
@@ -414,6 +432,8 @@ else: # Use SNPs in a fixed window size around genes
 			out_dir = PRECOMP_DIR + "/control.all_genes_in_dataset",
 			annotations = ["all_genes_in_dataset"],
 			bfile = BFILE_PATH
+		conda:
+			"envs/cellectpy3.yml"
 		script:
 			"scripts/make_annot_from_geneset_all_chr_snake.py"
 
@@ -427,22 +447,25 @@ rule compute_LD_scores:
 	input:
 		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"
 	output:
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",  # *TEMP FILE*
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M", # *TEMP FILE*
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50", # *TEMP FILE*
-		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log" # *TEMP FILE*
+		# ALL these files are tmp files, but it may be an advantage to keep them during pipeline dev, to avoid having to recompting ldscores if something in per_annot changes
+		temp("{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz"),  # *TEMP FILE*
+		temp("{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M"), # *TEMP FILE*
+		temp("{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50"), # *TEMP FILE*
+		"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log" # *TEMP FILE BUT KEEP* 
 	wildcard_constraints:
 		chromosome="\d+" # chromosome must be only a number, not sure if redundant (also have placed it in this rule arbitrarily)
+	log:
+		"{PRECOMP_DIR}/logs/log.compute_LD_scores.{run_prefix}.{chromosome}.txt"
 	params:
 		chromosome = '{chromosome}',
 		run_prefix = '{run_prefix}'
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
-		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
+		"{SCRIPT_LDSC} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
 		--annot {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome}.annot.gz \
 		--thin-annot --out {PRECOMP_DIR}/{params.run_prefix}/{params.run_prefix}.COMBINED_ANNOT.{params.chromosome} \
-		--print-snps {PRINT_SNPS_FILE}"
+		--print-snps {PRINT_SNPS_FILE} &> {log}"
 
 rule compute_LD_scores_all_genes: 
 	'''
@@ -457,16 +480,18 @@ rule compute_LD_scores_all_genes:
 		"{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.log"
 	wildcard_constraints:
 		chromosome="\d+" # chromosome must be only a number, not sure if redundant (also have placed it in this rule arbitrarily)
+	log:
+		"{PRECOMP_DIR}/logs/log.compute_LD_scores.all_genes_in_dataset.{run_prefix}.{chromosome}.txt"
 	params:
 		chromosome = '{chromosome}',
 		run_prefix = '{run_prefix}'
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
-		"{LDSC_SCRIPT} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
+		"{SCRIPT_LDSC} --l2 --bfile {BFILE_PATH}.{params.chromosome} --ld-wind-cm 1 \
 		--annot {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{params.run_prefix}.{params.chromosome}.annot.gz \
 		--thin-annot --out {PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{params.run_prefix}.{params.chromosome} \
-		 --print-snps {PRINT_SNPS_FILE}"
+		 --print-snps {PRINT_SNPS_FILE} &> {log}"
 
 
 for prefix in RUN_PREFIXES:
@@ -478,18 +503,25 @@ for prefix in RUN_PREFIXES:
 		Splits the files made during the compute LD scores step by annotation
 		'''
 		input:
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz",
 			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M",
 			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
-			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log"
+			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log",
+			"{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz",
+			ldscore="{PRECOMP_DIR}/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz"
 		output:
-			expand("{{PRECOMP_DIR}}/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{{chromosome}}.l2.ldscore.gz", annotation=ANNOTATIONS)
+			expand("{{PRECOMP_DIR}}/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{{chromosome}}.{suffix}", 
+				annotation=ANNOTATIONS, 
+				suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"])
 		conda:
 			"envs/cellectpy3.yml"
 		params:
 			chromosome = '{chromosome}',
 			run_prefix = '{run_prefix}',
 			out_dir = "{PRECOMP_DIR}/{run_prefix}"
+		log:
+			"{PRECOMP_DIR}/logs/log.split_ldscores_snake.{run_prefix}_{chromosome}.txt" # for some reason PRECOMP_DIR is needed in filename.
+			# ^ Error without PRECOMP_DIR: Not all output, log and benchmark files of rule 9 contain the same wildcards. 
+			
 		script:
 			"scripts/split_ldscores_snake.py"
 
@@ -522,63 +554,87 @@ rule prioritize_annotations:
 		lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
 		expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", 
 			PRECOMP_DIR=PRECOMP_DIR,
-			chromosome=CHROMOSOMES)
+			chromosome=CHROMOSOMES),
+		lambda wildcards: expand("{PRECOMP_DIR}/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{chromosome}.{suffix}",
+									PRECOMP_DIR=PRECOMP_DIR,
+									annotation=ANNOTATIONS_DICT[wildcards.run_prefix],
+									chromosome=CHROMOSOMES,
+									suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50"] # "annot.gz" not needed for CTS mode
+									) # files for ALL annotations are listed in the CTS file, so the must be available.
 	output:
 		"{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}.cell_type_results.txt"
+	log:
+		"{OUTPUT_DIR}/logs/log.prioritize_annotations.{run_prefix}.{gwas}.txt"
 	params:
-		gwas = '{gwas}',
-		gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-		run_prefix = '{run_prefix}',
+		gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'], # use wildcards to access dict
 		file_out_prefix = '{OUTPUT_DIR}/prioritization/{run_prefix}__{gwas}',
-		ldsc_all_genes_ref_ld_chr_name = ',{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
+		ldsc_all_genes_ref_ld_chr_name = '{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.'.format(PRECOMP_DIR=PRECOMP_DIR)
 	conda: # Need python 2 for LDSC
 		"envs/cellectpy27.yml"
 	shell: 
-		"{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
-		--ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name} \
+		"{SCRIPT_LDSC} --h2-cts {params.gwas_path} \
+		--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name} \
 		--w-ld-chr {LD_SCORE_WEIGHTS} \
-		--ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix}.ldcts.txt \
-		--out {params.file_out_prefix}"
-
+		--ref-ld-chr-cts {PRECOMP_DIR}/{run_prefix}.ldcts.txt \
+		--out {params.file_out_prefix} &> {log}"
 
 ### Conditional
-for run_prefix_cond in RUN_PREFIXES_COND:
-	for annot_cond in CONDITIONAL_INPUT[run_prefix_cond]:
+for run_prefix in RUN_PREFIXES_COND:
+	for annot_cond in CONDITIONAL_INPUT[run_prefix]:
 	# Need to loop over each annot bc shell() uses whole list of annots as input rather than iterate over each annot
 		rule: # run_gwas_conditional:
 			'''
 			Run LDSC with a list of provided GWAS sum stats but now conditioned on a set of annotations
 			''' 
 			input:
-				expand("{PRECOMP_DIR}/{run_prefix_cond}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR, run_prefix_cond = run_prefix_cond),
+				expand("{PRECOMP_DIR}/{run_prefix}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR, run_prefix = run_prefix),
 				lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-				expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix_cond}.{chromosome}.l2.ldscore.gz", 
+				expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz", 
 					PRECOMP_DIR=PRECOMP_DIR,
-					run_prefix_cond = run_prefix_cond,
-					chromosome=CHROMOSOMES)
+					run_prefix = run_prefix,
+					chromosome=CHROMOSOMES),
+				expand("{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.{suffix}",
+					PRECOMP_DIR=PRECOMP_DIR,
+					run_prefix=run_prefix,
+					annotation=ANNOTATIONS_DICT[run_prefix],
+					chromosome=CHROMOSOMES,
+					suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50"] # "annot.gz" not needed for CTS mode
+					) # files for ALL annotations are listed in the CTS file, so the must be available
 			output:
-				expand("{{OUTPUT_DIR}}/conditional/{run_prefix_cond}__{{gwas}}__CONDITIONAL__{annotation_cond}.cell_type_results.txt", 
-					  run_prefix_cond = run_prefix_cond,
-					  annotation_cond = annot_cond)
+				expand("{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}.cell_type_results.txt", 
+					  run_prefix = run_prefix,
+					  annotation = annot_cond)
+			log:
+				"{{OUTPUT_DIR}}/logs/log.conditional.{run_prefix}.{{gwas}}.{annotation}.txt".format(
+					run_prefix = run_prefix,
+					annotation = annot_cond)
 			params:
-				gwas = '{gwas}',
 				gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-				run_prefix_cond = run_prefix_cond,
-				file_out_prefix = '{{OUTPUT_DIR}}/conditional/{run_prefix_cond}__{{gwas}}__CONDITIONAL__{annotation_cond}'.format(
-											run_prefix_cond = run_prefix_cond,
-											annotation_cond = annot_cond),
-				ldsc_all_genes_ref_ld_chr_name = expand(",{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix_cond}.", 
+				file_out_prefix = '{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}'.format(
+											run_prefix = run_prefix,
+											annotation = annot_cond),
+				ldsc_all_genes_ref_ld_chr_name = expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.", 
 														PRECOMP_DIR=PRECOMP_DIR, 
-														run_prefix_cond = run_prefix_cond), 
-				cond_ref_ld_chr_name = ",{PRECOMP_DIR}/{run_prefix_cond}/per_annotation/{run_prefix_cond}__{annotation_cond}".format(
+														run_prefix = run_prefix), 
+				cond_ref_ld_chr_name = "{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.".format(
 												PRECOMP_DIR = PRECOMP_DIR, 
-												run_prefix_cond = run_prefix_cond, 
-												annotation_cond = annot_cond),
+												run_prefix = run_prefix, 
+												annotation = annot_cond),
 			conda: # Need python 2 for LDSC
 				"envs/cellectpy27.yml"
 			shell: 
-				"{LDSC_SCRIPT} --h2-cts {params.gwas_path} \
-				--ref-ld-chr {LDSC_BASELINE}{params.ldsc_all_genes_ref_ld_chr_name}{params.cond_ref_ld_chr_name}. \
+				"{SCRIPT_LDSC} --h2-cts {params.gwas_path} \
+				--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.cond_ref_ld_chr_name} \
 				--w-ld-chr {LD_SCORE_WEIGHTS} \
-				--ref-ld-chr-cts {PRECOMP_DIR}/{params.run_prefix_cond}.ldcts.txt \
-				--out {params.file_out_prefix}"
+				--ref-ld-chr-cts {PRECOMP_DIR}/{run_prefix}.ldcts.txt \
+				--out {params.file_out_prefix} &> {log}"
+
+
+
+
+########################################################################################
+################################### Load rules ##########################################
+########################################################################################
+
+# include: "rules/ldsc_h2_intervals.smk"
+

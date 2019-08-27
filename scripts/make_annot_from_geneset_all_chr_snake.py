@@ -1,14 +1,12 @@
-import multiprocessing
+
 import os
 import sys
-import subprocess
 
 import itertools
 import functools
 
 import pandas as pd
 import numpy as np
-import argparse
 
 import pybedtools # this script was developed using pybedtools v. 0.8.0
 # ^ some/all of pybedtools requires 'bedtools' to be available on your PATH /tools/bedtools/2.27.1/bin/bedtools
@@ -18,7 +16,7 @@ import pybedtools # this script was developed using pybedtools v. 0.8.0
 # os.environ["PATH"] += os.pathsep + "/tools/bedtools/2.27.1/bin/"
 # os.environ["PATH"] += os.pathsep + "/tools/htslib/1.6/bin/"
 
-import psutil
+
 
 
 
@@ -70,8 +68,8 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 	# /tools/anaconda/3-4.4.0/lib/python3.6/site-packages/pybedtools/cbedtools.pyx in pybedtools.cbedtools.isdigit()
 	# AttributeError: 'numpy.int64' object has no attribute 'isdigit'
 	# SOLUTION: convert everything to strings --> ['chr'+str(x1), str(x2), str(x2)]
-	print(df_bim.head)
-	print(bimfile)
+	# print(df_bim.head) --> useful for debugging
+	# print(bimfile)
 	iter_bim = [['chr'+str(x1), str(x2), str(x2)] for (x1, x2) in np.array(df_bim[['CHR', 'BP']])]
 	bimbed = pybedtools.BedTool(iter_bim)
 	counter = 1 # just to print status message
@@ -219,6 +217,11 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 
 
 ###################################### MAIN ######################################
+
+
+snake_log_obj = snakemake.log # class(snakemake.log) = 'snakemake.io.Log
+sys.stdout = open(str(snake_log_obj), "w") # could not find better ways than calling str(snake_log_obj) to get the log filepath
+
 
 out_dir = snakemake.params['out_dir']
 out_prefix = snakemake.params['run_prefix']
