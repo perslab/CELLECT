@@ -25,6 +25,7 @@ SPECIFICITY_INPUT:
   #- id: tabula_muris-test
   #  path: example/tabula_muris-test.csv # 5 annotations
 
+
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
 # path: filepath for munged GWAS sumstats.
@@ -60,7 +61,7 @@ LDSC_VAR: # Options for LDSC
 # NOTE: you can delete or leave these dicts blank if 'mode' is not activated
 CONDITIONAL_INPUT:
   - id: mousebrain-test
-    annotations: ['ABC', 'ACBG']
+    annotations: ['ABC']
   # - id: tabula_muris-test
   #   annotations: ['XX']
 
@@ -76,6 +77,8 @@ CONDITIONAL_INPUT:
 HERITABILITY_INPUT:
   - id: mousebrain-test
     annotations: ['ABC']
+
+
 
 
 ############################################################################################################################

@@ -1,5 +1,6 @@
 from snakemake.utils import min_version
 
+import sys
 import os
 import re
 import csv
@@ -29,6 +30,17 @@ def check_safe_id(list_of_strings):
 	# 		return False
 	# return True
 	
+
+def check_conditional_and_heritability_config_sections(config_section_string):
+	if not config_section_string in config:
+		raise Exception("Error in config file: parameter {} is required but missing from config file".format(config_section_string))
+	try:
+		for d in config[config_section_string]: # loop over list of dicts
+			assert isinstance(d["id"], str)
+			assert isinstance(d["annotations"], list)
+	except:
+		raise Exception("Error in config file: parameter {} is not correctly formatted. Fix the config file and rerun the command".format(config_section_string))
+
 
 def check_conditional_and_heritability_inputs(dict_dataset_annotations, annotations_dict):
 	"""
@@ -108,7 +120,20 @@ def build_dict_of_dataset_selected_annotations(list_of_dicts):
 ################################### VARIABLES ##########################################
 ########################################################################################
 
-configfile: 'config-ldsc.yml'
+### Load config
+# We check if --configfile arg is given to avoid confusing behavior when two config files are loaded.
+# snakemake executes the 'configfile: 'config-ldsc.yml'' even if another --configfile is given.
+# --configfile will only UPDATE the config dict loaded from 'configfile: 'config-ldsc.yml'.
+# This causes problems if some fields are deleted/missing from the --configfile. Then the config-ldsc.yml and --configfile will be mixed.
+try: # check if config file is already loaded from the --configfile parameter
+    config['BASE_OUTPUT_DIR']
+except:
+    print("Loading default config file: config-ldsc.yml")
+    configfile: 'config-ldsc.yml' # snakemake load config object
+else:
+	print("Loaded config file from --configfile argument") # no Exception raise, so run this
+   
+
 
 # Where all CELLECT-LDSC output will be saved
 BASE_WORKING_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
@@ -131,13 +156,6 @@ RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
 ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 
-### Conditional
-CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config['CONDITIONAL_INPUT'])
-RUN_PREFIXES_COND = list(CONDITIONAL_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
-
-### Heritability
-HERITABILITY_INPUT = build_dict_of_dataset_selected_annotations(config['HERITABILITY_INPUT'])
-RUN_PREFIXES_H2 = list(HERITABILITY_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
 
 
 ########################################################################################
@@ -195,15 +213,32 @@ for key in ANNOTATIONS_DICT:
 		raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
 
 
-if config['ANALYSIS_MODE']['conditional']: 
+if config['ANALYSIS_MODE']['conditional']:
+	config_section_string = 'CONDITIONAL_INPUT'
+	check_conditional_and_heritability_config_sections(config_section_string)
+	CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
+	RUN_PREFIXES_COND = list(CONDITIONAL_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
 	check_conditional_and_heritability_inputs(CONDITIONAL_INPUT, ANNOTATIONS_DICT)
+# else: # initializating needed because of downstream 'rule for loop'. Not ideal solution, but ok for now
+# 	CONDITIONAL_INPUT = {}
+# 	RUN_PREFIXES_COND = []
 
-if config['ANALYSIS_MODE']['heritability']: 
+
+
+if config['ANALYSIS_MODE']['heritability']:
+	config_section_string = 'HERITABILITY_INPUT'
+	check_conditional_and_heritability_config_sections(config_section_string)
+	HERITABILITY_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
+	RUN_PREFIXES_H2 = list(HERITABILITY_INPUT.keys()) # NB: this can be a subset of the RUN_PREFIXES
 	check_conditional_and_heritability_inputs(HERITABILITY_INPUT, ANNOTATIONS_DICT)
-
+# else: # initializating needed because of downstream 'rule for loop'. Not ideal solution, but ok for now
+# 	HERITABILITY_INPUT = {}
+# 	RUN_PREFIXES_H2 = []
 
 if (config['ANALYSIS_MODE']['heritability_intervals']) and (not config['ANALYSIS_MODE']['heritability']): 
 	raise Exception("Mode 'heritability_intervals' is enabled. This mode requires 'heritability' mode to also be enabled.")
+
+
 
 ########################################################################################
 ################################### Target files ##########################################
@@ -588,59 +623,60 @@ rule prioritize_annotations:
 		"{SCRIPT_LDSC} --h2-cts {params.gwas_path} \
 		--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name} \
 		--w-ld-chr {LD_SCORE_WEIGHTS} \
-		--ref-ld-chr-cts {PRECOMP_DIR}/{run_prefix}.ldcts.txt \
+		--ref-ld-chr-cts {PRECOMP_DIR}/{wildcards.run_prefix}.ldcts.txt \
 		--out {params.file_out_prefix} &> {log}"
 
-### Conditional
-for run_prefix in RUN_PREFIXES_COND:
-	for annot_cond in CONDITIONAL_INPUT[run_prefix]:
-	# Need to loop over each annot bc shell() uses whole list of annots as input rather than iterate over each annot
-		rule: # run_gwas_conditional:
-			'''
-			Run LDSC with a list of provided GWAS sum stats but now conditioned on a set of annotations
-			''' 
-			input:
-				expand("{PRECOMP_DIR}/{run_prefix}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR, run_prefix = run_prefix),
-				lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-				expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz", 
-					PRECOMP_DIR=PRECOMP_DIR,
-					run_prefix = run_prefix,
-					chromosome=CHROMOSOMES),
-				expand("{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.{suffix}",
-					PRECOMP_DIR=PRECOMP_DIR,
-					run_prefix=run_prefix,
-					annotation=ANNOTATIONS_DICT[run_prefix],
-					chromosome=CHROMOSOMES,
-					suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50"] # "annot.gz" not needed for CTS mode
-					) # files for ALL annotations are listed in the CTS file, so the must be available
-			output:
-				expand("{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}.cell_type_results.txt", 
-					  run_prefix = run_prefix,
-					  annotation = annot_cond)
-			log:
-				"{{OUTPUT_DIR}}/logs/log.conditional.{run_prefix}.{{gwas}}.{annotation}.txt".format(
-					run_prefix = run_prefix,
-					annotation = annot_cond)
-			params:
-				gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-				file_out_prefix = '{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}'.format(
-											run_prefix = run_prefix,
-											annotation = annot_cond),
-				ldsc_all_genes_ref_ld_chr_name = expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.", 
-														PRECOMP_DIR=PRECOMP_DIR, 
-														run_prefix = run_prefix), 
-				cond_ref_ld_chr_name = "{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.".format(
-												PRECOMP_DIR = PRECOMP_DIR, 
-												run_prefix = run_prefix, 
+## Conditional
+if config['ANALYSIS_MODE']['conditional']: # needed to avoid 'NameError: The name 'run_prefix' is unknown in this context. Please make sure that you defined that variable'
+	for run_prefix in RUN_PREFIXES_COND:
+		for annot_cond in CONDITIONAL_INPUT[run_prefix]:
+		# Need to loop over each annot bc shell() uses whole list of annots as input rather than iterate over each annot
+			rule: # run_gwas_conditional:
+				'''
+				Run LDSC with a list of provided GWAS sum stats but now conditioned on a set of annotations
+				''' 
+				input:
+					expand("{PRECOMP_DIR}/{run_prefix}.ldcts.txt", PRECOMP_DIR=PRECOMP_DIR, run_prefix = run_prefix),
+					lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+					expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz", 
+						PRECOMP_DIR=PRECOMP_DIR,
+						run_prefix = run_prefix,
+						chromosome=CHROMOSOMES),
+					expand("{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.{suffix}",
+						PRECOMP_DIR=PRECOMP_DIR,
+						run_prefix=run_prefix,
+						annotation=ANNOTATIONS_DICT[run_prefix],
+						chromosome=CHROMOSOMES,
+						suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50"] # "annot.gz" not needed for CTS mode
+						) # files for ALL annotations are listed in the CTS file, so the must be available
+				output:
+					expand("{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}.cell_type_results.txt", 
+						  run_prefix = run_prefix,
+						  annotation = annot_cond)
+				log:
+					"{{OUTPUT_DIR}}/logs/log.conditional.{run_prefix}.{{gwas}}.{annotation}.txt".format(
+						run_prefix = run_prefix,
+						annotation = annot_cond)
+				params:
+					gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
+					file_out_prefix = '{{OUTPUT_DIR}}/conditional/{run_prefix}__{{gwas}}__CONDITIONAL__{annotation}'.format(
+												run_prefix = run_prefix,
 												annotation = annot_cond),
-			conda: # Need python 2 for LDSC
-				"envs/cellectpy27.yml"
-			shell: 
-				"{SCRIPT_LDSC} --h2-cts {params.gwas_path} \
-				--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.cond_ref_ld_chr_name} \
-				--w-ld-chr {LD_SCORE_WEIGHTS} \
-				--ref-ld-chr-cts {PRECOMP_DIR}/{run_prefix}.ldcts.txt \
-				--out {params.file_out_prefix} &> {log}"
+					ldsc_all_genes_ref_ld_chr_name = expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.", 
+															PRECOMP_DIR=PRECOMP_DIR, 
+															run_prefix = run_prefix), 
+					cond_ref_ld_chr_name = "{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.".format(
+													PRECOMP_DIR = PRECOMP_DIR, 
+													run_prefix = run_prefix, 
+													annotation = annot_cond),
+				conda: # Need python 2 for LDSC
+					"envs/cellectpy27.yml"
+				shell: 
+					"{SCRIPT_LDSC} --h2-cts {params.gwas_path} \
+					--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.cond_ref_ld_chr_name} \
+					--w-ld-chr {LD_SCORE_WEIGHTS} \
+					--ref-ld-chr-cts {PRECOMP_DIR}/{run_prefix}.ldcts.txt \
+					--out {params.file_out_prefix} &> {log}"
 
 
 
