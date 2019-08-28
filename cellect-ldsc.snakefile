@@ -685,5 +685,6 @@ if config['ANALYSIS_MODE']['conditional']: # needed to avoid 'NameError: The nam
 ################################### Load rules ##########################################
 ########################################################################################
 
-include: "rules/ldsc_h2.smk"
+if config['ANALYSIS_MODE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
+	include: "rules/ldsc_h2.smk"
 
