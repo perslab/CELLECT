@@ -93,6 +93,9 @@ def multi_gene_sets_to_dict_of_beds(df_multi_gene_set, df_gene_coord, windowsize
 
 ###################################### MAIN ######################################
 
+snake_log_obj = snakemake.log # class(snakemake.log) = 'snakemake.io.Log
+sys.stdout = open(str(snake_log_obj), "w") # could not find better ways than calling str(snake_log_obj) to get the log filepath
+
 
 gene_coords = snakemake.params['gene_coords']
 windowsize = snakemake.params['windowsize_kb'] * 1000

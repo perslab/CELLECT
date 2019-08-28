@@ -12,7 +12,7 @@
 ############################################ RUN SPECIFIC VARIABLES ########################################################
 ############################################################################################################################
 
-BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC # for currect working directory use: ./CELLECT-LDSC
+BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC-example # for currect working directory use: ./CELLECT-LDSC
 # Folder where all the output is saved (LD scores, prioritization results files, etc.) Directory will be created if it does not exists.
   
 
@@ -21,9 +21,10 @@ BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC # for currect working directory u
 # path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
 SPECIFICITY_INPUT:
   - id: mousebrain-test
-    path: example/mousebrain-test.csv 
+    path: example/mousebrain-test.csv.gz # 2 annotations
   #- id: tabula_muris-test
-  #  path: example/tabula_muris-test.csv
+  #  path: example/tabula_muris-test.csv # 5 annotations
+
 
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
@@ -39,7 +40,8 @@ GWAS_SUMSTATS:
 ANALYSIS_MODE: # specify what analysis modes to run. At least one mode needs to be specified.
   prioritization: True # prioritizes all cell-type annotations in the SPECIFICITY_INPUT datasets
   conditional: True # performs conditional analysis for selected annotations.
-  heritability: False # estimates heritability for selected annotations.
+  heritability: True # estimates heritability for selected annotations.
+  heritability_intervals: True # estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
 
 
 LDSC_VAR: # Options for LDSC
@@ -59,7 +61,7 @@ LDSC_VAR: # Options for LDSC
 # NOTE: you can delete or leave these dicts blank if 'mode' is not activated
 CONDITIONAL_INPUT:
   - id: mousebrain-test
-    annotations: ['ABC', 'ACBG']
+    annotations: ['ABC']
   # - id: tabula_muris-test
   #   annotations: ['XX']
 
@@ -74,9 +76,9 @@ CONDITIONAL_INPUT:
 # NOTE: you can delete or leave these dicts blank if 'mode' is not activated
 HERITABILITY_INPUT:
   - id: mousebrain-test
-    annotations: ['TEGLU23', 'DEINH3', 'MEGLU1', 'MEINH2', 'DEGLU5', 'MEGLU10', 'TEGLU17', 'MEGLU11', 'TEGLU4', 'DEGLU4', 'TEINH12']
-  - id: tabula_muris-test
-    annotations: ['Spleen.T_cell', 'Thymus.immature_T_cell', 'Fat.T_cell', 'Spleen.B_cell']
+    annotations: ['ABC']
+
+
 
 
 ############################################################################################################################

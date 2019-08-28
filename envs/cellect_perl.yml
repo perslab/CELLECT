@@ -1,0 +1,6 @@
+name: cellect_perl # USED FOR H2 QUANTILE ANALYSIS
+channels:
+  - anaconda
+  - defaults
+dependencies:  
+  - perl # https://anaconda.org/anaconda/perl
