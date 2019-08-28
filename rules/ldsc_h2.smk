@@ -5,6 +5,16 @@ SCRIPT_LDSC_H2_RSCRIPT = os.path.join(LDSC_DIR,'ContinuousAnnotations/quantile_h
 FRQFILE_PREFIX = os.path.join(DATA_DIR, "1000G_Phase3_frq/1000G.EUR.QC.") # needed for h2 estimation
 
 
+
+def is_tool(name):
+	"""
+	Check whether `name` is on PATH and marked as executable.
+	Returns boolean value
+	"""
+	# REF: https://stackoverflow.com/a/34177358/6639640
+	from shutil import which
+	return which(name) is not None
+
 #########################################################################################
 ######################################## H2 #############################################
 #########################################################################################
@@ -35,12 +45,10 @@ for run_prefix in RUN_PREFIXES_H2:
 					  run_prefix = run_prefix,
 					  annotation = annot_h2,
 					  suffix = ["results", "cov", "delete", "part_delete", "log"])
-			### @BEN TODO make log work. I think there is a problem with the gwas wildcard
-			# log:
-			# 	"{PRECOMP_DIR}/logs/log.ldsc_h2.{run_prefix}.{{gwas}}.{annotation}.txt".format(
-			# 		PRECOMP_DIR=PRECOMP_DIR,
-			# 		run_prefix = run_prefix,
-			# 		annotation = annot_h2)
+			log:
+				"{{OUTPUT_DIR}}/logs/log.ldsc_h2.{run_prefix}.{{gwas}}.{annotation}.txt".format(
+					run_prefix = run_prefix,
+					annotation = annot_h2)
 			params:
 				gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
 				file_out_prefix = '{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}'.format(
@@ -61,7 +69,7 @@ for run_prefix in RUN_PREFIXES_H2:
 				--overlap-annot \
 				--thin-annot \
 				--print-cov --print-coefficients --print-delete-vals \
-				--out {params.file_out_prefix}" # &> {log}
+				--out {params.file_out_prefix} &> {log}"
 
 
 
@@ -118,11 +126,6 @@ for run_prefix in RUN_PREFIXES_H2:
 					{params.flag_dependent_argument} \
 					--out {output.file_M} &> {log}"
 
-
-
-for run_prefix in RUN_PREFIXES_H2:
-	for annot_h2 in HERITABILITY_INPUT[run_prefix]:
-		for mode in H2_INTERVAL_ARG_DICT:
 			rule: 
 				'''
 				Runs quantile_h2g.r
@@ -147,13 +150,23 @@ for run_prefix in RUN_PREFIXES_H2:
 												annotation = annot_h2,
 												mode=mode),
 				params:
-					fileout_prefix_ldsc_h2 = "{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}.".format( 
+					fileout_prefix_ldsc_h2 = "{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}".format( 
 					  run_prefix = run_prefix,
-					  annotation = annot_h2) # suffixes are added by Rscript
-				conda:
-					"../envs/cellect_R.yml"
-				shell:
-					"Rscript {SCRIPT_LDSC_H2_RSCRIPT} {input.file_M} {params.fileout_prefix_ldsc_h2} {output.file_out_quantile_h2g}"
+					  annotation = annot_h2) # .<suffixes> are added by Rscript
+				# conda:
+				# 	"../envs/cellect_R.yml" # You may suddenly experience problems with ldpaths for conda and/or NFS drives.
+				# 	# Error from R: "lib/R/etc/ldpaths: No such file or directory"
+				# 	# REF: https://github.com/conda-forge/r-base-feedstock/issues/67
+				# 	# SOLUTION --> We drop the R environment and make it a dependency for users.
+				log:
+					"{{OUTPUT_DIR}}/logs/log.quantile_h2g.{run_prefix}.{{gwas}}.{annotation}.{mode}.txt".format(
+						run_prefix = run_prefix,
+						annotation = annot_h2,
+						mode = mode) # no important information in log
+				run:
+					if not is_tool("Rscript"):
+						raise Exception("Could not find Rscript/R on your PATH. Make sure you have installed R when running h2_interval mode")
+					shell("Rscript {SCRIPT_LDSC_H2_RSCRIPT} {input.file_M} {params.fileout_prefix_ldsc_h2} {output.file_out_quantile_h2g} &> {log}")
 
 
 
