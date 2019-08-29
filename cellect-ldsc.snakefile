@@ -149,7 +149,6 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 
 
-
 ########################################################################################
 ################################### CONSTANTS ##########################################
 ########################################################################################
@@ -180,21 +179,10 @@ CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
 
 H2_INTERVAL_ARG_DICT = { # key=mode/out_suffix ; value=cmd_argument
 	"qfixed":"--fixed-quantiles",
-	"q5_exclude_zero":"--exclude0",
-	"q5_with_zero":""
+	### THE BELOW MODES ARE TESTED AND WORKS. They are commented out to simplify the output as many users will not need the files.
+	# "q5_exclude_zero":"--exclude0",
+	# "q5_with_zero":""
 	}
-
-
-
-# # *TODO RM*
-# from pprint import pprint
-# pprint(config)
-
-# # *TODO RM*
-# pprint(ANNOTATIONS_DICT)
-# ANNOTATIONS_DICT['mousebrain'] = ['TEGLU23','DEINH3','MEGLU1','MEINH2','DEGLU5','MEGLU10','TEGLU17','MEGLU11','DEGLU4','TEINH12']
-# pprint(ANNOTATIONS_DICT)
-
 
 
 ########################################################################################
@@ -532,32 +520,35 @@ rule compute_LD_scores_all_genes:
 
 
 
-rule split_LD_scores:
-	'''
-	Splits the files made during the compute LD scores step by annotation
-	'''
-	input:
-		"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M",
-		"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
-		"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log",
-		"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz",
-		ldscore="{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz"
-	output:
-		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{run_prefix}}/per_annotation/{{run_prefix}}__{{annotation}}.{{chromosome}}.{suffix}", 
-			suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"])
-	conda:
-		"envs/cellectpy3.yml"
-	params:
-		chromosome = '{chromosome}',
-		run_prefix = '{run_prefix}',
-		out_dir = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}"
-	# log: 
-	# HERE IT MAKES LITTLE SENSE TO USE THE LOG FILE BECAUSE THE LOG FILE *MUST CONTAIN* THE annotation WILDCARD TO WORK.
-	# THE RESULTING LOGS WILL BE 'COPIED' FOR EACH ANNOTATION, which is a waste of files
-	# ALTERNATIVE: RESEARCH THE USE OF DYNAMIC FILES. REF: https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#dynamic-files
-	 	# "{BASE_OUTPUT_DIR}/logs/log.split_ldscores_snake.{run_prefix}_{annotation}_{chromosome}.txt"
-	script:
-		"scripts/split_ldscores_snake.py"
+
+for prefix in RUN_PREFIXES:
+# Need to use a loop to generate this rule instead of using wildcards because the output depends on the run prefix used.
+# The rule generates multiple annotation output files that are matched to a specific run_prefix
+# REF https://stackoverflow.com/questions/48993241/varying-known-number-of-outputs-in-snakemake
+	rule: # split_LD_scores 
+		'''
+		Splits the files made during the compute LD scores step by annotation
+		'''
+		input:
+			"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M",
+			"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.M_5_50",
+			"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.log",
+			"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz",
+			ldscore="{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.l2.ldscore.gz"
+		output:
+			expand("{{BASE_OUTPUT_DIR}}/precomputation/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{{chromosome}}.{suffix}", 
+				annotation=ANNOTATIONS_DICT[prefix], 
+				suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"])
+		conda:
+			"envs/cellectpy3.yml"
+		params:
+			chromosome = '{chromosome}',
+			run_prefix = '{run_prefix}',
+			out_dir = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}"
+		log:
+			"{BASE_OUTPUT_DIR}/logs/log.split_ldscores_snake.{run_prefix}_{chromosome}.txt"
+		script:
+			"scripts/split_ldscores_snake.py"
 
 
 ###################################### PRIORITIZATION + CONDITIONAL ######################################
@@ -652,4 +643,6 @@ if config['ANALYSIS_MODE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 
 #if config['ANALYSIS_MODE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
 include: "rules/ldsc_h2.smk"
+
+
 
