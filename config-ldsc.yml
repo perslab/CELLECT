@@ -22,8 +22,8 @@ BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC-example # for currect working dir
 SPECIFICITY_INPUT:
   - id: mousebrain-test
     path: example/mousebrain-test.csv.gz # 2 annotations
-  #- id: tabula_muris-test
-  #  path: example/tabula_muris-test.csv # 5 annotations
+  # - id: tabula_muris-test
+  #   path: example/tabula_muris-test.csv # 5 annotations
 
 
 ### GWAS_SUMSTATS: list of dictionaries

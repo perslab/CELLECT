@@ -74,9 +74,8 @@ def split_ldscore_file_per_annotation(file_ldscore):
 
 ###################################### MAIN ######################################
 
-
-snake_log_obj = snakemake.log # class(snakemake.log) = 'snakemake.io.Log
-sys.stdout = open(str(snake_log_obj), "w") # could not find better ways than calling str(snake_log_obj) to get the log filepath
+# snake_log_obj = snakemake.log # class(snakemake.log) = 'snakemake.io.Log
+# sys.stdout = open(str(snake_log_obj), "w") # could not find better ways than calling str(snake_log_obj) to get the log filepath
 
 
 file_ldscore = snakemake.input["ldscore"] # e.g. <SOMEPATH>/nn_lira_sema.COMBINED_ANNOT.22.l2.ldscore.gz

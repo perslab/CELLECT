@@ -19,57 +19,40 @@ def is_tool(name):
 ######################################## H2 #############################################
 #########################################################################################
 
-if config['ANALYSIS_MODE']['heritability']: # needed to avoid 'NameError: The name 'run_prefix' is unknown in this context. Please make sure that you defined that variable'
-	for run_prefix in RUN_PREFIXES_H2:
-		for annot_h2 in HERITABILITY_INPUT[run_prefix]:
-			rule: 
-				'''
-				Estimates h2 for given sets of annotations 
-				We add '--print-delete-vals' to enable downstream heritability interval/quantile estimation
-				'''
-				input: 
-					lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-					expand("{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.l2.ldscore.gz", 
-						PRECOMP_DIR=PRECOMP_DIR,
-						run_prefix = run_prefix,
-						chromosome=CHROMOSOMES),
-					expand("{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.{suffix}",
-						PRECOMP_DIR=PRECOMP_DIR,
-						run_prefix=run_prefix,
-						annotation=ANNOTATIONS_DICT[run_prefix],
-						chromosome=CHROMOSOMES,
-						suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"] 
-						)
-				output:
-					expand("{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}.{suffix}", 
-						  run_prefix = run_prefix,
-						  annotation = annot_h2,
-						  suffix = ["results", "cov", "delete", "part_delete", "log"])
-				log:
-					"{{OUTPUT_DIR}}/logs/log.ldsc_h2.{run_prefix}.{{gwas}}.{annotation}.txt".format(
-						run_prefix = run_prefix,
-						annotation = annot_h2)
-				params:
-					gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
-					file_out_prefix = '{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}'.format(
-												run_prefix = run_prefix,
-												annotation = annot_h2),
-					ldsc_all_genes_ref_ld_chr_name = "{PRECOMP_DIR}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.".format(PRECOMP_DIR=PRECOMP_DIR, run_prefix = run_prefix),
-					h2_ref_ld_chr_name = "{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.".format(
-													PRECOMP_DIR=PRECOMP_DIR,
-													run_prefix = run_prefix, 
-													annotation = annot_h2)
-				conda: # Need python 2 for LDSC
-					"../envs/cellectpy27.yml"	
-				shell:
-					"{SCRIPT_LDSC} --h2 {params.gwas_path} \
-					--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.h2_ref_ld_chr_name} \
-					--frqfile-chr {FRQFILE_PREFIX} \
-					--w-ld-chr {LD_SCORE_WEIGHTS} \
-					--overlap-annot \
-					--thin-annot \
-					--print-cov --print-coefficients --print-delete-vals \
-					--out {params.file_out_prefix} &> {log}"
+if config['ANALYSIS_MODE']['heritability']: # 'if statement' needed for HERITABILITY_INPUT to be defined. Consider default initialization of HERITABILITY_INPUT
+	rule h2: 
+		'''
+		Estimates h2 for given sets of annotations 
+		We add '--print-delete-vals' to enable downstream heritability interval/quantile estimation
+		'''
+		input: 
+			lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]["path"],
+			expand("{{BASE_OUTPUT_DIR}}/precomputation/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", chromosome=CHROMOSOMES),
+			lambda wildcards: expand("{{BASE_OUTPUT_DIR}}/precomputation/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{chromosome}.{suffix}",
+				annotation=HERITABILITY_INPUT[wildcards.run_prefix],
+				chromosome=CHROMOSOMES,
+				suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"] 
+				)
+		output:
+			expand("{{BASE_OUTPUT_DIR}}/out/h2/{{run_prefix}}__{{gwas}}__h2__{{annotation}}.{suffix}", suffix = ["results", "cov", "delete", "part_delete", "log"])
+		log:
+			"{BASE_OUTPUT_DIR}/logs/log.ldsc_h2.{run_prefix}.{gwas}.{annotation}.txt"
+		params:
+			gwas_path = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]["path"],
+			file_out_prefix = "{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}",
+			ldsc_all_genes_ref_ld_chr_name = "{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.",
+			h2_ref_ld_chr_name = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/per_annotation/{run_prefix}__{annotation}."
+		conda: # Need python 2 for LDSC
+			"../envs/cellectpy27.yml"	
+		shell:
+			"{SCRIPT_LDSC} --h2 {params.gwas_path} \
+			--ref-ld-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.h2_ref_ld_chr_name} \
+			--frqfile-chr {FRQFILE_PREFIX} \
+			--w-ld-chr {LD_SCORE_WEIGHTS} \
+			--overlap-annot \
+			--thin-annot \
+			--print-cov --print-coefficients --print-delete-vals \
+			--out {params.file_out_prefix} &> {log}"
 
 
 
@@ -77,96 +60,68 @@ if config['ANALYSIS_MODE']['heritability']: # needed to avoid 'NameError: The na
 ################################### H2 INTERVAL #########################################
 #########################################################################################
 
-if config['ANALYSIS_MODE']['heritability_intervals']: # needed to avoid 'NameError: The name 'run_prefix' is unknown in this context. Please make sure that you defined that variable'
-	for run_prefix in RUN_PREFIXES_H2:
-		for annot_h2 in HERITABILITY_INPUT[run_prefix]:
-			for mode in H2_INTERVAL_ARG_DICT:
-				rule: 
-					'''
-					Use quantile_M_fixed_non_zero_quantiles.pl to generate .M files for heritability interval estimation
 
-					NOTE: I'm note sure it is necessary to add the 'all genes' to --ref-annot-chr, 
-					But I think it necessary since quantile_h2g.r relies on the .results and .M. files to have the same annotations (in the same order)
-					'''
-					input:
-						expand("{{PRECOMP_DIR}}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.annot.gz", 
-							run_prefix=run_prefix,
-							annotation=annot_h2,
-							chromosome=CHROMOSOMES),
-						expand("{{PRECOMP_DIR}}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz", 
-							run_prefix = run_prefix,
-							chromosome=CHROMOSOMES)
-					output:
-						file_M = "{{PRECOMP_DIR}}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{mode}.M".format(
-										run_prefix = run_prefix, 
-										annotation = annot_h2,
-										mode=mode)
-					params:
-						annot = annot_h2,
-						ldsc_all_genes_ref_ld_chr_name = '{{PRECOMP_DIR}}/control.all_genes_in_dataset/all_genes_in_{run_prefix}.'.format(run_prefix=run_prefix),
-						file_annot_prefix = "{{PRECOMP_DIR}}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.".format(run_prefix=run_prefix, annotation=annot_h2),
-						# ^ file_annot_prefix: this is a file prefix. quantile_M_fixed_non_zero_quantiles will add <CHR>.annot.gz to the file
-						flag_dependent_argument = H2_INTERVAL_ARG_DICT[mode]
-						# file_out_log = "{}.log".format(os.path.splitext(output['file_M'])[0])
-					log:
-						"{{PRECOMP_DIR}}/logs/log.quantile_M_fixed_non_zero_quantiles.{run_prefix}.{annotation}.{mode}.txt".format(
-							run_prefix = run_prefix,
-							annotation = annot_h2,
-							mode = mode)
-					conda:
-						"../envs/cellect_perl.yml"
-					shell:
-						"perl {SCRIPT_LDSC_QUANTILE_PERL} \
-						--ref-annot-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.file_annot_prefix} \
-						--frqfile-chr {FRQFILE_PREFIX} \
-						--annot-header {params.annot} \
-						--nb-quantile 5 \
-						--maf 0.05 \
-						--thin-annot \
-						{params.flag_dependent_argument} \
-						--out {output.file_M} &> {log}"
+# if config['ANALYSIS_MODE']['heritability_intervals']: 
 
-				rule: 
-					'''
-					Runs quantile_h2g.r
-					Info: quantile_h2g.r
-					Arg1: the file containing the sum of each annotation by quantile of the continuous annotation (e.g. .q5.M file) ['annotfile' inside the script]
-					Arg2: Specify the prefix of the ldsc h2 result outputs (only .results and .part_delete files needed) ['resultfile' inside the script]
-					Arg3: Specify the output filename ['outfile' inside the script]
-					'''
-					input:
-						expand("{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}.{suffix}", 
-						  run_prefix = run_prefix,
-						  annotation = annot_h2,
-						  suffix = ["results", "part_delete"]),
-						file_M = "{PRECOMP_DIR}/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{mode}.M".format(
-										PRECOMP_DIR = PRECOMP_DIR, 
-										run_prefix = run_prefix, 
-										annotation = annot_h2,
-										mode=mode) # M file output from quantile_M_fixed_non_zero_quantiles.pl
-					output:
-						file_out_quantile_h2g = '{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2_intervals__{annotation}.{mode}.results_intervals'.format(
-													run_prefix = run_prefix,
-													annotation = annot_h2,
-													mode=mode),
-					params:
-						fileout_prefix_ldsc_h2 = "{{OUTPUT_DIR}}/h2/{run_prefix}__{{gwas}}__h2__{annotation}".format( 
-						  run_prefix = run_prefix,
-						  annotation = annot_h2) # .<suffixes> are added by Rscript
-					# conda:
-					# 	"../envs/cellect_R.yml" # You may suddenly experience problems with ldpaths for conda and/or NFS drives.
-					# 	# Error from R: "lib/R/etc/ldpaths: No such file or directory"
-					# 	# REF: https://github.com/conda-forge/r-base-feedstock/issues/67
-					# 	# SOLUTION --> We drop the R environment and make it a dependency for users.
-					log:
-						"{{OUTPUT_DIR}}/logs/log.quantile_h2g.{run_prefix}.{{gwas}}.{annotation}.{mode}.txt".format(
-							run_prefix = run_prefix,
-							annotation = annot_h2,
-							mode = mode) # no important information in log
-					run:
-						if not is_tool("Rscript"):
-							raise Exception("Could not find Rscript/R on your PATH. Make sure you have installed R when running h2_interval mode")
-						shell("Rscript {SCRIPT_LDSC_H2_RSCRIPT} {input.file_M} {params.fileout_prefix_ldsc_h2} {output.file_out_quantile_h2g} &> {log}")
+
+rule h2_interval_M: 
+	'''
+	Use quantile_M_fixed_non_zero_quantiles.pl to generate .M files for heritability interval estimation
+	'''
+	# NOTE: I'm note sure it is necessary to add the 'all genes' to --ref-annot-chr, 
+	# But I think it necessary since quantile_h2g.r relies on the .results and .M. files to have the same annotations (in the same order)
+	input:
+		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{run_prefix}}/per_annotation/{{run_prefix}}__{{annotation}}.{chromosome}.annot.gz", chromosome=CHROMOSOMES),
+		expand("{{BASE_OUTPUT_DIR}}/precomputation/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.annot.gz", chromosome=CHROMOSOMES)
+	output:
+		file_M = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{mode}.q_M"
+	params:
+		ldsc_all_genes_ref_ld_chr_name = '{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.',
+		file_annot_prefix = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/per_annotation/{run_prefix}__{annotation}.",
+		# ^ file_annot_prefix: this is a file prefix. quantile_M_fixed_non_zero_quantiles will add <CHR>.annot.gz to the file
+		flag_dependent_argument = lambda wildcards: H2_INTERVAL_ARG_DICT[wildcards.mode]
+		# file_out_log = "{}.log".format(os.path.splitext(output['file_M'])[0]) # NOT TESTED
+	log:
+		"{BASE_OUTPUT_DIR}/logs/log.quantile_M_fixed_non_zero_quantiles.{run_prefix}.{annotation}.{mode}.txt"
+	conda:
+		"../envs/cellect_perl.yml"
+	shell:
+		"perl {SCRIPT_LDSC_QUANTILE_PERL} \
+		--ref-annot-chr {LDSC_BASELINE},{params.ldsc_all_genes_ref_ld_chr_name},{params.file_annot_prefix} \
+		--frqfile-chr {FRQFILE_PREFIX} \
+		--annot-header {wildcards.annotation} \
+		--nb-quantile 5 \
+		--maf 0.05 \
+		--thin-annot \
+		{params.flag_dependent_argument} \
+		--out {output.file_M} &> {log}"
+
+rule h2_interval_rscript: 
+	'''
+	Runs quantile_h2g.r using h2 .results file and .M file from perl script
+	'''
+	# Info: quantile_h2g.r
+	# Arg1: the file containing the sum of each annotation by quantile of the continuous annotation (e.g. .q5.M file) ['annotfile' inside the script]
+	# Arg2: Specify the prefix of the ldsc h2 result outputs (only .results and .part_delete files needed) ['resultfile' inside the script]
+	# Arg3: Specify the output filename ['outfile' inside the script]
+	input:
+		expand("{{BASE_OUTPUT_DIR}}/out/h2/{{run_prefix}}__{{gwas}}__h2__{{annotation}}.{suffix}", suffix = ["results", "part_delete"]),
+		file_M = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{mode}.q_M", # M file output from quantile_M_fixed_non_zero_quantiles.pl
+	output:
+		file_out_quantile_h2g = '{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2_intervals__{annotation}.{mode}.results_intervals'
+	params:
+		fileout_prefix_ldsc_h2 = "{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}" # .<suffixes> are added by Rscript
+	# conda:
+	# 	"../envs/cellect_R.yml" # You may suddenly experience problems with ldpaths for conda and/or NFS drives.
+	# 	# Error from R: "lib/R/etc/ldpaths: No such file or directory"
+	# 	# REF: https:/github.com/conda-forge/r-base-feedstock/issues/67
+	# 	# SOLUTION --> We drop the R environment and make it a dependency for users.
+	log:
+		"{BASE_OUTPUT_DIR}/logs/log.quantile_h2g.{run_prefix}.{gwas}.{annotation}.{mode}.txt" # OBS: currently no information in log
+	run:
+		if not is_tool("Rscript"):
+			raise Exception("Could not find Rscript/R on your PATH. Make sure you have installed R when running h2_interval mode")
+		shell("Rscript {SCRIPT_LDSC_H2_RSCRIPT} {input.file_M} {params.fileout_prefix_ldsc_h2} {output.file_out_quantile_h2g} &> {log}")
 
 
 

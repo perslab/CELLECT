@@ -57,6 +57,14 @@ CELLECT uses the workflow management software [**Snakemake**](https://snakemake.
 conda install -c bioconda snakemake
 ```
 
+## Updating CELLECT
+
+To get the lastest version of CELLECT, update the github repo:
+```bash
+git pull
+```
+
+
 ## Getting started with CELLECT-LDSC
 
 
@@ -69,7 +77,7 @@ snakemake --use-conda -j 4 -s cellect-ldsc.snakefile
 ```
 This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all available cores pass just the `-j` flag.
 
-The first time you run the workflow, snakemake will download and install two local conda environments in `CELLECT/.snakemake`. These environments ensure that all dependencies are correctly installed.
+The first time you run the workflow, snakemake will download and install local conda environments in `CELLECT/.snakemake`. These environments ensure that all dependencies are correctly installed. CELLECT-LDSC is unlikely to work without the `--use-conda` flag.
 
 ### CELLECT-LDSC Example: 
 
