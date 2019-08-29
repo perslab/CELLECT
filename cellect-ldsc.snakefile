@@ -133,8 +133,8 @@ else:
 BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
 
 
-WINDOWSIZE_KB = config['LDSC_VAR']['WINDOW_SIZE_KB']
-SNP_WINDOWS = config['LDSC_VAR']['WINDOW_LD_BASED']
+WINDOWSIZE_KB = config['WINDOW_DEFINITION']['WINDOW_SIZE_KB']
+SNP_WINDOWS = config['WINDOW_DEFINITION']['WINDOW_LD_BASED']
 
 
 SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
@@ -190,8 +190,8 @@ H2_INTERVAL_ARG_DICT = { # key=mode/out_suffix ; value=cmd_argument
 ########################################################################################
 
 
-if not (config['ANALYSIS_MODE']['prioritization'] or config['ANALYSIS_MODE']['conditional'] or config['ANALYSIS_MODE']['heritability']):
-	raise Exception("At least one ANALYSIS_MODE must be true.")
+if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['conditional'] or config['ANALYSIS_TYPE']['heritability']):
+	raise Exception("At least one ANALYSIS_TYPE must be true.")
 
 ### Check names/ids
 if not check_safe_id(list(GWAS_SUMSTATS.keys())):
@@ -203,7 +203,7 @@ for key in ANNOTATIONS_DICT:
 		raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
 
 
-if config['ANALYSIS_MODE']['conditional']:
+if config['ANALYSIS_TYPE']['conditional']:
 	config_section_string = 'CONDITIONAL_INPUT'
 	check_conditional_and_heritability_config_sections(config_section_string)
 	CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
@@ -211,14 +211,14 @@ if config['ANALYSIS_MODE']['conditional']:
 
 
 
-if config['ANALYSIS_MODE']['heritability']:
+if config['ANALYSIS_TYPE']['heritability']:
 	config_section_string = 'HERITABILITY_INPUT'
 	check_conditional_and_heritability_config_sections(config_section_string)
 	HERITABILITY_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
 	check_conditional_and_heritability_inputs(HERITABILITY_INPUT, ANNOTATIONS_DICT)
 
 
-if (config['ANALYSIS_MODE']['heritability_intervals']) and (not config['ANALYSIS_MODE']['heritability']): 
+if (config['ANALYSIS_TYPE']['heritability_intervals']) and (not config['ANALYSIS_TYPE']['heritability']): 
 	raise Exception("Mode 'heritability_intervals' is enabled. This mode requires 'heritability' mode to also be enabled.")
 
 
@@ -230,15 +230,20 @@ if (config['ANALYSIS_MODE']['heritability_intervals']) and (not config['ANALYSIS
 
 list_target_files = []
 
-if config['ANALYSIS_MODE']['prioritization']: 
+if config['ANALYSIS_TYPE']['prioritization']: 
 	tmp = expand("{BASE_OUTPUT_DIR}/out/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
-				run_prefix = RUN_PREFIXES,
 				BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
+				run_prefix = RUN_PREFIXES,
 				gwas = list(GWAS_SUMSTATS.keys()))
+	list_target_files.extend(tmp)
+	tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
 	list_target_files.extend(tmp)
 
 
-if config['ANALYSIS_MODE']['conditional']:
+
+if config['ANALYSIS_TYPE']['conditional']:
+	tmp = "{BASE_OUTPUT_DIR}/results/conditional.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	list_target_files.extend(tmp)
 	for prefix in CONDITIONAL_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/conditional/{run_prefix}__{gwas}__CONDITIONAL__{annotation_cond}.cell_type_results.txt",
 									run_prefix = prefix,
@@ -247,7 +252,9 @@ if config['ANALYSIS_MODE']['conditional']:
 									annotation_cond = CONDITIONAL_INPUT[prefix])
 		list_target_files.extend(tmp)
 
-if config['ANALYSIS_MODE']['heritability']: 
+if config['ANALYSIS_TYPE']['heritability']: 
+	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	list_target_files.extend(tmp)
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}.results",
 						run_prefix = prefix,
@@ -258,7 +265,9 @@ if config['ANALYSIS_MODE']['heritability']:
 		list_target_files.extend(tmp)
 
 
-if config['ANALYSIS_MODE']['heritability_intervals']: 
+if config['ANALYSIS_TYPE']['heritability_intervals']: 
+	tmp = "{BASE_OUTPUT_DIR}/results/heritability_intervals.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	list_target_files.extend(tmp)
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand('{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2_intervals__{annotation}.{mode}.results_intervals',
 											run_prefix = prefix,
@@ -281,6 +290,22 @@ rule all:
 	'''
 	input:
 		list_target_files
+
+rule parse_results:
+	"""
+	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out, 
+	All out/ files will be parsed, even if they where not generated in this run of the workflow
+	"""
+	output:
+		"{BASE_OUTPUT_DIR}/results/{analysis_type}.csv"
+	conda:
+		"envs/cellectpy3.yml"
+	params:
+		base_output_dir = BASE_OUTPUT_DIR
+		analysis_type = wildcards.analysis_type
+	script:
+		"scripts/parse_results.py"
+
 
 rule make_multigenesets:
 	'''
@@ -603,7 +628,7 @@ rule prioritize_annotations:
 		--out {params.file_out_prefix} &> {log}"
 
 ## Conditional
-if config['ANALYSIS_MODE']['conditional']: # needed to ensure CONDITIONAL_INPUT is defined
+if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT is defined
 	rule run_gwas_conditional:
 		'''
 		Run LDSC in CTS mode conditioned on a single cell-type annotation
@@ -641,7 +666,7 @@ if config['ANALYSIS_MODE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 ################################### Load rules ##########################################
 ########################################################################################
 
-#if config['ANALYSIS_MODE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
+#if config['ANALYSIS_TYPE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
 include: "rules/ldsc_h2.smk"
 
 
