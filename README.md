@@ -27,20 +27,7 @@ Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease o
 
 1. **Install git lsf**
 We use [`git lfs`](https://git-lfs.github.com/) to store the [CELLECT data files](https://github.com/perslab/CELLECT/data) on github. To download the files you need to have `git lfs` setup before you clone the repository.
-
-Mac:
-```
-brew update
-brew install git-lfs
-git lfs install
-```
-Ubuntu:
-```
-sudo apt-get install git-lfs
-git lfs install
-```
-For other operating systems, follow [this guide](https://github.com/git-lfs/git-lfs/wiki/Installation).
-
+On OSX: `brew install git-lfs; git lfs install` or Ubuntu:`sudo apt-get install git-lfs; git lfs install`. For other operating systems, follow [this guide](https://github.com/git-lfs/git-lfs/wiki/Installation).
 
 2. **Clone CELLECT repository**
 ```
@@ -60,10 +47,10 @@ conda install -c bioconda snakemake
 ## Updating CELLECT
 
 To get the lastest version of CELLECT, update the github repo:
+
 ```bash
 git pull
 ```
-
 
 ## Getting started with CELLECT-LDSC
 
@@ -79,7 +66,7 @@ This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all
 
 The first time you run the workflow, snakemake will download and install local conda environments in `CELLECT/.snakemake`. These environments ensure that all dependencies are correctly installed. CELLECT-LDSC is unlikely to work without the `--use-conda` flag.
 
-### CELLECT-LDSC Example: 
+## CELLECT-LDSC Example: 
 
 See our [**github wiki**](https://github.com/perslab/CELLECT/wiki).
 
@@ -97,4 +84,9 @@ Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for ad
 
 Please create and issue on the github repo if you encounter any problems using CELLECT. 
 Alternatively, you may write an email to timshel(at)sund.ku.dk
+
+
+## Acknowledgements
+
+We gratefully acknowledge the developers of the genetic prioritization tools used in  CELLECT: [LDSC](https://github.com/bulik/ldsc) and [MAGMA](http://ctglab.nl/software/magma). In particular, Christiaan de Leeuw and Steven Gazal for their generous support. 
 
