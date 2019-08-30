@@ -19,7 +19,7 @@ def is_tool(name):
 ######################################## H2 #############################################
 #########################################################################################
 
-if config['ANALYSIS_MODE']['heritability']: # 'if statement' needed for HERITABILITY_INPUT to be defined. Consider default initialization of HERITABILITY_INPUT
+if config['ANALYSIS_TYPE']['heritability']: # 'if statement' needed for HERITABILITY_INPUT to be defined. Consider default initialization of HERITABILITY_INPUT
 	rule h2: 
 		'''
 		Estimates h2 for given sets of annotations 
@@ -61,7 +61,7 @@ if config['ANALYSIS_MODE']['heritability']: # 'if statement' needed for HERITABI
 #########################################################################################
 
 
-# if config['ANALYSIS_MODE']['heritability_intervals']: 
+# if config['ANALYSIS_TYPE']['heritability_intervals']: 
 
 
 rule h2_interval_M: 

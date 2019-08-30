@@ -18,7 +18,7 @@ GWAS_SUMSTATS:
     path: example/BMI_Yengo2018.sumstats.gz
 
 
-ANALYSIS_MODE: 
+ANALYSIS_TYPE: 
   prioritization: True
   conditional: False
   heritability: False

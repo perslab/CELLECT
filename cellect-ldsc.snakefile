@@ -291,20 +291,27 @@ rule all:
 	input:
 		list_target_files
 
-rule parse_results:
-	"""
-	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out, 
-	All out/ files will be parsed, even if they where not generated in this run of the workflow
-	"""
+
+rule parse_results_dummy:
 	output:
-		"{BASE_OUTPUT_DIR}/results/{analysis_type}.csv"
-	conda:
-		"envs/cellectpy3.yml"
-	params:
-		base_output_dir = BASE_OUTPUT_DIR
-		analysis_type = wildcards.analysis_type
-	script:
-		"scripts/parse_results.py"
+		touch("{BASE_OUTPUT_DIR}/results/{analysis_type}.csv") # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#flag-files
+
+
+
+# rule parse_results:
+# 	"""
+# 	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out, 
+# 	All out/ files will be parsed, even if they where not generated in this run of the workflow
+# 	"""
+# 	output:
+# 		"{BASE_OUTPUT_DIR}/results/{analysis_type}.csv"
+# 	conda:
+# 		"envs/cellectpy3.yml"
+# 	params:
+# 		base_output_dir = BASE_OUTPUT_DIR
+# 		analysis_type = wildcards.analysis_type
+# 	script:
+# 		"scripts/parse_results.py"
 
 
 rule make_multigenesets:
