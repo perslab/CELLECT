@@ -1,6 +1,6 @@
 # CELLECT
 
-**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. Currently we have only implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-MAGMA, CELLECT-RolyPoly and CELLECT-DEPICT in the near future.
+**CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. 
 
 <!---
 ![fig-integration](https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png)
@@ -14,7 +14,8 @@
 
 ## How does CELLECT work?
 
-CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as LDSC (Hilary Kiyo Finucane et al., 2015) and MAGMA covariate analysis (Skene et al., 2018).
+CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as LDSC (Hilary Kiyo Finucane et al., 2015) and MAGMA covariate analysis (Skene et al., 2018). The output of CELLECT is a list of prioritized etiologic cell-types for a given human complex disease or trait.
+
 
 CELLECT takes as input GWAS data and cell-type expression specificity estimates. In order to compute robust estimates of ES, we developed the computational method called **CELLEX** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  CELLEX can be found [here](https://github.com/perslab/CELLEX).
 
@@ -22,6 +23,9 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 Schematic illustration of CELLECT and CELLEX. The bottom layer shows a disease or trait with multiple genetic components (G1-G4). CELLECT integrates disease heritability estimates with cell-type expression specificity to identify the etiologic cell-types (T1 and T4) underlying the genetic components (G1 and G4). CELLEX estimates expression specificity from single-cell transcriptomic data.
 
+## Update log
+
+We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-MAGMA, CELLECT-RolyPoly and CELLECT-DEPICT in the near future.
 
 ## Installation
 
@@ -60,11 +64,12 @@ git pull
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -j 4 -s cellect-ldsc.snakefile
+snakemake --use-conda -s cellect-ldsc.snakefile
 ```
-This will run the workflow using 4 cores (`-j 4`). If you wish to use to use all available cores pass just the `-j` flag.
 
-The first time you run the workflow, snakemake will download and install local conda environments in `CELLECT/.snakemake`. These environments ensure that all dependencies are correctly installed. CELLECT-LDSC is unlikely to work without the `--use-conda` flag.
+3. **Inspect the output**:
+
+**........... INSERT EXAMPLE OUTPUT.............. **
 
 ## CELLECT-LDSC Example: 
 
