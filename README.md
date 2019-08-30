@@ -14,7 +14,7 @@
 
 ## How does CELLECT work?
 
-CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as LDSC (Hilary Kiyo Finucane et al., 2015), RolyPoly (Calderon et al., 2017), DEPICT (Pers et al., 2015) or MAGMA covariate analysis (Skene et al., 2018).
+CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as LDSC (Hilary Kiyo Finucane et al., 2015) and MAGMA covariate analysis (Skene et al., 2018).
 
 CELLECT takes as input GWAS data and cell-type expression specificity estimates. In order to compute robust estimates of ES, we developed the computational method called **CELLEX** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  CELLEX can be found [here](https://github.com/perslab/CELLEX).
 
@@ -74,6 +74,11 @@ See our [**github wiki**](https://github.com/perslab/CELLECT/wiki).
 
 Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for additional documentation.
 
+## Acknowledgements
+
+We gratefully acknowledge the developers of the genetic prioritization tools used in  CELLECT: [LDSC](https://github.com/bulik/ldsc) and [MAGMA](http://ctglab.nl/software/magma). In particular, Christiaan de Leeuw and Steven Gazal for their generous support. 
+
+
 ## Authors
 
 - Pascal Nordgren Timshel (University of Copenhagen)
@@ -82,11 +87,10 @@ Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for ad
 
 ## Contact
 
-Please create and issue on the github repo if you encounter any problems using CELLECT. 
+Please create an issue on the github repo if you encounter any problems using CELLECT. 
 Alternatively, you may write an email to timshel(at)sund.ku.dk
 
+## Reference
+If you find CELLECT useful for your research, please consider citing the paper:
 
-## Acknowledgements
-
-We gratefully acknowledge the developers of the genetic prioritization tools used in  CELLECT: [LDSC](https://github.com/bulik/ldsc) and [MAGMA](http://ctglab.nl/software/magma). In particular, Christiaan de Leeuw and Steven Gazal for their generous support. 
-
+**......... INSERT LINK TO PUBLICATION ............**
