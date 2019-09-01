@@ -231,19 +231,19 @@ if (config['ANALYSIS_TYPE']['heritability_intervals']) and (not config['ANALYSIS
 list_target_files = []
 
 if config['ANALYSIS_TYPE']['prioritization']: 
+	# tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	# list_target_files.extend(tmp)
 	tmp = expand("{BASE_OUTPUT_DIR}/out/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
 				BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
 				run_prefix = RUN_PREFIXES,
 				gwas = list(GWAS_SUMSTATS.keys()))
 	list_target_files.extend(tmp)
-	tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend(tmp)
 
 
 
 if config['ANALYSIS_TYPE']['conditional']:
-	tmp = "{BASE_OUTPUT_DIR}/results/conditional.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend(tmp)
+	# tmp = "{BASE_OUTPUT_DIR}/results/conditional.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	# list_target_files.extend(tmp)
 	for prefix in CONDITIONAL_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/conditional/{run_prefix}__{gwas}__CONDITIONAL__{annotation_cond}.cell_type_results.txt",
 									run_prefix = prefix,
@@ -253,8 +253,8 @@ if config['ANALYSIS_TYPE']['conditional']:
 		list_target_files.extend(tmp)
 
 if config['ANALYSIS_TYPE']['heritability']: 
-	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend(tmp)
+	# tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	# list_target_files.extend(tmp)
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}.results",
 						run_prefix = prefix,
@@ -266,8 +266,8 @@ if config['ANALYSIS_TYPE']['heritability']:
 
 
 if config['ANALYSIS_TYPE']['heritability_intervals']: 
-	tmp = "{BASE_OUTPUT_DIR}/results/heritability_intervals.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend(tmp)
+	# tmp = "{BASE_OUTPUT_DIR}/results/heritability_intervals.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+	# list_target_files.extend(tmp)
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand('{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2_intervals__{annotation}.{mode}.results_intervals',
 											run_prefix = prefix,
@@ -292,9 +292,9 @@ rule all:
 		list_target_files
 
 
-rule parse_results_dummy:
-	output:
-		touch("{BASE_OUTPUT_DIR}/results/{analysis_type}.csv") # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#flag-files
+# rule parse_results_dummy:
+# 	output:
+# 		touch("{BASE_OUTPUT_DIR}/results/{analysis_type}.csv") # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#flag-files
 
 
 
@@ -673,8 +673,8 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 ################################### Load rules ##########################################
 ########################################################################################
 
-#if config['ANALYSIS_TYPE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
-include: "rules/ldsc_h2.smk"
+if config['ANALYSIS_TYPE']['heritability']: # conditional include statement to speed up building dag. Not sure how effective it is.
+	include: "rules/ldsc_h2.smk"
 
 
 
