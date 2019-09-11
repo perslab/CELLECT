@@ -123,10 +123,10 @@ def build_dict_of_dataset_selected_annotations(list_of_dicts):
 try: # check if config file is already loaded from the --configfile parameter
     config['BASE_OUTPUT_DIR'] # *OBS*: needs to be updated if BASE_OUTPUT_DIR changes name in the config file.
 except Exception as e:
-    print("Loading default config file: config-ldsc.yml")
+    snakemake.logger.info("Loading default config file: config-ldsc.yml")
     configfile: 'config-ldsc.yml' # snakemake load config object
 else:
-	print("Loaded config file from --configfile argument") # no Exception raise, so run this
+	snakemake.logger.info("Loaded config file from --configfile argument") # no Exception raise, so run this
 
 
 # Where all CELLECT-LDSC output will be saved
