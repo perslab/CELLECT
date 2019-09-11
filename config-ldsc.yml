@@ -22,8 +22,8 @@ BASE_OUTPUT_DIR: /scratch/timshel/CELLECT-LDSC-example # for currect working dir
 SPECIFICITY_INPUT:
   - id: mousebrain-test
     path: example/mousebrain-test.csv.gz # 2 annotations
-  #- id: tabula_muris-test
-  #  path: example/tabula_muris-test.csv # 5 annotations
+  # - id: tabula_muris-test
+  #   path: example/tabula_muris-test.csv # 5 annotations
 
 
 ### GWAS_SUMSTATS: list of dictionaries
@@ -37,14 +37,14 @@ GWAS_SUMSTATS:
     path: example/BMI_Yengo2018.sumstats.gz
 
 
-ANALYSIS_MODE: # specify what analysis modes to run. At least one mode needs to be specified.
+ANALYSIS_TYPE: # specify what analysis modes to run. At least one mode needs to be specified.
   prioritization: True # prioritizes all cell-type annotations in the SPECIFICITY_INPUT datasets
-  conditional: True # performs conditional analysis for selected annotations.
-  heritability: True # estimates heritability for selected annotations.
-  heritability_intervals: True # estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
+  conditional: False # performs conditional analysis for selected annotations.
+  heritability: False # estimates heritability for selected annotations.
+  heritability_intervals: False # estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
 
 
-LDSC_VAR: # Options for LDSC
+WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SNPs
   WINDOW_SIZE_KB:
     100
   WINDOW_LD_BASED: # Will override WINDOW_SIZE_KB if True. If True, use LD-based 'window' to map SNPs to genes. 
