@@ -90,7 +90,7 @@ Please see our [**github wiki**](https://github.com/perslab/CELLECT/wiki) for ad
 ## Authors
 
 - Pascal Nordgren Timshel (University of Copenhagen)
-- Tobi Alegby (University of Copenhagen)
+- Tobi Alegbe (University of Copenhagen)
 - Ben Nielsen (University of Copenhagen)
 
 ## Contact
