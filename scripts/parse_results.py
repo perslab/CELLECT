@@ -38,7 +38,7 @@ for analysis_type in analysis_types:
         prioritization_combined = prioritization_combined[['gwas', "specificity_id", 'annotation', 'Coefficient', 'Coefficient_std_error',  'Coefficient_P_value']]
         prioritization_combined.rename(columns = {'Coefficient': 'tau', 'Coefficient_std_error': 'se', 'Coefficient_P_value': 'pvalue'}, inplace = True)
         prioritization_combined.sort_values(['gwas', 'specificity_id'])
-        prioritization_combined.to_csv(os.path.join(results_output_dir, 'prioritization.csv'), index = False, sep = '\t')
+        prioritization_combined.to_csv(os.path.join(results_output_dir, 'prioritization.csv'), index = False)
 
 
     if analysis_type == 'conditional':
@@ -68,7 +68,7 @@ for analysis_type in analysis_types:
         conditional_combined = conditional_combined[['gwas', "specificity_id", 'conditional_annotation', 'annotation', 'Coefficient', 'Coefficient_std_error',  'Coefficient_P_value']]
         conditional_combined.rename(columns = {'Coefficient': 'tau', 'Coefficient_std_error': 'se', 'Coefficient_P_value': 'pvalue'}, inplace = True)   
         conditional_combined.sort_values(['gwas', 'specificity_id'])
-        conditional_combined.to_csv(os.path.join(results_output_dir, 'conditional.csv'), index = False, sep = '\t')
+        conditional_combined.to_csv(os.path.join(results_output_dir, 'conditional.csv'), index = False)
 
 
     if analysis_type == 'heritability': 
@@ -95,7 +95,7 @@ for analysis_type in analysis_types:
         h2_combined = h2_combined[['gwas', 'specificity_id', 'annotation', 'Prop._SNPs', 'Prop._h2', 'Prop._h2_std_error', 'Enrichment' , 'Enrichment_std_error', 'Enrichment_p']]
         h2_combined.rename(columns = {'Enrichment': 'h2_enrichment', 'Enrichment_std_error': 'h2_enrichment_se', 'Enrichment_p': 'h2_enrichment_pvalue'}, inplace = True)
         h2_combined.sort_values(['gwas', 'specificity_id'])
-        h2_combined.to_csv(os.path.join(results_output_dir, 'heritability.csv'), index = False, sep = '\t')
+        h2_combined.to_csv(os.path.join(results_output_dir, 'heritability.csv'), index = False)
 
 
     if analysis_type == 'heritability_intervals':
@@ -126,7 +126,7 @@ for analysis_type in analysis_types:
             
         h2_int_combined = h2_int_combined[['gwas', 'specificity_id', 'annotation', 'q', 'h2g', 'h2g_se', 'prop_h2g', 'prop_h2g_se', 'enr', 'enr_se', 'enr_pval']]
 
-        h2_int_combined.to_csv(os.path.join(results_output_dir, 'heritability_intervals.csv'), index = False, sep = '\t')
+        h2_int_combined.to_csv(os.path.join(results_output_dir, 'heritability_intervals.csv'), index = False)
 
     print('{} result files done compiling.'.format(analysis_type))
 
