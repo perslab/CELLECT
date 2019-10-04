@@ -304,41 +304,16 @@ rule all:
 		list_target_files
 
 
-# rule parse_results_dummy:
-# 	output:
-# 		touch("{BASE_OUTPUT_DIR}/results/{analysis_type}.csv") # https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#flag-files
-
-
-
-# rule parse_results:
-# 	"""
-# 	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out, 
-# 	All out/ files will be parsed, even if they where not generated in this run of the workflow
-# 	"""
-# 	output:
-# 		"{BASE_OUTPUT_DIR}/results/{analysis_type}.csv"
-# 	conda:
-# 		"envs/cellectpy3.yml"
-# 	params:
-# 		base_output_dir = BASE_OUTPUT_DIR
-# 		analysis_type = wildcards.analysis_type
-# 	script:
-# 		"scripts/parse_results.py"
-
 rule parse_results:
 	"""
-	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out/{analysis_type}.
+	Generates {BASE_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {BASE_OUTPUT_DIR}/out/.
 	"""
 	input:
 		filter(lambda s: '.csv' not in s, list_target_files) #Not sure if strictly necessary, just to make sure that the .csv files are generated AFTER the analysis
 	output:
-		expand("{{BASE_OUTPUT_DIR}}/results/{analysis_type}.csv", analysis_type = analysis_types_performed)
-	params:
-		BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
-		results_out_dir = '{BASE_OUTPUT_DIR}/results'.format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR),
-		analysis_types_performed = analysis_types_performed
-	script:
-		"scripts/parse_results.py"
+		expand("{{BASE_OUTPUT_DIR}}/results/{analysis_type}.csv", analysis_type=analysis_types_performed)
+	shell:
+		"python3 scripts/parse_results_cmdline.py --base_output_dir {BASE_OUTPUT_DIR}"
 
 rule make_multigenesets:
 	'''
