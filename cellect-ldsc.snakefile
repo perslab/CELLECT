@@ -313,7 +313,7 @@ rule parse_results:
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/results/{analysis_type}.csv", analysis_type=analysis_types_performed)
 	shell:
-		"python3 scripts/parse_results_cmdline.py --base_output_dir {BASE_OUTPUT_DIR}"
+		"python3 scripts/parse_results.py --base_output_dir {BASE_OUTPUT_DIR}"
 
 rule make_multigenesets:
 	'''
