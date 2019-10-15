@@ -61,7 +61,8 @@ def get_annots(specificity_input_dict):
 	Pulls all the annotations from each specificity matrix file and saves them into a dictionary.
 	"""
 	# Snakemake rules need to know the output files before the rule executes - this function gets the names
-	# of annotations because the "COMBINED_ANNOT" files are split into "{annotation name}" files
+	# of annotations from the first line, it needs to do this because the "COMBINED_ANNOT" files are split
+	# into unique "{annotation name}" files 
 	annots_dict = {}
 	for key, dictionary in specificity_input_dict.items():
 		if dictionary['path'].endswith('.gz'):
@@ -313,7 +314,7 @@ rule parse_results:
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/results/{analysis_type}.csv", analysis_type=analysis_types_performed)
 	shell:
-		"python3 scripts/parse_results_cmdline.py --base_output_dir {BASE_OUTPUT_DIR}"
+		"python3 scripts/parse_results.py --base_output_dir {BASE_OUTPUT_DIR}"
 
 rule make_multigenesets:
 	'''
@@ -574,6 +575,8 @@ for prefix in RUN_PREFIXES:
 				suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50", "annot.gz"])
 		conda:
 			"envs/cellectpy3.yml"
+		wildcard_constraints:
+			run_prefix = prefix
 		params:
 			chromosome = '{chromosome}',
 			run_prefix = '{run_prefix}',
