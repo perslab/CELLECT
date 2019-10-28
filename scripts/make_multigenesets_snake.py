@@ -6,7 +6,7 @@ specificity_matrix_name = snakemake.params['specificity_matrix_name']
 specificity_matrix_file = snakemake.params['specificity_matrix_file']
 
 
-specificity_df = pd.read_csv(specificity_matrix_file, sep = None, index_col=None)
+specificity_df = pd.read_csv(specificity_matrix_file, sep = None, index_col=None, engine='python')
 
 # Rename the first column to gene
 specificity_df.rename(columns={ specificity_df.columns[0]: "gene" }, inplace = True)
