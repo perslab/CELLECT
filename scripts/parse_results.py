@@ -39,7 +39,7 @@ def main(BASE_OUTPUT_DIR, logger):
         prioritization_combined['specificity_id'] = specificity_id_annotation[0] #mousebrain
         prioritization_combined['annotation'] = specificity_id_annotation[1] #TEGLU32
         prioritization_combined = prioritization_combined[['gwas', "specificity_id", 'annotation', 'Coefficient', 'Coefficient_std_error',  'Coefficient_P_value']]
-        prioritization_combined.rename(columns = {'Coefficient': 'tau', 'Coefficient_std_error': 'se', 'Coefficient_P_value': 'pvalue'}, inplace = True)
+        prioritization_combined.rename(columns = {'Coefficient': 'beta', 'Coefficient_std_error': 'beta_se', 'Coefficient_P_value': 'pvalue'}, inplace = True)
         prioritization_combined.sort_values(['gwas', 'specificity_id'])
         prioritization_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'prioritization.csv'), index = False)
 
@@ -60,7 +60,7 @@ def main(BASE_OUTPUT_DIR, logger):
         conditional_combined['specificity_id'] = specificity_id_annotation[0]
         conditional_combined['annotation'] = specificity_id_annotation[1]
         conditional_combined = conditional_combined[['gwas', "specificity_id", 'conditional_annotation', 'annotation', 'Coefficient', 'Coefficient_std_error',  'Coefficient_P_value']]
-        conditional_combined.rename(columns = {'Coefficient': 'tau', 'Coefficient_std_error': 'se', 'Coefficient_P_value': 'pvalue'}, inplace = True)   
+        conditional_combined.rename(columns = {'Coefficient': 'beta', 'Coefficient_std_error': 'beta_se', 'Coefficient_P_value': 'pvalue'}, inplace = True)   
         conditional_combined.sort_values(['gwas', 'specificity_id'])
         conditional_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'conditional.csv'), index = False)
 
