@@ -264,7 +264,7 @@ if config['ANALYSIS_TYPE']['conditional']:
 	analysis_types_performed.extend(['conditional'])
 
 if config['ANALYSIS_TYPE']['heritability']: 
-	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR, run_prefix = prefix)
+	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
 	list_target_files.extend([tmp])
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}.results",
