@@ -45,7 +45,7 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
    
 ```bash
-conda install -c bioconda snakemake
+conda install -c bioconda snakemake=5.4.5
 ```
 
 ## Updating CELLECT
@@ -58,13 +58,15 @@ git pull
 
 ## Getting started with CELLECT-LDSC
 
+An example configuration file is provided, but requires additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial).
+
 
 1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity.
 
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -s cellect-ldsc.snakefile
+snakemake --use-conda -s cellect-ldsc.snakefile --configfile example/config-ldsc_example.yml
 ```
 
 3. **Inspect the output**:
