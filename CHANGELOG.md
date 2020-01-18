@@ -20,6 +20,7 @@ CELLECT v. 1.1.0 and 1.0.0 produce prioritization results with Pearson's correla
 - Some legacy references to incorrect paths
 ### Technical details
 See commit for overview of important changes: https://github.com/perslab/CELLECT/commit/c7513a19c0dfc02b905e507f4c94924cee6a4ca4
+See also https://github.com/perslab/CELLECT/issues/8 for a description of the problem.
 - Replaced use of BEDtools for merging overlapping genes into a single track with BEDOPs which finds all unique overlapping regions and is more appropriate for continuous data
 - General restructuring of rules and scripts to account for above
 - Added BEDOPs to env
