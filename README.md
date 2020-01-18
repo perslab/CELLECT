@@ -45,7 +45,7 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
    
 ```bash
-conda install -c bioconda snakemake
+conda install -c bioconda snakemake=5.4.5
 ```
 
 ## Updating CELLECT
@@ -58,18 +58,34 @@ git pull
 
 ## Getting started with CELLECT-LDSC
 
+An example configuration file is provided, but requires additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial).
+
 
 1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity.
 
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -s cellect-ldsc.snakefile
+snakemake --use-conda -s cellect-ldsc.snakefile --configfile example/config-ldsc_example.yml
 ```
 
 3. **Inspect the output**:
 
-**........... INSERT EXAMPLE OUTPUT.............. **
+```head CELLECT-LDSC-EXAMPLE/results/prioritization.csv```
+gives you cell-type prioritization results:
+```
+gwas,specificity_id,annotation,beta,beta_se,pvalue
+BMI_Yengo2018,tabula_muris-test,Brain_Non-Myeloid.Bergmann_glial_cell,9.231153572792368e-09,4.019151323331188e-09,0.010815326414746898
+BMI_Yengo2018,tabula_muris-test,Bladder.bladder_cell,-5.004712418748802e-10,3.2673818983229307e-09,0.5608686595651585
+BMI_Yengo2018,tabula_muris-test,Brain_Myeloid.microglial_cell,-2.6351066098370078e-09,3.5627583125482456e-09,0.7702363432351039
+BMI_Yengo2018,tabula_muris-test,Brain_Myeloid.macrophage,-4.20188757005791e-09,5.126292004971455e-09,0.7937989730524113
+BMI_Yengo2018,tabula_muris-test,Bladder.bladder_urothelial_cell,-9.444074983296222e-09,3.099358846619276e-09,0.9988447189868584
+EA3_Lee2018,tabula_muris-test,Brain_Non-Myeloid.Bergmann_glial_cell,8.49739420095679e-09,1.911986590915025e-09,4.409437303659968e-06
+EA3_Lee2018,tabula_muris-test,Brain_Myeloid.macrophage,2.214934890235212e-09,2.716854415111798e-09,0.20746257567581028
+EA3_Lee2018,tabula_muris-test,Brain_Myeloid.microglial_cell,-6.441126119804287e-10,1.753163408008973e-09,0.6433397441548794
+EA3_Lee2018,tabula_muris-test,Bladder.bladder_urothelial_cell,-4.589906843053639e-09,1.6159150917314255e-09,0.9977474194521412
+EA3_Lee2018,tabula_muris-test,Bladder.bladder_cell,-4.421016110716137e-09,1.3525251453635627e-09,0.9994598102836466
+```
 
 ## CELLECT-LDSC Example: 
 
@@ -97,5 +113,4 @@ Alternatively, you may write an email to timshel(at)sund.ku.dk
 
 ## Reference
 If you find CELLECT useful for your research, please consider citing the paper:
-
-**......... INSERT LINK TO PUBLICATION ............**
+*LINK TO PRE-PRINT COMING SOON*
