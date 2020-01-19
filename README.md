@@ -2,13 +2,14 @@
 
 **CELL**-type **E**xpression-specific integration for **C**omplex **T**raits (**CELLECT**) is a computational toolkit for  identifing likely etiologic cell-types underlying complex traits. CELLECT leverages existing genetic prioritization models to integrate single-cell transcriptomic and human genetic data when identifing likely etiologic cell-types. 
 
-<!---
+<!--- v1
 ![fig-integration](https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png)
 --->
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/5487016/62281981-0cb33d00-b44f-11e9-8c0b-24aaa2b7d286.png" width="600"/>
+    <img src="https://user-images.githubusercontent.com/5487016/72677599-80e5a980-3a9e-11ea-95c4-ac645cb364a4.png" width="600"/>
 </p>
+
 
 
 
