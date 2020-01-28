@@ -118,5 +118,6 @@ Please create an issue on the github repo if you encounter any problems using CE
 Alternatively, you may write an email to timshel(at)sund.ku.dk
 
 ## Reference
-If you find CELLECT useful for your research, please consider citing the paper:
-*LINK TO PRE-PRINT COMING SOON*
+If you find CELLECT useful for your research, please consider citing the paper:  
+**[Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1)**
+
