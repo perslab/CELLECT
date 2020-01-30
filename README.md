@@ -72,8 +72,9 @@ An example configuration file is provided, but requires additional downloads and
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -s cellect-ldsc.snakefile --configfile example/config-ldsc_example.yml
+snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile example/config-ldsc_example.yml
 ```
+We recommend running with `-j` as it will use all available cores. Specifying `-j 4` will use up to 4 cores. 
 
 3. **Inspect the output**:
 
