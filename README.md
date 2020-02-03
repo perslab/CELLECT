@@ -35,7 +35,7 @@ We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc)
 
 ## Installation
 
-**Step 1: Install git lsf**  
+**Step 1: Install git lfs**  
 We use [`git lfs`](https://git-lfs.github.com/) to store the [CELLECT data files](https://github.com/perslab/CELLECT/data) on github. To download the files you need to have `git lfs` setup before you clone the repository.
 On OSX: `brew install git-lfs; git lfs install` or Ubuntu:`sudo apt-get install git-lfs; git lfs install`. For other operating systems, follow [this guide](https://github.com/git-lfs/git-lfs/wiki/Installation).
 
@@ -51,7 +51,7 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
    
 ```bash
-conda install -c bioconda snakemake=5.4.5
+conda install -c bioconda -c conda-forge snakemake=5.4.5
 ```
 
 ## Updating CELLECT
@@ -67,12 +67,12 @@ git pull
 An example configuration file is provided, but requires additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial).
 
 
-1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity.
+1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see tutorial for example.
 
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile example/config-ldsc_example.yml
+snakemake --use-conda -j -s cellect-ldsc.snakefile 
 ```
 We recommend running with `-j` as it will use all available cores. Specifying `-j 4` will use up to 4 cores. 
 
