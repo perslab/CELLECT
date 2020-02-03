@@ -12,14 +12,13 @@
 
 
 
-
 ## How does CELLECT work?
 
-CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as LDSC (Hilary Kiyo Finucane et al., 2015) and MAGMA covariate analysis (Skene et al., 2018). The output of CELLECT is a list of prioritized etiologic cell-types for a given human complex disease or trait.
+CELLECT quantifies the association between common polygenetic GWAS signal (heritability) and cell-type expression specificity (ES) of genes using established genetic prioritization models such as [S-LDSC](https://github.com/bulik/ldsc) ([Finucane et al., 2015](https://www.nature.com/articles/ng.3404)) and [MAGMA](http://ctglab.nl/software/magma) covariate analysis ([Skene et al., 2018](https://www.nature.com/articles/s41588-018-0129-5)). The output of CELLECT is a list of prioritized etiologic cell-types for a given human complex disease or trait.
 
 ![fig-CELLECT-regression](https://user-images.githubusercontent.com/5487016/72679543-919f1b00-3ab0-11ea-8d1d-f756fe46a4a0.png)
 
-CELLECT takes as input GWAS data and cell-type expression specificity estimates. In order to compute robust estimates of ES, we developed the computational method called **CELLEX** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  CELLEX can be found [here](https://github.com/perslab/CELLEX).
+CELLECT takes as input GWAS data and cell-type expression specificity estimates. In order to compute robust estimates of ES, we developed the computational method called **[CELLEX](https://github.com/perslab/CELLEX)** (**CELL**-type **EX**pression-specificity). CELLEX is built on the observation that different ES metrics provide complementary cell-type expression specific profiles. Our method incorporates a ‘wisdom of the crowd’ approach by integrating multiple ES metrics to obtain improved robustness and a more expressive ES measure that captures multiple aspects of expression specificity.  
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/5487016/72679609-299d0480-3ab1-11ea-8b05-5c1678ec270a.png" width="600"/>
@@ -31,7 +30,7 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 ## Update log
 
-We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-MAGMA, CELLECT-RolyPoly and CELLECT-DEPICT in the future. See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
+We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-[MAGMA](https://ctg.cncr.nl/software/magma) in the near future. We also expect to develop CELLECT-[RolyPoly](https://github.com/dcalderon/rolypoly) and CELLECT-[DEPICT](https://data.broadinstitute.org/mpg/depict/). See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
 
 ## Installation
 
@@ -52,14 +51,6 @@ CELLECT uses the workflow management software [**Snakemake**](https://snakemake.
    
 ```bash
 conda install -c bioconda -c conda-forge snakemake=5.4.5
-```
-
-## Updating CELLECT
-
-To get the lastest version of CELLECT, update the github repo:
-
-```bash
-git pull
 ```
 
 ## Getting started with CELLECT-LDSC
@@ -94,9 +85,13 @@ EA3_Lee2018,tabula_muris-test,Bladder.bladder_urothelial_cell,-4.589906843053639
 EA3_Lee2018,tabula_muris-test,Bladder.bladder_cell,-4.421016110716137e-09,1.3525251453635627e-09,0.9994598102836466
 ```
 
-## CELLECT-LDSC Example: 
+### CELLECT-LDSC Example: 
 
 See our [**github wiki**](https://github.com/perslab/CELLECT/wiki).
+
+## Getting started with CELLECT-MAGMA
+
+COMMING SOON!
 
 ## Documentation
 
@@ -109,7 +104,7 @@ We gratefully acknowledge the developers of the genetic prioritization tools use
 
 ## Authors
 
-- Pascal Nordgren Timshel (University of Copenhagen)
+- Pascal Nordgren Timshel (University of Copenhagen) (@ptimshel)[https://twitter.com/ptimshel]
 - Tobi Alegbe (University of Copenhagen)
 - Ben Nielsen (University of Copenhagen)
 
