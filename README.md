@@ -95,7 +95,7 @@ We gratefully acknowledge the developers of the genetic prioritization tools use
 ## Authors
 
 - Pascal Nordgren Timshel (University of Copenhagen) [@ptimshel](https://twitter.com/ptimshel)
-- Tobi Alegbe (University of Copenhagen)
+- Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
 - Ben Nielsen (University of Copenhagen)
 
 ## Contact
