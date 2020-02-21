@@ -39,6 +39,9 @@ We use [`git lfs`](https://git-lfs.github.com/) to store the [CELLECT data files
 On OSX: `brew install git-lfs; git lfs install` or Ubuntu:`sudo apt-get install git-lfs; git lfs install`. For other operating systems, follow [this guide](https://github.com/git-lfs/git-lfs/wiki/Installation).
 
 **Step 2: Clone CELLECT repository**  
+_Before you clone: check that you've installed git lfs by running `git lfs env`. If you get a message that says `'lfs' is not a git command`, git lfs is not installed properly. If `git lfs env` does not produces what you think it should produce then consult [troubleshooting git lfs](https://github.com/git-lfs/git-lfs/wiki/Troubleshooting#troubleshooting)_.
+
+Clone the repository: 
 ```
 git clone --recurse-submodules https://github.com/perslab/CELLECT.git
 ```
