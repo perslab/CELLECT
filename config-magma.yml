@@ -29,7 +29,8 @@ SPECIFICITY_INPUT:
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
 # path: filepath for munged GWAS sumstats.
-# OBS: sumstats MUST be munged using the munge_sumstats.py script found in the repo.
+# OBS: sumstats MUST be munged using the mtag_munge.py script found in the repo and then unpacked via 'gunzip' command. 
+# MAGMA takes as input unarchived / simple text files only.
 GWAS_SUMSTATS:
   - id: BMI_UKBB_Loh2018_no_mhc
     path: example/BMI_UKBB_Loh2018_no_mhc.sumstats 
