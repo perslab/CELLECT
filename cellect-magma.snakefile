@@ -81,7 +81,7 @@ BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
 
 # Detect OS type and load the corresponding MAGMA binary file
 usersystem = platform.system()
-magma_version_dir = "magma/bin/magma_v1.07b"
+magma_version_dir = "magma/bin"
 if usersystem == 'Linux':      # Linux
 	MAGMA_EXEC = os.path.join(magma_version_dir, "static/magma")
 elif usersystem == 'Darwin':   # MacOS
@@ -132,6 +132,13 @@ os.environ["MKL_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
 os.environ["NUMEXPR_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
 os.environ["OMP_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
 
+# Citation info
+# The citation info is stored in README.txt, which is saved in magma/bin and duplicated into /data/magma
+if not os.path.exists("magma/bin/README.txt"):
+	raise Exception("The README file with citation info does not exist in magma/bin.")
+f_readme = open("magma/bin/README.txt", "r")
+CITATION_INFO = f_readme.read()
+f_readme.close()
 
 
 ########################################################################################
@@ -210,7 +217,7 @@ rule make_annot:
 	output:
 		ANNOT_FILE
 	shell:
-		"{MAGMA_EXEC} --annotate window = {WINDOWSIZE_KB},{WINDOWSIZE_KB} \
+		"echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --annotate window = {WINDOWSIZE_KB},{WINDOWSIZE_KB} \
 		--snp-loc {SNPLOC_FILE} \
 		--gene-loc {GENELOC_FILE} \
 		--out {BASE_OUTPUT_DIR}/precomputation/NCBI37_1kgp_up{WINDOWSIZE_KB}kb_down{WINDOWSIZE_KB}kb"
@@ -251,10 +258,11 @@ rule get_uncorrected_pvals:
 		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
                 gwas_file = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path']
 	shell:
-                "{MAGMA_EXEC} --bfile {BFILE} \
+                "echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --bfile {BFILE} \
                 --gene-annot {ANNOT_FILE} \
                 --pval {params.gwas_file} \
 		ncol=N \
+		use=SNP,PVAL \
                 --out {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}"
 
 
@@ -273,7 +281,7 @@ rule get_corrected_pvals:
 	params:
                 gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
 	shell:
-                "{MAGMA_EXEC} --gene-results {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}.genes.raw \
+                "echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --gene-results {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}.genes.raw \
                 --gene-covar {input.dummy_covar_file} \
                 --model correct=all direction-covar=greater \
 		--settings abbreviate=0 gene-info \
