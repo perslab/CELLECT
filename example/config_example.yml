@@ -16,21 +16,14 @@ SPECIFICITY_INPUT:
 
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
-    path: example/EA3_Lee2018.sumstats 
+    path: example/EA3_Lee2018.sumstats   # must be unarchived for MAGMA
 #  - id: BMI_Yengo2018
 #    path: example/BMI_Yengo2018.sumstats.gz
 
 
-CONDITIONAL_INPUT:
-  - id: mousebrain-test
-    annotations: ['ABC']
-  # - id: tabula_muris-test
-  #   #   annotations: ['XX']
-
-
 ANALYSIS_TYPE: 
   prioritization: True
-  conditional: True
+  conditional: False
   heritability: False
   heritability_intervals: False
 
@@ -39,11 +32,11 @@ WINDOW_DEFINITION:
   WINDOW_SIZE_KB:
     100
   WINDOW_LD_BASED:
-    True
+    False
 
 
 #################################################################################
-########################### LD SPECIFIC PARAMETERS ##############################
+########################### LD SPECIFIC CONSTANTS ###############################
 #################################################################################
 
 LDSC_CONST:
@@ -56,7 +49,7 @@ LDSC_CONST:
 
 
 ##################################################################################
-########################## MAGMA SPECIFIC PARAMETERS #############################
+########################## MAGMA SPECIFIC CONSTANTS ##############################
 ##################################################################################
 
 MAGMA_CONST:
