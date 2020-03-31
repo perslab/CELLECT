@@ -1,83 +1,18 @@
-from snakemake.utils import min_version
+########################################################################################
+########################## OVERLAPPING FUNCTIONALITY ###################################
+########################################################################################
 
-import sys
-import os
-import platform
-import re
-import csv
-import gzip
-
-min_version("5.4")
-
-
-_ILLEGAL_ID_PATTERN = r"\s|__|/"
-
+include: "rules/common_func.smk"
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-def check_safe_id(list_of_strings):
-        '''
-        Returns False if any string in list_of_strings contains the patterns defined in _ILLEGAL_ID_PATTERN.
-        '''
-        for val in list_of_strings:
-                if re.search(_ILLEGAL_ID_PATTERN, val):
-                        return False
-        return True
-
-
-def build_dict_from_id_filepath_key_value_pairs(list_of_dicts):
-        '''
-        Each dict in the list in MUST contain the keys 'id' and 'path'.
-        path will be converted to absolute paths.
-        Takes the list of dictionaries and makes it into a new dictionary where the keys are the id values from each dictionary and the values are each dictionary
-        e.g. [{"id":"a", "value": 1}, {"id":"b","value":2}] ->
-        {"a":{"id":"a", "value": 1}, "b":{"id":"b","value":2}}
-        '''
-        out_dict = {}
-        for d in list_of_dicts:
-                d['path'] = os.path.abspath(d['path'])
-                out_dict[d['id']] = d
-        return(out_dict)
-
-
-def get_annots(specificity_input_dict):
-        """
-        Pulls all the annotations from each specificity matrix file and saves them into a dictionary.
-        """
-        annots_dict = {}
-        for key, dictionary in specificity_input_dict.items():
-                if dictionary['path'].endswith('.gz'):
-                        fh = gzip.open(dictionary['path'], 'rt') # open in text mode
-                else:
-                        fh = open(dictionary['path'])
-                annotations = next(csv.reader(fh))[1:] # [1:] skip first column because it the the 'gene' column
-                annots_dict[key] = annotations # key is dataset name
-                fh.close()
-        return(annots_dict)
-
+# see the *.smk file
 
 ########################################################################################
 ################################### VARIABLES ##########################################
 ########################################################################################
-
-### Load config
-# We check if --configfile arg is given to avoid confusing behavior when two config files are loaded.
-# snakemake executes the 'configfile: 'config-magma.yml'' even if another --configfile is given.
-# --configfile will only UPDATE the config dict loaded from 'configfile: 'config-magma.yml'.
-# This causes problems if some fields are deleted/missing from the --configfile. Then the config-magma.yml and --configfile will be mixed.
-try: # check if config file is already loaded from the --configfile parameter
-    config['BASE_OUTPUT_DIR'] # *OBS*: needs to be updated if BASE_OUTPUT_DIR changes name in the config file.
-except Exception as e:
-    snakemake.logger.info("Loading default config file: config-magma.yml")
-    configfile: 'config-magma.yml' # snakemake load config object
-else:
-        snakemake.logger.info("Loaded config file from --configfile argument") # no Exception raise, so run this
-
-
-# Where all CELLECT-MAGMA output will be saved
-BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
 
 # Detect OS type and load the corresponding MAGMA binary file
 usersystem = platform.system()
@@ -90,15 +25,6 @@ elif usersystem == 'Windows':  # Win
         raise Exception("Windows OS is not supported at the moment.")
 else:                          # the value cannot be determined
 	raise Exception("Can not determine the user system/OS name.")
-
-WINDOWSIZE_KB = config['WINDOW_DEFINITION']['WINDOW_SIZE_KB']
-
-SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
-GWAS_SUMSTATS = build_dict_from_id_filepath_key_value_pairs(config['GWAS_SUMSTATS'])
-
-# Reads the first line of each specificity matrix and saves the annotations
-# as lists where the key is the assigned run prefix
-ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 
 wildcard_constraints:
@@ -126,12 +52,6 @@ BFILE = os.path.splitext(SNPLOC_FILE)[0]
 ANNOT_FILE = os.path.join(BASE_OUTPUT_DIR, "precomputation/NCBI37_1kgp_up" + str(WINDOWSIZE_KB) + "kb_down" + str(WINDOWSIZE_KB) + "kb.genes.annot")
 DUMMY_COVAR_FILE_NAME = "magma_dummy_gene_covar_file.NCBI37_3.tab"
 
-# These environment variables control how many cores numpy can use
-# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
-os.environ["MKL_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-os.environ["NUMEXPR_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-os.environ["OMP_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-
 # Citation info
 # The citation info is stored in README.txt, which is saved in magma/bin and duplicated into /data/magma
 if not os.path.exists("magma/bin/README.txt"):
@@ -142,48 +62,28 @@ f_readme.close()
 
 
 ########################################################################################
-############################# Pre-check of inputs #######################################
+############################# Pre-check of inputs ######################################
 ########################################################################################
 
-if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['conditional'] or config['ANALYSIS_TYPE']['heritability']):
-        raise Exception("At least one ANALYSIS_TYPE must be true.")
+if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['conditional']):
+        raise Exception("At least one ANALYSIS_TYPE out of 'prioritization' and 'conditional' must be true.")
 
-### Check names/ids
-if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
-        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
-if not check_safe_id(list(GWAS_SUMSTATS.keys())):
-        raise Exception("Illegal charecters in GWAS SUMSTATS id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
-for key in ANNOTATIONS_DICT:
-        if not check_safe_id(ANNOTATIONS_DICT[key]):
-                raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
+if (config['ANALYSIS_TYPE']['heritability'] or config['ANALYSIS_TYPE']['heritability_intervals']):
+	warnings.warn("'heritability' and 'heritability_intervals' options are available for CELLECT-LDSC only.")
 
+if (config['WINDOW_DEFINITION']['WINDOW_LD_BASED']):
+	warnings.warn("WINDOW_LD_BASED is available for CELLECT-LDSC only.")
 
-if not config['ANALYSIS_TYPE']['prioritization']:
-	raise Exception("Currently prioritization is the only available analysis type for MAGMA.")
-
-
+# see also the *.smk file
 
 ########################################################################################
-################################### Target files ##########################################
+################################### Target files #######################################
 ########################################################################################
 
-list_target_files = []
-analysis_types_performed = []     # this is for parsing and compiling the results files
-
-if config['ANALYSIS_TYPE']['prioritization']:
-	tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend([tmp])
-	tmp = expand("{BASE_OUTPUT_DIR}/out/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
-                                BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
-                                run_prefix = list(SPECIFICITY_INPUT.keys()),
-                                gwas = list(GWAS_SUMSTATS.keys()))
-	list_target_files.extend(tmp)
-	analysis_types_performed.extend(['prioritization'])
-
-
+# see the *.smk file
 
 ########################################################################################
-################################### PIPELINE ##########################################
+################################### PIPELINE ###########################################
 ########################################################################################
 
 rule all:
@@ -307,11 +207,11 @@ rule map_human_entrez_to_ens:
 
 
 
-###################################### PRIORITIZATION ########################################
+###################################### PRIORITIZATION + CONDITIONAL ANALYSIS ########################################
 
 rule prioritize_annotations:
 	'''
-	Fit linear model between MAGMA ZSTATs and ES with the provided list of GWAS
+	Fit the linear model between MAGMA ZSTATs and ESmu with the provided list of GWAS
 	'''
 	input:
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all_ens.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
@@ -329,3 +229,24 @@ rule prioritize_annotations:
 		"scripts/prioritize_annotations_snake.py"
 
 
+# Conditional
+if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT is defined
+	rule run_gwas_conditional:
+		'''
+		Run the linear model between MAGMA ZSTATs and ESmu conditioned on a given cell type.
+		(One extra ESmu covariate is added to the regression at each step.)
+		'''
+		input:
+			expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all_ens.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
+		output:
+			expand("{{BASE_OUTPUT_DIR}}/out/conditional/{{run_prefix}}__{{gwas}}__CONDITIONAL__{{annotation}}.cell_type_results.txt")
+		log:
+			"{BASE_OUTPUT_DIR}/logs/log.conditional.{run_prefix}.{gwas}.{annotation}.txt"
+		params:
+                	base_output_dir = "{BASE_OUTPUT_DIR}",
+                	specificity_matrix_file = lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
+                	specificity_matrix_name = "{run_prefix}",
+                	gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
+			annotation = lambda wildcards: CONDITIONAL_INPUT[wildcards.run_prefix]
+		script:
+			"scripts/run_gwas_conditional_snake.py"
