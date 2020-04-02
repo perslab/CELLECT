@@ -30,7 +30,7 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 ## Update log
 
-We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-[MAGMA](https://ctg.cncr.nl/software/magma) in the near future. We also expect to develop CELLECT-[RolyPoly](https://github.com/dcalderon/rolypoly) and CELLECT-[DEPICT](https://data.broadinstitute.org/mpg/depict/). See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
+We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) and [MAGMA](https://ctg.cncr.nl/software/magma) for genetic prioritization. We also expect to develop CELLECT-[RolyPoly](https://github.com/dcalderon/rolypoly) and CELLECT-[DEPICT](https://data.broadinstitute.org/mpg/depict/). See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
 
 ## Installation
 
@@ -58,12 +58,12 @@ conda install -c bioconda -c conda-forge snakemake=5.4.5
 An example configuration file is provided, but requires additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial).
 
 
-1. **Modify the `config-ldsc.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see tutorial for example.
+1. **Modify the `config.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see tutorial for example.
 
 2. **Run CELLECT-LDSC workflow**:
 
 ```bash
-snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile config-ldsc.yml
+snakemake --use-conda -j -s cellect-ldsc.snakefile --configfile config.yml
 ```
 We recommend running with `-j` as it will use all available cores. Specifying `-j 4` will use up to 4 cores. 
 
@@ -81,7 +81,22 @@ See our [**Github wiki**](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-T
 
 ## Getting started with CELLECT-MAGMA
 
-COMMING SOON!
+The same example configuration file as for CELLECT-LDSC is provided. In order to run the example, please follow the [CELLECT MAGMA Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-MAGMA-Tutorial).
+
+
+1. **Modify the `config.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see tutorial for example.
+
+2. **Run CELLECT-MAGMA workflow**:
+
+```bash
+snakemake --use-conda -j -s cellect-magma.snakefile --configfile config.yml
+```
+We recommend running with `-j` as it will use all available cores. Specifying `-j 4` will use up to 4 cores. 
+
+3. **Inspect the output**:
+
+```<BASE_OUTPUT_DIR>/results/prioritization.csv```
+gives you cell-type prioritization results.
 
 ## Documentation
 
