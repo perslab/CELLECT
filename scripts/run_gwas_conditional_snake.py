@@ -19,7 +19,14 @@ def fit_multivar_LM(es_mu, df_magma, specificity_id, cond_annotation):
 	for annotation in annotations:
 		y = df_regression.loc[:, df_regression.columns == 'ZSTAT']       # the dependent variable
 		X = df_regression.loc[:, df_regression.columns == annotation]
-		X[cond_annotation] = df_regression.loc[:, df_regression.columns == cond_annotation]
+		# in order to add a new covariate into the regression, 
+		# we need to make the additional column name in X unique
+		if cond_annotation == annotation:
+			cond_annotation_colname = cond_annotation + '_'
+		else:
+			cond_annotation_colname = cond_annotation
+		# add the covariate
+		X[cond_annotation_colname] = df_regression.loc[:, df_regression.columns == cond_annotation]
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
