@@ -60,6 +60,7 @@ An example configuration file is provided, but requires additional downloads and
 1. **Modify the `config.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see the respective tutorial for example.
 
 2. **Run the workflow**:
+
 CELLECT-LDSC:
 
 ```bash
