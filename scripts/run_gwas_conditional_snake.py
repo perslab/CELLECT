@@ -4,6 +4,8 @@ import statsmodels.api as sm
 import statsmodels.tools.tools as sm_tools
 import os
 
+from statsmodels.formula.api import ols
+
 
 
 	
@@ -11,26 +13,27 @@ def fit_multivar_LM(es_mu, df_magma, specificity_id, cond_annotation):
 	'''
 	Fit linear model between an ESmu matrix 'specificity_id' with one extra ESmu covariate 'cond_annotation' added to each cell type and MAGMA ZSTAT
 	'''
-	### Get cell annotations	
-	annotations = es_mu.columns[1:]	
-	# inner join magma ZSTATs and ES_mu values
+	### Extract cell type annotations	
+	annotations = es_mu.columns[1:]
+	### Delete an annotation that coincides with the conditional annotation
+	### to avoid the multicollearity 
+	annotations = annotations[annotations != cond_annotation]  
+	
+	### inner join magma ZSTATs and ES_mu values
 	df_regression = pd.merge(es_mu, df_magma, left_on = 'gene', right_on = 'gene', how = 'inner')
 	df_res = pd.DataFrame(columns = ["Name", "Coefficient", "Coefficient_std_error", "Coefficient_P_value"])
 	for annotation in annotations:
 		y = df_regression.loc[:, df_regression.columns == 'ZSTAT']       # the dependent variable
-		X = df_regression.loc[:, df_regression.columns == annotation]
-		# in order to add a new covariate into the regression, 
-		# we need to make the additional column name in X unique
-		if cond_annotation == annotation:
-			cond_annotation_colname = cond_annotation + '_'
-		else:
-			cond_annotation_colname = cond_annotation
-		# add the covariate
-		X[cond_annotation_colname] = df_regression.loc[:, df_regression.columns == cond_annotation]
+		X = df_regression.loc[:, df_regression.columns == annotation]    # the 1st independent variable
+		# add the 2nd covariate
+		X[cond_annotation] = df_regression.loc[:, df_regression.columns == cond_annotation]
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
+		# append the result for the given `annotation`
 		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": ols_result.pvalues[1]}, ignore_index = True)
+	# return NA when conditioned on itself
+	df_res = df_res.append({"Name": specificity_id + "__" + cond_annotation, "Coefficient": np.nan, "Coefficient_std_error": np.nan, "Coefficient_P_value": np.nan}, ignore_index = True)
 	df_res = df_res.sort_values(by = ['Coefficient_P_value'])     # sort by original p-value
 	return df_res
 
@@ -77,5 +80,5 @@ for annotation in annotations:
 	fullname = os.path.join(subdir, outname)
 
 	print("Saving the results...")
-	df_res.to_csv(fullname, sep = '\t', index = False)
+	df_res.to_csv(fullname, sep = '\t', index = False, na_rep='NaN')
 	print("The results are saved as " + fullname)
