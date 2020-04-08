@@ -4,9 +4,6 @@ import statsmodels.api as sm
 import statsmodels.tools.tools as sm_tools
 import os
 
-from statsmodels.formula.api import ols
-
-
 
 	
 def fit_multivar_LM(es_mu, df_magma, specificity_id, cond_annotation):
