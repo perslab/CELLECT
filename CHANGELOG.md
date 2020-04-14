@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 
-## [Unreleased 1.1.0] - 2020-18-01
+## [1.1.0] - 2020-04-14
 ### Added
 ### Changed
 - Improved CELLECT-LDSC handling of continuous gene annotations. Importantly, this changes the prioritization results slightly. 
