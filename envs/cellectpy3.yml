@@ -1,3 +1,4 @@
+
 name: cellectpy3 # USED FOR EVERYTHING PYTHON EXCEPT LDSC.PY
 channels:
   - anaconda
@@ -10,4 +11,3 @@ dependencies:
   - pandas=0.24.2
   - numpy=1.16.3
   - bedops=2.4.37
-
