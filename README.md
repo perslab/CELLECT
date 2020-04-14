@@ -30,7 +30,7 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 ## Update log
 
-We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) for genetic prioritization. We expect to release CELLECT-[MAGMA](https://ctg.cncr.nl/software/magma) in the near future. We also expect to develop CELLECT-[RolyPoly](https://github.com/dcalderon/rolypoly) and CELLECT-[DEPICT](https://data.broadinstitute.org/mpg/depict/). See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
+See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
 
 ## Installation
 
