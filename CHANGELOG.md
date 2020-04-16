@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 
+## [1.2.0] - 2020-04-16
+### Added
+- CELLECT-MAGMA (analysis types supported: prioritization, conditional)
+- Extra output directory layer
+### Changed
+- Minimized the overlap of functions between CELLECT-LDSC and CELLECT-MAGMA
+- Config file
+- WiKi
+- README Documentation
+
+
 ## [1.0.0] - 2020-01-01
 ### Added
 - CELLECT-LDSC conditional analysis type
