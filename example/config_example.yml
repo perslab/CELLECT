@@ -4,12 +4,7 @@
 ############################ COMMON PARAMETERS #################################
 ################################################################################
 
-
-BASE_OUTPUT_DIR:
-  LDSC:
-    ./CELLECT-LDSC-EXAMPLE
-  MAGMA:
-    ./CELLECT-MAGMA-EXAMPLE
+BASE_OUTPUT_DIR: CELLECT-EXAMPLE
 
 
 SPECIFICITY_INPUT:
@@ -21,16 +16,9 @@ SPECIFICITY_INPUT:
 
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
-    path: example/EA3_Lee2018.sumstats.gz   # must be unarchived for MAGMA
+    path: example/EA3_Lee2018.sumstats.gz  
   - id: BMI_Yengo2018
     path: example/BMI_Yengo2018.sumstats.gz
-
-
-CONDITIONAL_INPUT:
-  - id: mousebrain-test
-    annotations: ['ABC']
-  # - id: tabula_muris-test
-  #   #   annotations: ['XX']
 
 
 ANALYSIS_TYPE: 
