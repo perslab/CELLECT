@@ -12,9 +12,13 @@
 ############################################ RUN COMMON VARIABLES ##########################################################
 ############################################################################################################################
 
-BASE_OUTPUT_DIR: ./CELLECT-example # for currect working directory use: ./
-# Folder where all the output is saved (LD scores, prioritization results files, etc.) Directory will be created if it does not exists.
-  
+# Folders where all the outputs are saved (LD scores, prioritization results files, etc.) Directories will be created if they do not exist.
+# It is recommended to use separate directories for CELLECT-LDSC and CELLECT-MAGMA outputs in order to avoid overwriting of the results files.
+BASE_OUTPUT_DIR: # for currect working directory use: ./
+  LDSC:       # CELLECT-LDSC output
+    ./CELLECT-LDSC-EXAMPLE
+  MAGMA:      # CELLECT-MAGMA output
+    ./CELLECT-MAGMA-EXAMPLE  
 
 ### SPECIFICITY_INPUT: list of dictionaries
 # id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
