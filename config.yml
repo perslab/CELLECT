@@ -12,13 +12,10 @@
 ############################################ RUN COMMON VARIABLES ##########################################################
 ############################################################################################################################
 
-# Folders where all the outputs are saved (LD scores, prioritization results files, etc.) Directories will be created if they do not exist.
-# It is recommended to use separate directories for CELLECT-LDSC and CELLECT-MAGMA outputs in order to avoid overwriting of the results files.
-BASE_OUTPUT_DIR: # for currect working directory use: ./
-  LDSC:       # CELLECT-LDSC output
-    ./CELLECT-LDSC-EXAMPLE
-  MAGMA:      # CELLECT-MAGMA output
-    ./CELLECT-MAGMA-EXAMPLE  
+# Folder where all the outputs are saved (LD scores, prioritization results files, etc.) 
+# CELLECT-LDSC and CELLECT-MAGMA will write the analysis results into <BASE_OUTPUT_DIR>/CELLECT-LDSC and <BASE_OUTPUT_DIR>/CELLECT-MAGMA subdirectories respectively. The directory and its subdirectories will be created if they do not exist.
+BASE_OUTPUT_DIR: CELLECT-EXAMPLE
+
 
 ### SPECIFICITY_INPUT: list of dictionaries
 # id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
@@ -33,8 +30,6 @@ SPECIFICITY_INPUT:
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
 # path: filepath for munged GWAS sumstats.
-# OBS: [CELLECT-LDSC INFO]: sumstats MUST be munged using the *munge_sumstats.py* or *mtag_munge.py* script found in the LDSC repo.
-# OBS: [CELLECT-MAGMA INFO]: sumstats MUST be munged using the *mtag_munge.py* script found in the repo and then unpacked via 'gunzip' command. CELLECT-MAGMA takes as input unarchived / simple text files only.
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
     path: example/EA3_Lee2018.sumstats 
