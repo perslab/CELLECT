@@ -1,14 +1,12 @@
-########################################################################################
-########################## OVERLAPPING FUNCTIONALITY ###################################
-########################################################################################
 
-include: "rules/common_func.smk"
+# Some overlapping functionality
+include: "rules/common_func1.smk"
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-# see also the *.smk file
+# see also the *.smk files
 
 def make_prefix__annotations(prefix, annotations):
 	"""
@@ -26,7 +24,13 @@ def make_prefix__annotations(prefix, annotations):
 ################################### VARIABLES ##########################################
 ########################################################################################
 
-# see also the *.smk file
+# see also the *.smk files
+
+# Where all the output will be saved
+BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR']['LDSC'])
+
+# More overlapping functionality
+include: "rules/common_func2.smk"
 
 SNP_WINDOWS = config['WINDOW_DEFINITION']['WINDOW_LD_BASED']
 
@@ -45,7 +49,7 @@ wildcard_constraints:
 ################################### CONSTANTS ##########################################
 ########################################################################################
 
-# see also the *.smk file
+# see also the *.smk files
 
 DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
 LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
@@ -77,7 +81,7 @@ H2_INTERVAL_ARG_DICT = { # key=mode/out_suffix ; value=cmd_argument
 ############################# Pre-check of inputs #######################################
 ########################################################################################
 
-# see also the *.smk file
+# see also the *.smk files
 
 if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['conditional'] or config['ANALYSIS_TYPE']['heritability']):
 	raise Exception("At least one ANALYSIS_TYPE must be true.")
@@ -98,7 +102,7 @@ if (config['ANALYSIS_TYPE']['heritability_intervals']) and (not config['ANALYSIS
 ################################### Target files ##########################################
 ########################################################################################
 
-# see also the *.smk file
+# see also the *.smk files
 
 if config['ANALYSIS_TYPE']['heritability']:
 	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR, run_prefix = prefix)
@@ -318,7 +322,7 @@ else: # Use SNPs in a fixed window size around genes
 					bfile_prefix = BFILE_PATH,
 					chromosome = CHROMOSOMES)
 		output:
-			"{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regrssion
+			"{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regression
 		log:
 			"{BASE_OUTPUT_DIR}/logs/log.make_annot_from_geneset_all_chr_snake.all_genes_in_dataset.{run_prefix}.{chromosome}.txt"
 		params:
