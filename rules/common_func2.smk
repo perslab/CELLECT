@@ -1,0 +1,79 @@
+#########################################################################################
+#################################### VARIABLES ##########################################
+#########################################################################################
+
+# It is better to separate CELLECT-LDSC and CELLECT-MAGMA outputs
+if config['BASE_OUTPUT_DIR']['MAGMA'] == config['BASE_OUTPUT_DIR']['LDSC']:
+        warnings.warn("The same directory (see the BASE_OUTPUT_DIR parameter in the config) is used for CELLECT-LDSC and CELLECT-MAGMA outputs. The result files can be overwritten when running both CELLECT-MAGMA + CELLECT-LDSC on the same config.")
+
+WINDOWSIZE_KB = config['WINDOW_DEFINITION']['WINDOW_SIZE_KB']
+
+SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
+
+# Reads the first line of each specificity matrix and saves the annotations
+#  as lists where the key is the assigned run prefix
+ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
+
+
+#########################################################################################
+#################################### CONSTANTS ##########################################
+#########################################################################################
+
+# These environment variables control how many cores numpy can use
+# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
+os.environ["MKL_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+
+
+#########################################################################################
+############################## Pre-check of inputs ######################################
+#########################################################################################
+
+### Check names/ids
+if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
+        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+if not check_safe_id(list(GWAS_SUMSTATS.keys())):
+        raise Exception("Illegal charecters in GWAS SUMSTATS id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+for key in ANNOTATIONS_DICT:
+        if not check_safe_id(ANNOTATIONS_DICT[key]):
+                raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
+
+
+if config['ANALYSIS_TYPE']['conditional']:
+        config_section_string = 'CONDITIONAL_INPUT'
+        check_conditional_and_heritability_config_sections(config_section_string)
+        CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
+        check_conditional_and_heritability_inputs(CONDITIONAL_INPUT, ANNOTATIONS_DICT)
+
+
+#########################################################################################
+#################################### Target files #######################################
+#########################################################################################
+
+list_target_files = []
+analysis_types_performed = []     # this is for parsing and compiling the results files
+
+if config['ANALYSIS_TYPE']['prioritization']:
+        tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+        list_target_files.extend([tmp])
+        tmp = expand("{BASE_OUTPUT_DIR}/out/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
+                                BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
+                                run_prefix = list(SPECIFICITY_INPUT.keys()),
+                                gwas = list(GWAS_SUMSTATS.keys()))
+        list_target_files.extend(tmp)
+        analysis_types_performed.extend(['prioritization'])
+
+
+if config['ANALYSIS_TYPE']['conditional']:
+        tmp = "{BASE_OUTPUT_DIR}/results/conditional.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
+        list_target_files.extend([tmp])
+        for prefix in CONDITIONAL_INPUT:
+                tmp = expand("{BASE_OUTPUT_DIR}/out/conditional/{run_prefix}__{gwas}__CONDITIONAL__{annotation_cond}.cell_type_results.txt",
+                                                                        run_prefix = prefix,
+                                                                        BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
+                                                                        gwas = list(GWAS_SUMSTATS.keys()),
+                                                                        annotation_cond = CONDITIONAL_INPUT[prefix])
+                list_target_files.extend(tmp)
+        analysis_types_performed.extend(['conditional'])
+
