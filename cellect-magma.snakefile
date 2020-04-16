@@ -1,18 +1,22 @@
-########################################################################################
-########################## OVERLAPPING FUNCTIONALITY ###################################
-########################################################################################
 
-include: "rules/common_func.smk"
+# Some overlapping functionality
+include: "rules/common_func1.smk"
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-# see the *.smk file
+# see the *.smk files
 
 ########################################################################################
 ################################### VARIABLES ##########################################
 ########################################################################################
+
+# Where all the output will be saved
+BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR']['MAGMA'])
+
+# More overlapping functionality
+include: "rules/common_func2.smk"
 
 # Detect OS type and load the corresponding MAGMA binary file
 usersystem = platform.system()
@@ -74,13 +78,13 @@ if (config['ANALYSIS_TYPE']['heritability'] or config['ANALYSIS_TYPE']['heritabi
 if (config['WINDOW_DEFINITION']['WINDOW_LD_BASED']):
 	warnings.warn("WINDOW_LD_BASED is available for CELLECT-LDSC only.")
 
-# see also the *.smk file
+# see also the *.smk files
 
 ########################################################################################
 ################################### Target files #######################################
 ########################################################################################
 
-# see the *.smk file
+# see the *.smk files
 
 ########################################################################################
 ################################### PIPELINE ###########################################
@@ -141,6 +145,22 @@ rule make_dummy_covar_file:
 		"scripts/make_dummy_covar_file_snake.py"
 
 
+######################## AUTOMATICALLY UNZIP THE GWAS INPUT FILES FOR MAGMA ##############################
+        
+'''
+In this way CELLECT-MAGMA and CELLECT-LDSC can use the same input GWAS files 
+'''
+rule unzip_gwas:
+	input: 
+		gwas_file = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path']
+	output:
+		temp(expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}.sumstats"))
+	params:
+		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
+	shell: 
+		"gunzip -c {input.gwas_file} > {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}.sumstats"
+		
+
 
 ###################################### GENE ANALYSIS ON SNP P-VALUES ######################################
 
@@ -151,12 +171,12 @@ rule get_uncorrected_pvals:
 	input: 
 		SNPLOC_FILE,
 		ANNOT_FILE,
-		lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path']
+		expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}.sumstats", gwas = list(GWAS_SUMSTATS.keys()))
 	output: 
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.genes.{ext}", ext = ["raw", "out"])
 	params:
 		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
-                gwas_file = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path']
+                gwas_file = lambda wildcards: BASE_OUTPUT_DIR + "/precomputation/" + GWAS_SUMSTATS[wildcards.gwas]['id'] + ".sumstats"
 	shell:
                 "echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --bfile {BFILE} \
                 --gene-annot {ANNOT_FILE} \
