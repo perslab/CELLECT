@@ -27,7 +27,7 @@ def make_prefix__annotations(prefix, annotations):
 # see also the *.smk files
 
 # Where all the output will be saved
-BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR']['LDSC'])
+BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'], "CELLECT-LDSC")
 
 # More overlapping functionality
 include: "rules/common_func2.smk"
