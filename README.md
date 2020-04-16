@@ -77,7 +77,7 @@ We recommend running with `-j` as it will use all available cores. Specifying `-
 
 3. **Inspect the output**:
 
-```<BASE_OUTPUT_DIR>/results/prioritization.csv```
+```<BASE_OUTPUT_DIR>/CELLECT-LDSC/results/prioritization.csv```
 gives you cell-type prioritization results. You can plot the .csv file to make similar plots to this:
 
 ![ALT_TEXT](https://github.com/perslab/CELLECT/blob/master/misc/CELLECT_BMI_Tabula_Muris.gif)
