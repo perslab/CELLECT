@@ -2,10 +2,6 @@
 #################################### VARIABLES ##########################################
 #########################################################################################
 
-# It is better to separate CELLECT-LDSC and CELLECT-MAGMA outputs
-if config['BASE_OUTPUT_DIR']['MAGMA'] == config['BASE_OUTPUT_DIR']['LDSC']:
-        warnings.warn("The same directory (see the BASE_OUTPUT_DIR parameter in the config) is used for CELLECT-LDSC and CELLECT-MAGMA outputs. The result files can be overwritten when running both CELLECT-MAGMA + CELLECT-LDSC on the same config.")
-
 WINDOWSIZE_KB = config['WINDOW_DEFINITION']['WINDOW_SIZE_KB']
 
 SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
