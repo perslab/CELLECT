@@ -30,7 +30,7 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 ## Update log
 
-We have implemented CELLECT-LDSC that uses [LDSC](https://github.com/bulik/ldsc) and [MAGMA](https://ctg.cncr.nl/software/magma) for genetic prioritization. We also expect to develop CELLECT-[RolyPoly](https://github.com/dcalderon/rolypoly) and CELLECT-[DEPICT](https://data.broadinstitute.org/mpg/depict/). See the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
+See the official CELLECT [release history](https://github.com/perslab/CELLECT/releases) and the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
 
 ## Installation
 
@@ -80,7 +80,7 @@ We recommend running with `-j` as it will use all available cores. Specifying `-
 
 3. **Inspect the output**:
 
-```<BASE_OUTPUT_DIR>/CELLECT-LDSC/results/prioritization.csv```
+```<BASE_OUTPUT_DIR>/<CELLECT-{LDSC,MAGMA}>/results/prioritization.csv```
 gives you cell-type prioritization results. You can plot the .csv file to make similar plots to this:
 
 ![ALT_TEXT](https://github.com/perslab/CELLECT/blob/master/misc/CELLECT_BMI_Tabula_Muris.gif)
@@ -88,12 +88,12 @@ gives you cell-type prioritization results. You can plot the .csv file to make s
 
 ### CELLECT-LDSC Tutorial: 
 
-See our [**Github wiki**](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial) for the CELLECT-LDSC tutorial.
+See our Github wiki for the [CELLECT-LDSC tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial).
 
 
 ### CELLECT-MAGMA Tutorial: 
 
-See our [**Github wiki**](https://github.com/perslab/CELLECT/wiki/CELLECT-MAGMA-Tutorial) for the CELLECT-MAGMA tutorial.
+See our Github wiki for the [CELLECT-MAGMA tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-MAGMA-Tutorial).
 
 
 ## Documentation
