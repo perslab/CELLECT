@@ -1,0 +1,59 @@
+---
+
+################################################################################
+############################ COMMON PARAMETERS #################################
+################################################################################
+
+BASE_OUTPUT_DIR: CELLECT-EXAMPLE
+
+
+SPECIFICITY_INPUT:
+  - id: mousebrain-test
+    path: example/mousebrain-test.csv.gz # 2 annotations
+  - id: tabula_muris-test
+    path: example/tabula_muris-test.csv # 5 annotations
+
+
+GWAS_SUMSTATS:
+  - id: EA3_Lee2018
+    path: example/EA3_Lee2018.sumstats.gz  
+  - id: BMI_Yengo2018
+    path: example/BMI_Yengo2018.sumstats.gz
+
+
+ANALYSIS_TYPE: 
+  prioritization: True
+  conditional: False
+  heritability: False
+  heritability_intervals: False
+
+
+WINDOW_DEFINITION:
+  WINDOW_SIZE_KB:
+    100
+  WINDOW_LD_BASED:
+    False
+
+
+#################################################################################
+########################### LD SPECIFIC CONSTANTS ###############################
+#################################################################################
+
+LDSC_CONST:
+  DATA_DIR: 
+    data/ldsc
+  LDSC_DIR: 
+    ldsc
+  NUMPY_CORES: 
+    1
+
+
+##################################################################################
+########################## MAGMA SPECIFIC CONSTANTS ##############################
+##################################################################################
+
+MAGMA_CONST:
+  DATA_DIR:
+    data/magma
+  NUMPY_CORES:
+    1

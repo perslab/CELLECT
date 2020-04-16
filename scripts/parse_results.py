@@ -62,7 +62,7 @@ def main(BASE_OUTPUT_DIR, logger):
         conditional_combined = conditional_combined[['gwas', "specificity_id", 'conditional_annotation', 'annotation', 'Coefficient', 'Coefficient_std_error',  'Coefficient_P_value']]
         conditional_combined.rename(columns = {'Coefficient': 'beta', 'Coefficient_std_error': 'beta_se', 'Coefficient_P_value': 'pvalue'}, inplace = True)   
         conditional_combined.sort_values(['gwas', 'specificity_id'])
-        conditional_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'conditional.csv'), index = False)
+        conditional_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'conditional.csv'), index = False, na_rep = 'NaN')
 
     result_files = glob(result_path_h2)
     if result_files:
