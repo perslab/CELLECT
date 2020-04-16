@@ -13,7 +13,7 @@ include: "rules/common_func1.smk"
 ########################################################################################
 
 # Where all the output will be saved
-BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR']['MAGMA'])
+BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'], "CELLECT-MAGMA")
 
 # More overlapping functionality
 include: "rules/common_func2.smk"
