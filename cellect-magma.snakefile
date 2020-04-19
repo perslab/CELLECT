@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # Some overlapping functionality
 include: "rules/common_func1.smk"
@@ -78,6 +79,22 @@ if (config['ANALYSIS_TYPE']['heritability'] or config['ANALYSIS_TYPE']['heritabi
 if (config['WINDOW_DEFINITION']['WINDOW_LD_BASED']):
 	warnings.warn("WINDOW_LD_BASED is available for CELLECT-LDSC only.")
 
+
+
+import pandas as pd
+
+# Check GWAS input format for MAGMA
+def check_gwas_format_for_magma(gwas_file):
+        # Column names
+        gwas_df = pd.read_csv(gwas_file, sep= '\t')
+        if 'PVAL' not in gwas_df.columns:
+                raise Exception("Incorrect GWAS input file format: PVAL column is absent: " + gwas_file)
+        elif 'N' not in gwas_df.columns:
+                raise Exception("Incorrect GWAS input file format: N column is absent: " + gwas_file)
+        elif 'SNP' not in gwas_df.columns:
+                raise Exception("Incorrect GWAS input file format: SNP column is absent: " + gwas_file)
+
+
 # see also the *.smk files
 
 ########################################################################################
@@ -145,24 +162,41 @@ rule make_dummy_covar_file:
 		"scripts/make_dummy_covar_file_snake.py"
 
 
-######################## AUTOMATICALLY UNZIP THE GWAS INPUT FILES FOR MAGMA ##############################
-        
-'''
-In this way CELLECT-MAGMA and CELLECT-LDSC can use the same input GWAS files 
-'''
-rule unzip_gwas:
-	input: 
-		gwas_file = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path']
-	output:
-		temp(expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}.sumstats"))
-	params:
-		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
-	shell: 
-		"gunzip -c {input.gwas_file} > {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}.sumstats"
-		
-
-
 ###################################### GENE ANALYSIS ON SNP P-VALUES ######################################
+
+### Automatically unarchive GWAS files for MAGMA
+# In this way CELLECT-MAGMA and CELLECT-LDSC can use the same input GWAS files (both compressed or uncompressed)
+
+import zipfile
+import shutil
+import bz2
+
+
+# Wrapper for the snakemake rule
+def uncompress_wrapper(wildcards):
+	source_path = GWAS_SUMSTATS[wildcards.gwas]['path']
+	target_path = BASE_OUTPUT_DIR + "/precomputation/" + GWAS_SUMSTATS[wildcards.gwas]['id']  + ".sumstats"
+        # create the 'precomputation' dir if it does not exist
+	if not os.path.exists(BASE_OUTPUT_DIR + "/precomputation"):      
+        	os.mkdir(BASE_OUTPUT_DIR + "/precomputation")
+	# Detect filetype by its extension.
+	# This way is simple and actually more reliable than magic bytes or through shell via subprocessing 
+	ft = os.path.splitext(source_path)[1]
+	# Unarchive appropriately
+	if ft == ".gz":
+		with gzip.open(source_path, 'r') as f_in, open(target_path, 'wb') as f_out:
+			shutil.copyfileobj(f_in, f_out)
+	elif ft == ".bz2":
+		with open(source_path, 'rb') as f_in, open(target_path, 'wb') as f_out:
+			f_out.write(bz2.decompress(f_in.read()))
+	else:     # if the file is unarchived, just do nothing
+		check_gwas_format_for_magma(source_path)
+		return GWAS_SUMSTATS[wildcards.gwas]['path']	
+	check_gwas_format_for_magma(target_path)	
+	return temp(target_path)
+
+
+
 
 rule get_uncorrected_pvals:
 	'''
@@ -171,16 +205,15 @@ rule get_uncorrected_pvals:
 	input: 
 		SNPLOC_FILE,
 		ANNOT_FILE,
-		expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}.sumstats", gwas = list(GWAS_SUMSTATS.keys()))
+		gwas_file = uncompress_wrapper
 	output: 
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.genes.{ext}", ext = ["raw", "out"])
 	params:
-		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
-                gwas_file = lambda wildcards: BASE_OUTPUT_DIR + "/precomputation/" + GWAS_SUMSTATS[wildcards.gwas]['id'] + ".sumstats"
+		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
 	shell:
                 "echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --bfile {BFILE} \
                 --gene-annot {ANNOT_FILE} \
-                --pval {params.gwas_file} \
+                --pval {input.gwas_file} \
 		ncol=N \
 		use=SNP,PVAL \
                 --out {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}"

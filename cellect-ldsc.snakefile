@@ -98,6 +98,22 @@ if (config['ANALYSIS_TYPE']['heritability_intervals']) and (not config['ANALYSIS
 	raise Exception("Mode 'heritability_intervals' is enabled. This mode requires 'heritability' mode to also be enabled.")
 
 
+import pandas as pd
+# Check GWAS input format for LDSC
+def check_gwas_format_for_ldsc(gwas_file):	
+	# Column names
+	gwas_df = pd.read_csv(gwas_file, sep= '\t')
+	if 'N' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: N column is absent: " + gwas_file)
+	elif 'SNP' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: SNP column is absent: " + gwas_file)
+	elif 'Z' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: Z column is absent: " + gwas_file)
+
+# do it for eqch GWAS in a row
+for gwas_name in list(GWAS_SUMSTATS.keys()):
+	check_gwas_format_for_ldsc(GWAS_SUMSTATS[gwas_name]['path'])
+
 
 ########################################################################################
 ################################### Target files ##########################################
