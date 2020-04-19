@@ -167,7 +167,6 @@ rule make_dummy_covar_file:
 ### Automatically unarchive GWAS files for MAGMA
 # In this way CELLECT-MAGMA and CELLECT-LDSC can use the same input GWAS files (both compressed or uncompressed)
 
-import zipfile
 import shutil
 import bz2
 
@@ -177,6 +176,10 @@ def uncompress_wrapper(wildcards):
 	source_path = GWAS_SUMSTATS[wildcards.gwas]['path']
 	target_path = BASE_OUTPUT_DIR + "/precomputation/" + GWAS_SUMSTATS[wildcards.gwas]['id']  + ".sumstats"
         # create the 'precomputation' dir if it does not exist
+	if not os.path.exists(config['BASE_OUTPUT_DIR']):
+		os.mkdir(config['BASE_OUTPUT_DIR'])
+	if not os.path.exists(BASE_OUTPUT_DIR):
+		os.mkdir(BASE_OUTPUT_DIR)
 	if not os.path.exists(BASE_OUTPUT_DIR + "/precomputation"):      
         	os.mkdir(BASE_OUTPUT_DIR + "/precomputation")
 	# Detect filetype by its extension.
