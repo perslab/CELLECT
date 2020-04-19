@@ -11,12 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - 2020-04-16
 ### Added
-- CELLECT-MAGMA (analysis types supported: prioritization, conditional)
-- Extra output directory layer
+- CELLECT-MAGMA (analysis types supported: prioritization, conditional). See https://ctg.cncr.nl/software/magma for more information about the algorithm and auxiliary files. 
+- Extra output directory layer. The results are output into 2 separate subdirectories of the base output directory: CELLECT-LDSC and CELLECT-MAGMA respectively.
+- WiKi (respective sections for CELLECT-MAGMA)
 ### Changed
-- Minimized the overlap of functions between CELLECT-LDSC and CELLECT-MAGMA
-- Config file
-- WiKi
+- Minimized the overlap of functions between CELLECT-LDSC and CELLECT-MAGMA via includes. 
+- Config file. The file was divided into sections of common and LDSC-/MAGMA-specific parameters. 
+- WiKi (respective sections for CELLECT-LDSC)
 - README Documentation
 ## [1.1.0] - 2020-04-14
 ### Added
