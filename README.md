@@ -32,6 +32,14 @@ CELLECT takes as input GWAS data and cell-type expression specificity estimates.
 
 See the official CELLECT [release history](https://github.com/perslab/CELLECT/releases) and the [CHANGELOG](https://github.com/perslab/CELLECT/blob/master/CHANGELOG.md) for details.
 
+To update to the latest version of CELLECT:
+```
+git pull # get the latest version from github
+git submodule update --init --recursive # get the latest version of the ldsc submodule*
+* updating submodules can be problematic and depends on your git version. If you have issues, please refer to stackoverflow and contact us if your problem persists.
+```
+
+
 ## Installation
 
 **Step 1: Install git lfs**  
