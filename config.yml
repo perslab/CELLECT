@@ -29,12 +29,12 @@ SPECIFICITY_INPUT:
 
 ### GWAS_SUMSTATS: list of dictionaries
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
-# path: filepath for munged GWAS sumstats.
+# path: filepath for munged GWAS sumstats. Uncompressed / gz or bz2 compressed files allowed.
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
-    path: example/EA3_Lee2018.sumstats 
+    path: example/EA3_Lee2018.sumstats.gz 
   - id: BMI_Yengo2018
-    path: example/BMI_Yengo2018.sumstats
+    path: example/BMI_Yengo2018.sumstats.gz
 
 
 ANALYSIS_TYPE: # specify what analysis type to run. At least one analysis type needs to be specified.
