@@ -137,6 +137,8 @@ rule make_annot:
 		GENELOC_FILE
 	output:
 		ANNOT_FILE
+	conda:
+		"envs/cellectpy3.yml"
 	shell:
 		"echo \"$(cat magma/bin/README.txt)\"; {MAGMA_EXEC} --annotate window = {WINDOWSIZE_KB},{WINDOWSIZE_KB} \
 		--snp-loc {SNPLOC_FILE} \
@@ -153,6 +155,8 @@ We need to do it because MAGMA only outputs gene scores for genes in the covar f
 rule make_dummy_covar_file:
 	output:
 		"{BASE_OUTPUT_DIR}/precomputation/" + DUMMY_COVAR_FILE_NAME
+	conda:
+		"envs/cellectpy3.yml"
 	log:
 		"{BASE_OUTPUT_DIR}/logs/log.make_dummy_covar_file_snake.txt"
 	params:
@@ -211,6 +215,8 @@ rule get_uncorrected_pvals:
 		gwas_file = uncompress_wrapper
 	output: 
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.genes.{ext}", ext = ["raw", "out"])
+	conda:
+		"envs/cellectpy3.yml"
 	params:
 		gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
 	shell:
@@ -234,6 +240,8 @@ rule get_corrected_pvals:
 		genes_raw = expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.genes.raw", gwas = list(GWAS_SUMSTATS.keys()))
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.resid_correct_all.{ext}", ext = ["gsa.genes.out", "gsa.out"])
+	conda:
+		"envs/cellectpy3.yml"
 	params:
                 gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
 	shell:
@@ -252,6 +260,8 @@ rule map_human_entrez_to_ens:
                 expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys()))    # magma ZSTAT files with Entrez gene IDs		
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.resid_correct_all_ens.gsa.genes.out")  
+	conda:
+		"envs/cellectpy3.yml"
 	log:
                 "{BASE_OUTPUT_DIR}/logs/log.map_human_entrez_to_ens_snake.{gwas}.txt"		
 	params:
@@ -274,6 +284,8 @@ rule prioritize_annotations:
 		lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path']      # es mu files
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/out/prioritization/{{run_prefix}}__{{gwas}}.cell_type_results.txt")
+	conda:
+		"envs/cellectpy3_magma.yml"	
 	log:
 		"{BASE_OUTPUT_DIR}/logs/log.prioritize_annotations_snake.{run_prefix}.{gwas}.txt"
 	params:
@@ -296,6 +308,8 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 			expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all_ens.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
 		output:
 			expand("{{BASE_OUTPUT_DIR}}/out/conditional/{{run_prefix}}__{{gwas}}__CONDITIONAL__{{annotation}}.cell_type_results.txt")
+		conda:
+			"envs/cellectpy3_magma.yml"		
 		log:
 			"{BASE_OUTPUT_DIR}/logs/log.conditional.{run_prefix}.{gwas}.{annotation}.txt"
 		params:
