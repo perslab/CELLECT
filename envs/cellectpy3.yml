@@ -1,5 +1,5 @@
 
-name: cellectpy3 # USED FOR EVERYTHING PYTHON EXCEPT LDSC.PY
+name: cellectpy3 # USED FOR EVERYTHING PYTHON EXCEPT LDSC.PY AND MAGMA REGRESSION
 channels:
   - anaconda
   - defaults
