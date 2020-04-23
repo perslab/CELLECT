@@ -285,7 +285,7 @@ rule prioritize_annotations:
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/out/prioritization/{{run_prefix}}__{{gwas}}.cell_type_results.txt")
 	conda:
-		"envs/cellectpy3_magma.yml"	
+		"envs/cellectpy3.yml"	
 	log:
 		"{BASE_OUTPUT_DIR}/logs/log.prioritize_annotations_snake.{run_prefix}.{gwas}.txt"
 	params:
@@ -309,7 +309,7 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 		output:
 			expand("{{BASE_OUTPUT_DIR}}/out/conditional/{{run_prefix}}__{{gwas}}__CONDITIONAL__{{annotation}}.cell_type_results.txt")
 		conda:
-			"envs/cellectpy3_magma.yml"		
+			"envs/cellectpy3.yml"		
 		log:
 			"{BASE_OUTPUT_DIR}/logs/log.conditional.{run_prefix}.{gwas}.{annotation}.txt"
 		params:
