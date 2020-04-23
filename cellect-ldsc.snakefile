@@ -1,79 +1,12 @@
-from snakemake.utils import min_version
 
-import sys
-import os
-import re
-import csv
-import gzip
-
-min_version("5.4")
-
-
-
-_ILLEGAL_ID_PATTERN = r"\s|__|/"
+# Some overlapping functionality
+include: "rules/common_func1.smk"
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
 ########################################################################################
 
-def check_safe_id(list_of_strings):
-	"""
-	Returns False if any string in list_of_strings contains the patterns defined in _ILLEGAL_ID_PATTERN.
-	"""
-	for val in list_of_strings:
-		if re.search(_ILLEGAL_ID_PATTERN, val):
-			return False
-	return True
-
-
-def check_conditional_and_heritability_config_sections(config_section_string):
-	if not config_section_string in config:
-		raise Exception("Error in config file: parameter {} is required but missing from config file".format(config_section_string))
-	try:
-		for d in config[config_section_string]: # loop over list of dicts
-			assert isinstance(d["id"], str)
-			assert isinstance(d["annotations"], list)
-	except:
-		raise Exception("Error in config file: parameter {} is not correctly formatted. Fix the config file and rerun the command".format(config_section_string))
-
-
-def check_conditional_and_heritability_inputs(dict_dataset_annotations, annotations_dict):
-	"""
-	dict_dataset_annotations: keys are dataset ids, values are list of 'selected' annotations to perform analysis on (e.g. conditional or h2)
-	Checks:
-		1. check that dict_dataset_annotations['id'] matches SPECIFICITY_INPUT id's
-		2. check that dict_dataset_annotations['annotations'] exists in annotations
-	Returns False if does not pass checks, otherwise True
-	"""
-	for key in dict_dataset_annotations:
-		if not key in annotations_dict:
-			raise Exception("[dataset id = {}] used for conditional or heritability analysis but the id was not found in the SPECIFICITY_INPUT. Check your config file".format(key))
-		# if not all(dict_dataset_annotations[key] in annotations_dict[key]):
-		for annotation in dict_dataset_annotations[key]:
-			if annotation not in annotations_dict[key]:
-				raise Exception("[annotation={}] in [dataset id = {}] in conditional or heritability analysis was not found in the annotations of the SPECIFICITY_INPUT. Check your config file".format(annotation, key))
-
-
-
-
-def get_annots(specificity_input_dict):
-	"""
-	Pulls all the annotations from each specificity matrix file and saves them into a dictionary.
-	"""
-	# Snakemake rules need to know the output files before the rule executes - this function gets the names
-	# of annotations from the first line, it needs to do this because the "COMBINED_ANNOT" files are split
-	# into unique "{annotation name}" files 
-	annots_dict = {}
-	for key, dictionary in specificity_input_dict.items():
-		if dictionary['path'].endswith('.gz'):
-			fh = gzip.open(dictionary['path'], 'rt') # open in text mode
-		else:
-			fh = open(dictionary['path'])
-		annotations = next(csv.reader(fh))[1:] # [1:] skip first column because it the the 'gene' column
-		annots_dict[key] = annotations # key is dataset name
-		fh.close()
-	return(annots_dict)
-
+# see also the *.smk files
 
 def make_prefix__annotations(prefix, annotations):
 	"""
@@ -86,68 +19,23 @@ def make_prefix__annotations(prefix, annotations):
 		pa_list.append(prefix+'__'+annot)
 	return(pa_list)
 
-def build_dict_from_id_filepath_key_value_pairs(list_of_dicts):
-	'''
-	Each dict in the list in MUST contain the keys 'id' and 'path'.
-	path will be converted to absolute paths.
-	Takes the list of dictionaries and makes it into a new dictionary where the keys are the id values from each dictionary and the values are each dictionary
-	e.g. [{"id":"a", "value": 1}, {"id":"b","value":2}] ->
-	{"a":{"id":"a", "value": 1}, "b":{"id":"b","value":2}}
-	'''
-	out_dict = {}
-	for d in list_of_dicts:
-		d['path'] = os.path.abspath(d['path'])
-		out_dict[d['id']] = d 
-	return(out_dict)
-
-def build_dict_of_dataset_selected_annotations(list_of_dicts):
-	"""
-	list_of_dicts: list of dicts. Each dict in the list in MUST contain the keys 'id' and 'annotations'.
-		list_of_dicts[0]['id']: string
-		list_of_dicts[0]['annotations']: list
-	returns dict[<id>] = [annotations]
-	"""
-	dataset_annots_dict = {}
-	for d in list_of_dicts:
-		dataset_annots_dict[d['id']] = d['annotations']
-	return(dataset_annots_dict)
 
 ########################################################################################
 ################################### VARIABLES ##########################################
 ########################################################################################
 
-### Load config
-# We check if --configfile arg is given to avoid confusing behavior when two config files are loaded.
-# snakemake executes the 'configfile: 'config-ldsc.yml'' even if another --configfile is given.
-# --configfile will only UPDATE the config dict loaded from 'configfile: 'config-ldsc.yml'.
-# This causes problems if some fields are deleted/missing from the --configfile. Then the config-ldsc.yml and --configfile will be mixed.
-try: # check if config file is already loaded from the --configfile parameter
-    config['BASE_OUTPUT_DIR'] # *OBS*: needs to be updated if BASE_OUTPUT_DIR changes name in the config file.
-except Exception as e:
-    snakemake.logger.info("Loading default config file: config-ldsc.yml")
-    configfile: 'config-ldsc.yml' # snakemake load config object
-else:
-	snakemake.logger.info("Loaded config file from --configfile argument") # no Exception raise, so run this
+# see also the *.smk files
 
+# Where all the output will be saved
+BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'], "CELLECT-LDSC")
 
-# Where all CELLECT-LDSC output will be saved
-BASE_OUTPUT_DIR = os.path.abspath(config['BASE_OUTPUT_DIR'])
+# More overlapping functionality
+include: "rules/common_func2.smk"
 
-
-WINDOWSIZE_KB = config['WINDOW_DEFINITION']['WINDOW_SIZE_KB']
 SNP_WINDOWS = config['WINDOW_DEFINITION']['WINDOW_LD_BASED']
-
-
-SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFICITY_INPUT'])
-GWAS_SUMSTATS = build_dict_from_id_filepath_key_value_pairs(config['GWAS_SUMSTATS'])
 
 # Output file prefixes
 RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
-
-# Reads the first line of each specificity matrix and saves the annotations
-# as lists where the key is the assigned run prefix
-ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
-
 
 wildcard_constraints:
 	chromosomes = "\d+",
@@ -161,6 +49,8 @@ wildcard_constraints:
 ################################### CONSTANTS ##########################################
 ########################################################################################
 
+# see also the *.smk files
+
 DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
 LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
 
@@ -173,12 +63,6 @@ SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab.gz")
 CHROMOSOME_SIZES_FILE = os.path.join(DATA_DIR, "GRCh37-chr-sizes.txt")
 
 SCRIPT_LDSC = os.path.join(LDSC_DIR,'ldsc.py')
-
-# These environment variables control how many cores numpy can use
-# Setting to 1 allows snakemakme to use 1 core per active rule i.e. snakemake core usage = actual core usage
-os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
-os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
-os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
 
 CHROMOSOMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] 
 # OBS: this workflow supports computing LDSC scores for the chromosomes specified in this list. 
@@ -198,27 +82,10 @@ H2_INTERVAL_ARG_DICT = { # key=mode/out_suffix ; value=cmd_argument
 ############################# Pre-check of inputs #######################################
 ########################################################################################
 
+# see also the *.smk files
 
 if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['conditional'] or config['ANALYSIS_TYPE']['heritability']):
 	raise Exception("At least one ANALYSIS_TYPE must be true.")
-
-### Check names/ids
-if not check_safe_id(list(GWAS_SUMSTATS.keys())):
-	raise Exception("Illegal charecters in GWAS SUMSTATS id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
-if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
-	raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
-for key in ANNOTATIONS_DICT:
-	if not check_safe_id(ANNOTATIONS_DICT[key]):
-		raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
-
-
-if config['ANALYSIS_TYPE']['conditional']:
-	config_section_string = 'CONDITIONAL_INPUT'
-	check_conditional_and_heritability_config_sections(config_section_string)
-	CONDITIONAL_INPUT = build_dict_of_dataset_selected_annotations(config[config_section_string])
-	check_conditional_and_heritability_inputs(CONDITIONAL_INPUT, ANNOTATIONS_DICT)
-
-
 
 if config['ANALYSIS_TYPE']['heritability']:
 	config_section_string = 'HERITABILITY_INPUT'
@@ -231,40 +98,30 @@ if (config['ANALYSIS_TYPE']['heritability_intervals']) and (not config['ANALYSIS
 	raise Exception("Mode 'heritability_intervals' is enabled. This mode requires 'heritability' mode to also be enabled.")
 
 
+import pandas as pd
+# Check GWAS input format for LDSC
+def check_gwas_format_for_ldsc(gwas_file):	
+	# Column names
+	gwas_df = pd.read_csv(gwas_file, sep= '\t')
+	if 'N' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: N column is absent: " + gwas_file)
+	elif 'SNP' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: SNP column is absent: " + gwas_file)
+	elif 'Z' not in gwas_df.columns:
+		raise Exception("Incorrect GWAS input file format: Z column is absent: " + gwas_file)
+
+# do it for eqch GWAS in a row
+for gwas_name in list(GWAS_SUMSTATS.keys()):
+	check_gwas_format_for_ldsc(GWAS_SUMSTATS[gwas_name]['path'])
+
 
 ########################################################################################
 ################################### Target files ##########################################
 ########################################################################################
 
+# see also the *.smk files
 
-list_target_files = []
-analysis_types_performed = [] # this is for parsing and compiling the results files
-
-if config['ANALYSIS_TYPE']['prioritization']: 
-	tmp = "{BASE_OUTPUT_DIR}/results/prioritization.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend([tmp])
-	tmp = expand("{BASE_OUTPUT_DIR}/out/prioritization/{run_prefix}__{gwas}.cell_type_results.txt",
-				BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
-				run_prefix = RUN_PREFIXES,
-				gwas = list(GWAS_SUMSTATS.keys()))
-	list_target_files.extend(tmp)
-	analysis_types_performed.extend(['prioritization'])
-
-
-
-if config['ANALYSIS_TYPE']['conditional']:
-	tmp = "{BASE_OUTPUT_DIR}/results/conditional.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
-	list_target_files.extend([tmp])
-	for prefix in CONDITIONAL_INPUT:
-		tmp = expand("{BASE_OUTPUT_DIR}/out/conditional/{run_prefix}__{gwas}__CONDITIONAL__{annotation_cond}.cell_type_results.txt",
-									run_prefix = prefix,
-									BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
-									gwas = list(GWAS_SUMSTATS.keys()),
-									annotation_cond = CONDITIONAL_INPUT[prefix])
-		list_target_files.extend(tmp)
-	analysis_types_performed.extend(['conditional'])
-
-if config['ANALYSIS_TYPE']['heritability']: 
+if config['ANALYSIS_TYPE']['heritability']:
 	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR, run_prefix = prefix)
 	list_target_files.extend([tmp])
 	for prefix in HERITABILITY_INPUT:

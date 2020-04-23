@@ -1,0 +1,102 @@
+---
+
+############################################################################################################################
+#################################################### INFORMATION ###########################################################
+############################################################################################################################
+
+# All file paths accept absolute and relative paths
+# Environment variables (including ~) are not processed, so don't use them in this config.
+
+
+############################################################################################################################
+############################################ RUN COMMON VARIABLES ##########################################################
+############################################################################################################################
+
+# Folder where all the outputs are saved (LD scores, prioritization results files, etc.) 
+# CELLECT-LDSC and CELLECT-MAGMA will write the analysis results into <BASE_OUTPUT_DIR>/CELLECT-LDSC and <BASE_OUTPUT_DIR>/CELLECT-MAGMA subdirectories respectively. The directory and its subdirectories will be created if they do not exist.
+BASE_OUTPUT_DIR: CELLECT-EXAMPLE
+
+
+### SPECIFICITY_INPUT: list of dictionaries
+# id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
+# path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
+SPECIFICITY_INPUT:
+  - id: mousebrain-test
+    path: example/mousebrain-test.csv.gz # this test file contains 2 annotations
+  # - id: tabula_muris-test
+  #   path: example/tabula_muris-test.csv # this test file contains 5 annotations
+
+
+### GWAS_SUMSTATS: list of dictionaries
+# id: identifier for GWAS. MUST be unique and NO double underscores allowed
+# path: filepath for munged GWAS sumstats. Uncompressed / gz or bz2 compressed files allowed.
+GWAS_SUMSTATS:
+  - id: EA3_Lee2018
+    path: example/EA3_Lee2018.sumstats.gz 
+  - id: BMI_Yengo2018
+    path: example/BMI_Yengo2018.sumstats.gz
+
+
+ANALYSIS_TYPE: # specify what analysis type to run. At least one analysis type needs to be specified.
+  prioritization: True # prioritizes all cell-type annotations in the SPECIFICITY_INPUT datasets
+  conditional: False # performs conditional analysis for selected annotations.
+  heritability: False # [CELLECT-LDSC ONLY] estimates heritability for selected annotations. 
+  heritability_intervals: False # [CELLECT-LDSC ONLY] estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
+
+
+WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SNPs
+  WINDOW_SIZE_KB:
+    100
+  WINDOW_LD_BASED: # [CELLECT-LDSC ONLY] Will override WINDOW_SIZE_KB if True. If True, use LD-based 'window' to map SNPs to genes. 
+    False
+
+
+############################################################################################################################
+############################################## CONDITIONAL ANALYSIS ########################################################
+############################################################################################################################
+
+### CONDITIONAL_INPUT: list of dictionaries
+# id: dataset input - must correspond to an id in SPECIFICITY_INPUT.
+# annotations: annotations to condition on
+# NOTE: you can delete or leave these dicts blank if the 'analysis type' is not activated
+CONDITIONAL_INPUT:
+  - id: mousebrain-test
+    annotations: ['ABC']
+  # - id: tabula_muris-test
+  #   annotations: ['XX']
+
+
+############################################################################################################################
+###################################### HERITABILITY ANALYSIS (LDSC ONLY) ###################################################
+############################################################################################################################
+
+### HERITABILITY_INPUT: list of dictionaries
+# id: dataset input - must correspond to an id in SPECIFICITY_INPUT.
+# annotations: annotations to estimate heritability for
+# NOTE: you can delete or leave these dicts blank if the 'analysis type' is not activated
+HERITABILITY_INPUT:
+  - id: mousebrain-test
+    annotations: ['ABC']
+
+
+#############################################################################################################################
+##################################################### CONSTANTS #############################################################
+#############################################################################################################################
+
+# You generally do not need to change these variables.
+
+LDSC_CONST:
+  DATA_DIR: # Path to the data used for CELLECT-LDSC (baseline model, gene mapping etc).
+    data/ldsc
+  LDSC_DIR: # Path to the a cloned version of the github repo pascaltimshel/ldsc. This is included as a git submodule.
+    ldsc
+  NUMPY_CORES: # Numpy by default uses all cores available to it. This variable limits the amount of cores numpy can use to 1 so snakemake has full control over multicore processing via ithe '-j' flag.
+    1
+
+
+MAGMA_CONST:
+  DATA_DIR: # Path to the data used for CELLECT-MAGMA (baseline model, gene mapping etc).
+    data/magma
+  NUMPY_CORES: # Numpy by default uses all cores available to it. This variable limits the amount of cores numpy can use to 1 so snakemake has full control over multicore processing via the '-j' flag.
+    1
+
