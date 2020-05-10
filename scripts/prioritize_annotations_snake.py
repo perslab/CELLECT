@@ -13,7 +13,7 @@ def fit_LM(specificity_id, es_mu, df_magma):
 	### Get cell annotations	
 	annotations = es_mu.columns[1:]	
 	# inner join magma ZSTATs and ES_mu values
-	df_regression = pd.merge(es_mu, df_magma, left_on = 'gene', right_on = 'gene', how = 'inner')
+	df_regression = pd.merge(es_mu, df_magma, left_on = 'gene', right_on = 'GENE', how = 'inner')
 	df_res = pd.DataFrame(columns = ["Name", "Coefficient", "Coefficient_std_error", "Coefficient_P_value"])
 	for annotation in annotations:
 		y = df_regression.loc[:, df_regression.columns == 'ZSTAT']       # the dependent variable

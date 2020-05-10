@@ -18,14 +18,11 @@ def format_genes(gene_coord_df, chr_sizes_df, out_dir, windowsize_kb, print_log_
 	# Gets the window size in bases
 	windowsize = windowsize_kb * 1000
 
-	# Keep only protein-coding genes, and genes on autosomes or sex chromosomes 
+	# Make sure we keep only genes on autosomes or sex chromosomes 
 	# (Remove sex chromosomes later in pipeline as LDSC only uses autosomes for now)
-	gene_coord_df = gene_coord_df[gene_coord_df["gene_biotype"]=='protein_coding']
 	gene_coord_df = gene_coord_df[gene_coord_df['CHR'].isin(chr_sizes_dict.keys())]
 	gene_coord_df = gene_coord_df.dropna().sort_values(by=['CHR','START'])
 
-
-	gene_coord_df = gene_coord_df.drop('gene_biotype', 1)
 	gene_coord_df['START'] = np.maximum(0, gene_coord_df['START'] - windowsize)
 	gene_coord_df['END'] = np.minimum(gene_coord_df['END'] + windowsize, gene_coord_df['CHR'].map(chr_sizes_dict))
 
@@ -51,7 +48,13 @@ bed_out_dir = snakemake.params['bed_out_dir']
 gene_coords = snakemake.input['gene_coords']
 chr_sizes = snakemake.input['chr_sizes']
 
-gene_coords_df = pd.read_csv(gene_coords, delim_whitespace = True, index_col=None)
+gene_coords_df = pd.read_csv(gene_coords, delim_whitespace = True, index_col=None, header=None, names=['GENE', 'CHR', 'START', 'END', 'STRAND', 'GENE_NAME'])
+gene_coord_df = gene_coord_df.drop(['STRAND', 'GENE_NAME'], axis=1)
+# ENSG00000186092 1       69091   70008   +       OR4F5
+# ENSG00000237683 1       134901  139379  -       AL627309.1
+# ENSG00000235249 1       367640  368634  +       OR4F29
+# ENSG00000185097 1       621059  622053  -       OR4F16
+
 chr_sizes_df = pd.read_csv(chr_sizes, delim_whitespace = True, index_col=0, header=None)
 format_genes(gene_coords_df, chr_sizes_df, bed_out_dir, windowsize_kb)
 # multi_gene_sets_to_dict_of_beds(df_multi_gene_set_human, df_gene_coords, windowsize, bed_out_dir + '/tmp', bed_out_dir, out_prefix)

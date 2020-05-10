@@ -53,10 +53,10 @@ wildcard_constraints:
 
 DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
 LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
+GENE_COORD_FILE = os.path.abspath(config['GENE_COORD_FILE'])
 
 BFILE_PATH = os.path.join(DATA_DIR,"1000G_EUR_Phase3_plink/1000G.EUR.QC")
 PRINT_SNPS_FILE = os.path.join(DATA_DIR,"print_snps.txt")
-GENE_COORD_FILE =os.path.join(DATA_DIR,'gene_annotation.hsapiens_all_genes.GRCh37.ens_v91.LDSC_fmt.txt')
 LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
 LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1_thin_annot/baseline.")
 SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab.gz")

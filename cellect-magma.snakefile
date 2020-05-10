@@ -46,16 +46,15 @@ wildcard_constraints:
 # Data directory
 DATA_DIR = os.path.abspath(config['MAGMA_CONST']['DATA_DIR'])
 
-# Data for mapping of human entrez gene IDs to human Ensembl gene IDs
-MAPPING_FILE = os.path.join(DATA_DIR, "mapping/gene_id_mapping.hsapiens.ensembl_entrez.txt.gz")
 # Gene locations file
-GENELOC_FILE = os.path.join(DATA_DIR, "gene_loc.NCBI37.3/NCBI37.3.gene.loc")
+GENELOC_FILE = os.path.abspath(config['GENE_COORD_FILE'])
+
 # SNP locations file
 SNPLOC_FILE = os.path.join(DATA_DIR, "g1000_eur/g1000_eur.bim")
 BFILE = os.path.splitext(SNPLOC_FILE)[0]
 
 ANNOT_FILE = os.path.join(BASE_OUTPUT_DIR, "precomputation/NCBI37_1kgp_up" + str(WINDOWSIZE_KB) + "kb_down" + str(WINDOWSIZE_KB) + "kb.genes.annot")
-DUMMY_COVAR_FILE_NAME = "magma_dummy_gene_covar_file.NCBI37_3.tab"
+DUMMY_COVAR_FILE_NAME = "magma_dummy_gene_covar_file.tab"
 
 # Citation info
 # The citation info is stored in README.txt, which is saved in magma/bin and duplicated into /data/magma
@@ -250,26 +249,6 @@ rule get_corrected_pvals:
                 --model correct=all direction-covar=greater \
 		--settings abbreviate=0 gene-info \
                 --out {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}.resid_correct_all"
-
-
-
-################################# MAP ENTREZ HUMAN GENE IDs TO ENSEMBL HUMAN GENE IDs #####################################
- 
-rule map_human_entrez_to_ens:
-	input:
-                expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys()))    # magma ZSTAT files with Entrez gene IDs		
-	output:
-		expand("{{BASE_OUTPUT_DIR}}/precomputation/{{gwas}}/{{gwas}}.resid_correct_all_ens.gsa.genes.out")  
-	conda:
-		"envs/cellectpy3.yml"
-	log:
-                "{BASE_OUTPUT_DIR}/logs/log.map_human_entrez_to_ens_snake.{gwas}.txt"		
-	params:
-                base_output_dir = "{BASE_OUTPUT_DIR}",
-                gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
-		mapping_file = MAPPING_FILE
-	script:
-		"scripts/map_human_entrez_to_ens.py"
 
 
 

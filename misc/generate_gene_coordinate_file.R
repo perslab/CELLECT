@@ -103,14 +103,14 @@ df.gene_coord
 ### Columns
 # ensembl_gene_id
 # chromosome
-# start position
-# stop position
+# start_position
+# stop_position
 # strand
-# gene name
+# gene_name
 
 ### Write table
 file.ensmbl_annotation <- "gene_coordinates.GRCh37.ensembl_v91.txt"
-df.BM.feature %>% write_tsv(path=file.ensmbl_annotation, col_names=F) # no header
+df.gene_coord %>% write_tsv(path=file.ensmbl_annotation, col_names=F) # no header
 
 
 # ======================================================================= #
