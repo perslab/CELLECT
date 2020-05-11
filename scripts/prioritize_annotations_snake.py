@@ -21,7 +21,10 @@ def fit_LM(specificity_id, es_mu, df_magma):
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
-		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": ols_result.pvalues[1]}, ignore_index = True)
+		# FDR correction
+		pval = ols_result.pvalues[1]/2                           # get one-sided p-value instead of the two-sided one
+		pval = 1 - pval if ols_result.params[1] < 0 else pval    # compute complementary p-value for negative beta's
+		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": pval}, ignore_index = True)
 	df_res = df_res.sort_values(by = ['Coefficient_P_value'])     # sort by original p-value
 	return df_res
 
@@ -44,7 +47,7 @@ base_output_dir = snakemake.params['base_output_dir']			   # base directory for 
 print("Fitting linear model between MAGMA ZSTATs and ES matrix '" + specificity_matrix_name + "' for GWAS '" + gwas_name + "': ")
 
 ### Load MAGMA ZSTATs
-df_magma = pd.read_csv(base_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all_ens.gsa.genes.out", sep= '\t', header = 0)
+df_magma = pd.read_csv(base_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all.gsa.genes.out", sep= '\s+', header = 1)
 
 ### Expression Specificity Metrics
 es_mu = pd.read_csv(specificity_matrix_file, header = 0)
