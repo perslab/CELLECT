@@ -259,7 +259,7 @@ rule prioritize_annotations:
 	Fit the linear model between MAGMA ZSTATs and ESmu with the provided list of GWAS
 	'''
 	input:
-		expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all_ens.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
+		expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
 		lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path']      # es mu files
 	output:
 		expand("{{BASE_OUTPUT_DIR}}/out/prioritization/{{run_prefix}}__{{gwas}}.cell_type_results.txt")
@@ -284,7 +284,7 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 		(One extra ESmu covariate is added to the regression at each step.)
 		'''
 		input:
-			expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all_ens.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
+			expand("{{BASE_OUTPUT_DIR}}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.out", gwas = list(GWAS_SUMSTATS.keys())),    # magma ZSTAT files with Ensembl gene IDs
 		output:
 			expand("{{BASE_OUTPUT_DIR}}/out/conditional/{{run_prefix}}__{{gwas}}__CONDITIONAL__{{annotation}}.cell_type_results.txt")
 		conda:
