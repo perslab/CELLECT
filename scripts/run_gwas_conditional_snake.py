@@ -27,8 +27,11 @@ def fit_multivar_LM(es_mu, df_magma, specificity_id, cond_annotation):
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
+		# FDR correction
+		pval = ols_result.pvalues[1]/2                           # get one-sided p-value instead of the two-sided one
+		pval = 1 - pval if ols_result.params[1] < 0 else pval    # compute complementary p-value for negative beta's
 		# append the result for the given `annotation`
-		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": ols_result.pvalues[1]}, ignore_index = True)
+		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": pval}, ignore_index = True)	
 	# return NA when conditioned on itself
 	df_res = df_res.append({"Name": specificity_id + "__" + cond_annotation, "Coefficient": np.nan, "Coefficient_std_error": np.nan, "Coefficient_P_value": np.nan}, ignore_index = True)
 	df_res = df_res.sort_values(by = ['Coefficient_P_value'])     # sort by original p-value
