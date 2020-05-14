@@ -54,4 +54,4 @@ MAGMA_CONST:
     1
 
 GENE_COORD_FILE:
-  shared/gene_coordinates.GRCh37.ensembl_v91.txt
+  data/shared/gene_coordinates.GRCh37.ensembl_v91.txt

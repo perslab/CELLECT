@@ -101,6 +101,6 @@ MAGMA_CONST:
     1
 
 GENE_COORD_FILE: # Path to gene coordinates. First five columns must be: ensembl_gene_id, chromosome, start_position, stop_position, strand. No header allowed
-  shared/gene_coordinates.GRCh37.ensembl_v91.txt
+  data/shared/gene_coordinates.GRCh37.ensembl_v91.txt
 
 
