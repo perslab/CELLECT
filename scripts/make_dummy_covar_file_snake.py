@@ -15,7 +15,7 @@ print("Reading gene locations from the file " + str(GENELOC_FILE))
 all_magma_genes = pd.read_csv(GENELOC_FILE, sep='\t', header = None)
 
 print("Composing a dummy covariance file...")
-all_magma_genes = all_magma_genes.rename(columns={ all_magma_genes.columns[0]: "entrez_id" })
+all_magma_genes = all_magma_genes.rename(columns={ all_magma_genes.columns[0]: "gene_id" })
 all_magma_genes = pd.DataFrame(all_magma_genes.iloc[:, 0])
 all_magma_genes['dummy_gene_covar'] = np.random.normal(size = len(all_magma_genes))
 

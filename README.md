@@ -117,8 +117,8 @@ We gratefully acknowledge the developers of the genetic prioritization tools use
 
 - Pascal Nordgren Timshel (University of Copenhagen) [@ptimshel](https://twitter.com/ptimshel)
 - Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
-- Ben Nielsen (University of Copenhagen)
-- Liubov Pashkova (University of Copenhagen)
+- Ben Nielsen (University of Copenhagen) 
+- Liubov Pashkova (University of Copenhagen) [@incorrigiblema3](https://twitter.com/incorrigiblema3)
 
 ## Contact
 
@@ -128,4 +128,3 @@ Alternatively, you may write an email to timshel(at)sund.ku.dk
 ## Reference
 If you find CELLECT useful for your research, please consider citing the paper:  
 **[Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1)**
-
