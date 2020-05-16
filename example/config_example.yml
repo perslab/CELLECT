@@ -16,7 +16,7 @@ SPECIFICITY_INPUT:
 
 GWAS_SUMSTATS:
   - id: EA3_Lee2018
-    path: example/EA3_Lee2018.sumstats.gz  
+    path: example/EA3_Lee2018.sumstats.gz
   - id: BMI_Yengo2018
     path: example/BMI_Yengo2018.sumstats.gz
 
