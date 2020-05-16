@@ -254,6 +254,11 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 		print(file_out_annot_combined)
 	else:
 		file_out_annot_combined = "{}/{}.{}.{}.annot.gz".format(out_dir, out_prefix, "COMBINED_ANNOT", chromosome)
+	
+	if keep_annots == True:
+			df_annot_keep_combined = pd.concat([df_bim]+list_df_annot, axis='columns') # see L237
+			df_annot_keep_combined.to_csv(snakemake.output['combined_annot_keep'], sep="\t", index=False, compression="gzip")
+
 
 	df_annot_combined.to_csv(file_out_annot_combined, sep="\t", index=False, compression="gzip")
 	
@@ -274,11 +279,10 @@ annot_per_geneset = False
 chromosome = snakemake.params['chromosome']
 annotations = snakemake.params['annotations']
 all_genes = snakemake.params['all_genes']
+keep_annots = snakemake.params['keep_annots']
 
 bimfile = snakemake.input['chrom_bfile']
 overlap_df = pd.read_csv(snakemake.input['overlap_segments'], delim_whitespace = True,names=['CHR', 'START', 'END', 'GENES'])
-print(overlap_df)
-print(snakemake.input['overlap_segments'])
 specificity_df = pd.read_csv(snakemake.input['spec_matrix'], index_col='gene')
 
 dict_of_beds = map_ES_values_to_genes(overlap_df, specificity_df)

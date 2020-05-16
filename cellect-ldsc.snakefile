@@ -305,7 +305,8 @@ else: # Use SNPs in a fixed window size around genes
 			chrom_bfile="{bfile_path}.{{chromosome}}.bim".format(bfile_path = BFILE_PATH),
 			overlap_segments="{{BASE_OUTPUT_DIR}}/precomputation/bed/overlap_segments_{window}kb.{{chromosome}}.bed".format(window = WINDOWSIZE_KB)
 		output:
-			temp("{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz") # *TEMP FILE*
+			combined_annot = temp("{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"), # *TEMP FILE*
+			combined_annot_keep = "{BASE_OUTPUT_DIR}/out/annots/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" if config['KEEP_ANNOTS'] else []
 		log:
 			"{BASE_OUTPUT_DIR}/logs/log.make_annot_snake.{run_prefix}.{chromosome}.txt"
 		params:
@@ -313,7 +314,8 @@ else: # Use SNPs in a fixed window size around genes
 			chromosome = "{chromosome}",
 			out_dir = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}",
 			all_genes = False,
-			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix]
+			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix],
+			keep_annots = config['KEEP_ANNOTS']
 		conda:
 			"envs/cellectpy3.yml"
 		script:
@@ -338,7 +340,8 @@ else: # Use SNPs in a fixed window size around genes
 			chromosome = "{chromosome}",
 			out_dir = "{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset",
 			all_genes = True,
-			annotations = ["all_genes_in_dataset"]
+			annotations = ["all_genes_in_dataset"],
+			keep_annots = False
 		conda:
 			"envs/cellectpy3.yml"
 		script:
