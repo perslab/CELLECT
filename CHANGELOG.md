@@ -5,8 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [Add option to exclude MHC region for CELLECT-MAGMA](https://github.com/perslab/CELLECT/issues/52)
 ### Changed
+- CELLECT-MAGMA gene coordinates updated to extactly match CELLECT-LDSC (which remains the same). See [#51 - Unify LDSC and MAGMA gene coordination files](https://github.com/perslab/CELLECT/issues/51)
 ### Removed
+- Removed `WINDOW_LD_BASED` option (CELLECT-LDSC only feature). 
 ### Fixed
 
 ## [1.2.0] - 2020-04-16
