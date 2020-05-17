@@ -47,9 +47,6 @@ ANALYSIS_TYPE: # specify what analysis type to run. At least one analysis type n
 WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SNPs
   WINDOW_SIZE_KB:
     100
-  WINDOW_LD_BASED: # [CELLECT-LDSC ONLY] Will override WINDOW_SIZE_KB if True. If True, use LD-based 'window' to map SNPs to genes. 
-    False
-
 
 ############################################################################################################################
 ############################################## CONDITIONAL ANALYSIS ########################################################
