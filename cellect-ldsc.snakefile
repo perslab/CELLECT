@@ -51,6 +51,12 @@ wildcard_constraints:
 
 # see also the *.smk files
 
+# These environment variables control how many cores numpy can use
+# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
+os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+
 DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
 LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
 GENE_COORD_FILE = os.path.abspath(config['GENE_COORD_FILE'])
