@@ -34,6 +34,8 @@ WINDOW_DEFINITION:
   WINDOW_LD_BASED:
     False
 
+GENE_COORD_FILE:
+  data/shared/gene_coordinates.GRCh37.ensembl_v91.txt
 
 #################################################################################
 ################################  CONSTANTS #####################################
@@ -52,6 +54,6 @@ MAGMA_CONST:
     data/magma
   NUMPY_CORES:
     1
+  EXCLUDE_MHC:
+    True
 
-GENE_COORD_FILE:
-  data/shared/gene_coordinates.GRCh37.ensembl_v91.txt
