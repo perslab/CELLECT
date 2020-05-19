@@ -21,7 +21,7 @@ def fit_LM(specificity_id, es_mu, df_magma):
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
-		# FDR correction
+		# P-values correction
 		pval = ols_result.pvalues[1]/2                           # get one-sided p-value instead of the two-sided one
 		pval = 1 - pval if ols_result.params[1] < 0 else pval    # compute complementary p-value for negative beta's
 		df_res = df_res.append({"Name": specificity_id + "__" + annotation, "Coefficient": ols_result.params[1], "Coefficient_std_error": ols_result.bse[1], "Coefficient_P_value": pval}, ignore_index = True)
@@ -43,11 +43,19 @@ specificity_matrix_name = snakemake.params['specificity_matrix_name']      # ES 
 specificity_matrix_file = snakemake.params['specificity_matrix_file']      # ES MU file path
 gwas_name = snakemake.params['gwas_name']				   # GWAS name
 base_output_dir = snakemake.params['base_output_dir']			   # base directory for all the outputs
+exclude_mhc = snakemake.params['exclude_mhc'] 	                           # exclude the MHC region or not
 
 print("Fitting linear model between MAGMA ZSTATs and ES matrix '" + specificity_matrix_name + "' for GWAS '" + gwas_name + "': ")
 
 ### Load MAGMA ZSTATs
 df_magma = pd.read_csv(base_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all.gsa.genes.out", sep= '\s+', header = 1)
+
+### Exclude the MHC region if necessary
+if exclude_mhc:
+	old_len = len(df_magma)
+	# using one of De Morgan's laws from Boolean Algebra: NOT (A & B) = (NOT A) OR (NOT B)
+	df_magma = df_magma[(df_magma['START'] < 28477797) | (df_magma['STOP'] > 33448354) | (df_magma['CHR'] != 6)]
+	print(str(old_len - len(df_magma)) + " MHC genes excluded.")
 
 ### Expression Specificity Metrics
 es_mu = pd.read_csv(specificity_matrix_file, header = 0)
