@@ -175,6 +175,11 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 		bp = [x.start for x in annotbed] # PT NOTE: make list of all bp positions for the overlapping SNPs | All features, no matter what the file type, have chrom, start, stop, name, score, and strand attributes.
 		annotation_value = [x.fields[7] for x in annotbed] # returns list of strings. Extract the 'score' column. This is column 7 in the 0-based column indexing. *OBS*: x.fields[7] is a string.
 		
+		# Saving the genes names as a dataframe with one column 'GENES'
+		# counter == 1 as all bed files have the same gene names column so only needs to be done for one loop
+		if keep_annots == True and counter == 1:
+			annotation_genes = [x.fields[6] for x in annotbed] # returns list of strings. Extract the 'Ensembl gene name' column aka column 6
+			annotation_genes_df = pd.DataFrame({'GENES':annotation_genes}) # Makes df
 		### pybedtools cleanup V1: deletes all pybedtools session files [does not work - see below]
 		### KEEP THIS AS A WIKI/EXPLANATION
 		### REF 1 Pybedtools Design principles: https://daler.github.io/pybedtools/topical-design-principles.html
@@ -256,7 +261,7 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 		file_out_annot_combined = "{}/{}.{}.{}.annot.gz".format(out_dir, out_prefix, "COMBINED_ANNOT", chromosome)
 	
 	if keep_annots == True:
-			df_annot_keep_combined = pd.concat([df_bim]+list_df_annot, axis='columns') # see L237
+			df_annot_keep_combined = pd.concat([df_bim]+list_df_annot+[annotation_genes_df], axis='columns') # see L240: stack horizon...
 			df_annot_keep_combined.to_csv(snakemake.output['combined_annot_keep'], sep="\t", index=False, compression="gzip")
 
 

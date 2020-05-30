@@ -34,7 +34,7 @@ WINDOW_DEFINITION:
   WINDOW_LD_BASED:
     False
 
-KEEP_ANNOTS: # If True, for each specificity input a file containing the SNP:ES mappings will be saved to output also
+KEEP_ANNOTS: # [CELLECT-LDSC ONLY] If True, for each specificity input a file containing the SNP:ES (and all overlapping genes) mappings will be saved to output also. If you only want this and do not wish to run the rest of CELLECT add "--until make_annot" to the normal snakemake command
   False
 
 #################################################################################
