@@ -50,6 +50,8 @@ WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SN
 
 GENE_COORD_FILE: # Path to gene coordinates. First five columns must be: ensembl_gene_id, chromosome, start_position, stop_position, strand. No header allowed
   data/shared/gene_coordinates.GRCh37.ensembl_v91.txt
+KEEP_ANNOTS: # [CELLECT-LDSC ONLY] If True, for each specificity input a file containing the SNP:ES (and all overlapping genes) mappings will be saved to output also. If you only want this and do not wish to run the rest of CELLECT add "--until make_annot" to the normal snakemake command
+  False
 
 ############################################################################################################################
 ############################################## CONDITIONAL ANALYSIS ########################################################
