@@ -12,17 +12,6 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 
 #########################################################################################
-#################################### CONSTANTS ##########################################
-#########################################################################################
-
-# These environment variables control how many cores numpy can use
-# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
-os.environ["MKL_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-os.environ["NUMEXPR_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-os.environ["OMP_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
-
-
-#########################################################################################
 ############################## Pre-check of inputs ######################################
 #########################################################################################
 

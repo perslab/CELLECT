@@ -43,6 +43,12 @@ wildcard_constraints:
 ################################### CONSTANTS ##########################################
 ########################################################################################
 
+# These environment variables control how many cores numpy can use
+# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
+os.environ["MKL_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['MAGMA_CONST']['NUMPY_CORES'])
+
 # Data directory
 DATA_DIR = os.path.abspath(config['MAGMA_CONST']['DATA_DIR'])
 
@@ -151,9 +157,9 @@ rule make_annot:
 Create a dummy covar file containing ALL genes in MAGMA universe.
 We need to do it because MAGMA only outputs gene scores for genes in the covar file.
 '''
-rule make_dummy_covar_file:
+rule make_covar_file:
 	output:
-		"{BASE_OUTPUT_DIR}/precomputation/" + DUMMY_COVAR_FILE_NAME
+		temp("{BASE_OUTPUT_DIR}/precomputation/" + DUMMY_COVAR_FILE_NAME)
 	conda:
 		"envs/cellectpy3.yml"
 	log:
@@ -271,7 +277,8 @@ rule prioritize_annotations:
                 base_output_dir = "{BASE_OUTPUT_DIR}",
                 specificity_matrix_file = lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
                 specificity_matrix_name = "{run_prefix}",
-                gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id']
+                gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
+		exclude_mhc = config['MAGMA_CONST']['EXCLUDE_MHC']
 	script:
 		"scripts/prioritize_annotations_snake.py"
 
@@ -296,6 +303,7 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
                 	specificity_matrix_file = lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
                 	specificity_matrix_name = "{run_prefix}",
                 	gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
-			annotation = lambda wildcards: CONDITIONAL_INPUT[wildcards.run_prefix]
+			annotation = lambda wildcards: CONDITIONAL_INPUT[wildcards.run_prefix],
+                	exclude_mhc = config['MAGMA_CONST']['EXCLUDE_MHC']
 		script:
 			"scripts/run_gwas_conditional_snake.py"

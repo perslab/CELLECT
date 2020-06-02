@@ -23,11 +23,11 @@ def fit_multivar_LM(es_mu, df_magma, specificity_id, cond_annotation):
 		y = df_regression.loc[:, df_regression.columns == 'ZSTAT']       # the dependent variable
 		X = df_regression.loc[:, df_regression.columns == annotation]    # the 1st independent variable
 		# add the 2nd covariate
-		X[cond_annotation] = df_regression.loc[:, df_regression.columns == cond_annotation]
+		X = X.assign(cov = df_regression.loc[:, df_regression.columns == cond_annotation])
 		X = sm_tools.add_constant(X.values)      # adding the intercept manually
 		ols = sm.OLS(y, X)
 		ols_result = ols.fit()
-		# FDR correction
+		# P-values correction
 		pval = ols_result.pvalues[1]/2                           # get one-sided p-value instead of the two-sided one
 		pval = 1 - pval if ols_result.params[1] < 0 else pval    # compute complementary p-value for negative beta's
 		# append the result for the given `annotation`
@@ -53,9 +53,18 @@ specificity_matrix_file = snakemake.params['specificity_matrix_file']      # ES 
 gwas_name = snakemake.params['gwas_name']				   # GWAS name
 base_output_dir = snakemake.params['base_output_dir']			   # base directory for all the outputs
 annotations = snakemake.params['annotation']			           # list of cell types for the conditional analysis
+exclude_mhc = snakemake.params['exclude_mhc']                              # exclude the MHC region or not
 
 ### Load MAGMA ZSTATs
 df_magma = pd.read_csv(base_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all.gsa.genes.out", sep= '\s+', header = 1)
+
+### Exclude the MHC region if necessary
+if exclude_mhc:
+        old_len = len(df_magma)
+        # using one of De Morgan's laws from Boolean Algebra: NOT (A & B) = (NOT A) OR (NOT B)
+        df_magma = df_magma[(df_magma['START'] < 28477797) | (df_magma['STOP'] > 33448354) | (df_magma['CHR'] != 6)]
+        print(str(old_len - len(df_magma)) + " MHC genes excluded.")
+
 
 ### Expression Specificity Metrics
 es_mu = pd.read_csv(specificity_matrix_file, header = 0)

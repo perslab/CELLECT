@@ -32,7 +32,6 @@ BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'], "CELLECT-LDSC")
 # More overlapping functionality
 include: "rules/common_func2.smk"
 
-SNP_WINDOWS = config['WINDOW_DEFINITION']['WINDOW_LD_BASED']
 
 # Output file prefixes
 RUN_PREFIXES = list(SPECIFICITY_INPUT.keys())
@@ -51,6 +50,12 @@ wildcard_constraints:
 
 # see also the *.smk files
 
+# These environment variables control how many cores numpy can use
+# Setting to 1 allows snakemake to use 1 core per active rule i.e. snakemake core usage = actual core usage
+os.environ["MKL_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["NUMEXPR_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+os.environ["OMP_NUM_THREADS"] = str(config['LDSC_CONST']['NUMPY_CORES'])
+
 DATA_DIR = os.path.abspath(config['LDSC_CONST']['DATA_DIR'])
 LDSC_DIR = os.path.abspath(config['LDSC_CONST']['LDSC_DIR'])
 GENE_COORD_FILE = os.path.abspath(config['GENE_COORD_FILE'])
@@ -59,7 +64,6 @@ BFILE_PATH = os.path.join(DATA_DIR,"1000G_EUR_Phase3_plink/1000G.EUR.QC")
 PRINT_SNPS_FILE = os.path.join(DATA_DIR,"print_snps.txt")
 LD_SCORE_WEIGHTS = os.path.join(DATA_DIR,"1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.")
 LDSC_BASELINE = os.path.join(DATA_DIR,"baseline_v1.1_thin_annot/baseline.")
-SNPSNAP_FILE = os.path.join(DATA_DIR,"ld0.5_collection.tab.gz")
 CHROMOSOME_SIZES_FILE = os.path.join(DATA_DIR, "GRCh37-chr-sizes.txt")
 
 SCRIPT_LDSC = os.path.join(LDSC_DIR,'ldsc.py')
@@ -193,156 +197,92 @@ rule make_all_genes_background:
 
 ###################################### CREATE ANNOTATIONS ######################################
 
-if SNP_WINDOWS == True: # Only use SNPs in LD with genes. 
+rule format_genes:
+	'''
+	Adds fixed-size windows to either side of all protein-coding genes in the human genome
+	'''
+	input:
+		gene_coords = GENE_COORD_FILE,
+		chr_sizes = CHROMOSOME_SIZES_FILE
+	output:
+		temp(expand("{{BASE_OUTPUT_DIR}}/precomputation/bed/genes_plus_{window}kb.{chromosome}.bed", window = WINDOWSIZE_KB,
+																									chromosome = CHROMOSOMES))
+	conda:
+		"envs/cellectpy3.yml"
+	log:
+		"{BASE_OUTPUT_DIR}/logs/log.format_genes_snake.txt"
+	params:
+		windowsize_kb =  WINDOWSIZE_KB,
+		bed_out_dir = "{BASE_OUTPUT_DIR}/precomputation/bed"
+	script:
+		"scripts/format_and_map_snake.py"
 
-	rule join_snpsnap_bims:
-		'''
-		Joins SNPsnap file with genes to input BIM file for all chromosomes
-		'''
-		input:
-			"{bfile_path}.CHR_1_22.bim".format(bfile_path = BFILE_PATH),
-			"{SNPSNAP_FILE}".format(SNPSNAP_FILE = SNPSNAP_FILE)
-		output:
-			expand("{{BASE_OUTPUT_DIR}}/precomputation/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
-					bfile_prefix = os.path.basename(BFILE_PATH),
-					chromosome = CHROMOSOMES) # we don't delete this 'tmp file' because it can be reused for other runs?
-		conda:
-			"envs/cellectpy3.yml"
-		params:
-			out_dir = "{BASE_OUTPUT_DIR}/precomputation/SNPsnap",
-			chromosomes = CHROMOSOMES,
-			snpsnap_file = SNPSNAP_FILE,
-			bfile = BFILE_PATH
-		script:
-			"scripts/join_SNPsnap_and_bim_snake.py"
-
-	rule make_snpsnap_annot:
-		'''
-		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
-		'''
-		input:
-			lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
-			"{{BASE_OUTPUT_DIR}}/precomputation/SNPsnap/SNPs_with_genes.{bfile_prefix}.{{chromosome}}.txt".format(bfile_prefix = os.path.basename(BFILE_PATH))
-		output:
-			temp("{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz") # *TEMP FILE*
-		conda:
-			"envs/cellectpy3.yml"
-		params:
-			chromosome = "{chromosome}",
-			run_prefix = "{run_prefix}",
-			precomp_dir = "{BASE_OUTPUT_DIR}/precomputation",
-			all_genes = False,
-			bfile = BFILE_PATH
-		script:
-			"scripts/generate_SNPsnap_windows_snake.py"
-
-	rule make_snpsnap_annot_all_genes:
-		'''
-		Make the annotation files for input to LDSC from multigeneset files using SNPsnap, LD-based windows
-		'''
-		input:
-			"{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/all_genes.{run_prefix}.csv",		
-			expand("{{BASE_OUTPUT_DIR}}/precomputation/SNPsnap/SNPs_with_genes.{bfile_prefix}.{chromosome}.txt",
-					bfile_prefix = os.path.basename(BFILE_PATH),
-					chromosome = CHROMOSOMES)
-		output:
-			"{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # NOT TEMP FILE. May be used for h2
-		conda:
-			"envs/cellectpy3.yml"
-		params:
-			chromosome = "{chromosome}",
-			run_prefix = "{run_prefix}",
-			precomp_dir = "{BASE_OUTPUT_DIR}/precomputation",
-			all_genes = True,
-			bfile = BFILE_PATH
-		script:
-			"scripts/generate_SNPsnap_windows_snake.py"
-
-else: # Use SNPs in a fixed window size around genes
-
-	rule format_genes:
-		'''
-		Adds fixed-size windows to either side of all protein-coding genes in the human genome
-		'''
-		input:
-			gene_coords = GENE_COORD_FILE,
-			chr_sizes = CHROMOSOME_SIZES_FILE
-		output:
-			temp(expand("{{BASE_OUTPUT_DIR}}/precomputation/bed/genes_plus_{window}kb.{chromosome}.bed", window = WINDOWSIZE_KB,
-																										chromosome = CHROMOSOMES))
-		conda:
-			"envs/cellectpy3.yml"
-		log:
-			"{BASE_OUTPUT_DIR}/logs/log.format_genes_snake.txt"
-		params:
-			windowsize_kb =  WINDOWSIZE_KB,
-			bed_out_dir = "{BASE_OUTPUT_DIR}/precomputation/bed"
-		script:
-			"scripts/format_and_map_snake.py"
-
-	rule find_overlaps:
-		'''
-		Finds where genes overlap and makes these regions into unique segments in a BED file
-		see https://bedops.readthedocs.io/en/latest/content/reference/set-operations/bedops.html#partition-p-partition
-		This is necessary so the max ES score of each overlapping region is only assigned to the region that overlaps
-		'''
-		input:
-			"{BASE_OUTPUT_DIR}/precomputation/bed/genes_plus_{window}kb.{chromosome}.bed"
-		output:
-			"{BASE_OUTPUT_DIR}/precomputation/bed/overlap_segments_{window}kb.{chromosome}.bed"
-		conda:
-			"envs/cellectpy3.yml"
-		shell:
-			"bedops --partition {input} | bedmap --echo --echo-map-id-uniq --delim '\t' - {input} > {output}"
-		
-	rule make_annot:
-		'''
-		Make the annotation files used to generate LD scores from the specificity score matrix, HapMap3 SNPs
-		and calculated overlapping gene segments
-		'''
-		input:
-			spec_matrix=lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
-			chrom_bfile="{bfile_path}.{{chromosome}}.bim".format(bfile_path = BFILE_PATH),
-			overlap_segments="{{BASE_OUTPUT_DIR}}/precomputation/bed/overlap_segments_{window}kb.{{chromosome}}.bed".format(window = WINDOWSIZE_KB)
-		output:
-			temp("{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz") # *TEMP FILE*
-		log:
-			"{BASE_OUTPUT_DIR}/logs/log.make_annot_snake.{run_prefix}.{chromosome}.txt"
-		params:
-			run_prefix = "{run_prefix}", # better alternative: wildcards.run_prefix?
-			chromosome = "{chromosome}",
-			out_dir = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}",
-			all_genes = False,
-			annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix]
-		conda:
-			"envs/cellectpy3.yml"
-		script:
-			"scripts/make_annot_from_geneset_all_chr_snake.py"
+rule find_overlaps:
+	'''
+	Finds where genes overlap and makes these regions into unique segments in a BED file
+	see https://bedops.readthedocs.io/en/latest/content/reference/set-operations/bedops.html#partition-p-partition
+	This is necessary so the max ES score of each overlapping region is only assigned to the region that overlaps
+	'''
+	input:
+		"{BASE_OUTPUT_DIR}/precomputation/bed/genes_plus_{window}kb.{chromosome}.bed"
+	output:
+		"{BASE_OUTPUT_DIR}/precomputation/bed/overlap_segments_{window}kb.{chromosome}.bed"
+	conda:
+		"envs/cellectpy3.yml"
+	shell:
+		"bedops --partition {input} | bedmap --echo --echo-map-id-uniq --delim '\t' - {input} > {output}"
+	
+rule make_annot:
+	'''
+	Make the annotation files used to generate LD scores from the specificity score matrix, HapMap3 SNPs
+	and calculated overlapping gene segments
+	'''
+	input:
+		spec_matrix=lambda wildcards: SPECIFICITY_INPUT[wildcards.run_prefix]['path'],
+		chrom_bfile="{bfile_path}.{{chromosome}}.bim".format(bfile_path = BFILE_PATH),
+		overlap_segments="{{BASE_OUTPUT_DIR}}/precomputation/bed/overlap_segments_{window}kb.{{chromosome}}.bed".format(window = WINDOWSIZE_KB)
+	output:
+		combined_annot = temp("{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz"), # *TEMP FILE*
+		combined_annot_keep = "{BASE_OUTPUT_DIR}/out/annots/{run_prefix}/{run_prefix}.COMBINED_ANNOT.{chromosome}.annot.gz" if config['KEEP_ANNOTS'] else []
+	log:
+		"{BASE_OUTPUT_DIR}/logs/log.make_annot_snake.{run_prefix}.{chromosome}.txt"
+	params:
+		run_prefix = "{run_prefix}", # better alternative: wildcards.run_prefix?
+		chromosome = "{chromosome}",
+		out_dir = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}",
+		all_genes = False,
+		annotations = lambda wildcards: ANNOTATIONS_DICT[wildcards.run_prefix],
+		keep_annots = config['KEEP_ANNOTS']
+	conda:
+		"envs/cellectpy3.yml"
+	script:
+		"scripts/make_annot_from_geneset_all_chr_snake.py"
 
 
-	rule make_annot_all_genes:
-		'''
-		Make the annotation files used to generate LD scores from the all-genes matrix, HapMap3 SNPs
-		and calculated overlapping gene segments
-		'''
-		input:
-			spec_matrix = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/all_genes.{run_prefix}.csv",
-			chrom_bfile = "{bfile_path}.{{chromosome}}.bim".format(bfile_path = BFILE_PATH),
-			overlap_segments = "{{BASE_OUTPUT_DIR}}/precomputation/bed/overlap_segments_{window}kb.{{chromosome}}.bed".format(window = WINDOWSIZE_KB)
-		output:
-			"{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regression
-		log:
-			"{BASE_OUTPUT_DIR}/logs/log.make_annot_snake.all_genes_in_dataset.{run_prefix}.{chromosome}.txt"
-		params:
-			run_prefix = "{run_prefix}", # better alternative: wildcards.run_prefix?
-			chromosome = "{chromosome}",
-			out_dir = "{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset",
-			all_genes = True,
-			annotations = ["all_genes_in_dataset"]
-		conda:
-			"envs/cellectpy3.yml"
-		script:
-			"scripts/make_annot_from_geneset_all_chr_snake.py"
+rule make_annot_all_genes:
+	'''
+	Make the annotation files used to generate LD scores from the all-genes matrix, HapMap3 SNPs
+	and calculated overlapping gene segments
+	'''
+	input:
+		spec_matrix = "{BASE_OUTPUT_DIR}/precomputation/{run_prefix}/all_genes.{run_prefix}.csv",
+		chrom_bfile = "{bfile_path}.{{chromosome}}.bim".format(bfile_path = BFILE_PATH),
+		overlap_segments = "{{BASE_OUTPUT_DIR}}/precomputation/bed/overlap_segments_{window}kb.{{chromosome}}.bed".format(window = WINDOWSIZE_KB)
+	output:
+		"{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset/all_genes_in_{run_prefix}.{chromosome}.annot.gz" # not temp because used in regression
+	log:
+		"{BASE_OUTPUT_DIR}/logs/log.make_annot_snake.all_genes_in_dataset.{run_prefix}.{chromosome}.txt"
+	params:
+		run_prefix = "{run_prefix}", # better alternative: wildcards.run_prefix?
+		chromosome = "{chromosome}",
+		out_dir = "{BASE_OUTPUT_DIR}/precomputation/control.all_genes_in_dataset",
+		all_genes = True,
+		annotations = ["all_genes_in_dataset"],
+		keep_annots = False
+	conda:
+		"envs/cellectpy3.yml"
+	script:
+		"scripts/make_annot_from_geneset_all_chr_snake.py"
 
 
 ###################################### COMPUTE LDSC SCORES ######################################
