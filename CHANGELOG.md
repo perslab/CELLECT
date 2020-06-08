@@ -4,8 +4,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
 - [Add option to exclude MHC region for CELLECT-MAGMA](https://github.com/perslab/CELLECT/issues/52)
+### Changed
+### Removed
+### Fixed
+
+## [1.2.1] - 2020-05-21
 ### Changed
 - CELLECT-MAGMA gene coordinates updated to extactly match CELLECT-LDSC (which remains the same). See [#51 - Unify LDSC and MAGMA gene coordination files](https://github.com/perslab/CELLECT/issues/51)
 - Added CELLECT-LDSC option - save the SNP:ES mappings as an output file if `KEEP_ANNOTS` is True in the config. See [#53 - Exporting genes assigned to GWAS variants](https://github.com/perslab/CELLECT/issues/53)
