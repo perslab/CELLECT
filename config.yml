@@ -22,7 +22,7 @@ BASE_OUTPUT_DIR: CELLECT-EXAMPLE
 # path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
 SPECIFICITY_INPUT:
   - id: mousebrain-test
-    path: example/mousebrain-test.csv.gz # this test file contains 2 annotations
+    path: example/mousebrain-test.csv # this test file contains 2 annotations
   # - id: tabula_muris-test
   #   path: example/tabula_muris-test.csv # this test file contains 5 annotations
 
