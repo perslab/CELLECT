@@ -81,10 +81,6 @@ if not (config['ANALYSIS_TYPE']['prioritization'] or config['ANALYSIS_TYPE']['co
 if (config['ANALYSIS_TYPE']['heritability'] or config['ANALYSIS_TYPE']['heritability_intervals']):
 	warnings.warn("'heritability' and 'heritability_intervals' options are available for CELLECT-LDSC only.")
 
-if (config['WINDOW_DEFINITION']['WINDOW_LD_BASED']):
-	warnings.warn("WINDOW_LD_BASED is available for CELLECT-LDSC only.")
-
-
 
 import pandas as pd
 
