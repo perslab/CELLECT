@@ -179,7 +179,7 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 		# counter == 1 as all bed files have the same gene names column so only needs to be done for one loop
 		if keep_annots == True and counter == 1:
 			annotation_genes = [x.fields[6] for x in annotbed] # returns list of strings. Extract the 'Ensembl gene name' column aka column 6
-			annotation_genes_df = pd.DataFrame({'BP': bp,'GENES':annotation_genes}) # Makes df
+			annotation_genes_df = pd.DataFrame({'BP': bp,'GENES':annotation_genes}).drop_duplicates(subset='BP',keep='first') # Makes df
 		### pybedtools cleanup V1: deletes all pybedtools session files [does not work - see below]
 		### KEEP THIS AS A WIKI/EXPLANATION
 		### REF 1 Pybedtools Design principles: https://daler.github.io/pybedtools/topical-design-principles.html
@@ -207,6 +207,7 @@ def make_annot_file_per_chromosome(chromosome, dict_of_beds, out_dir, out_prefix
 
 		### Create data frame
 		df_annot_overlap_bp = pd.DataFrame({'BP': bp, name_annotation:annotation_value}) # FINUCANE ORIG: df_int = pd.DataFrame({'BP': bp, 'ANNOT':1})
+		df_annot_overlap_bp = df_annot_overlap_bp.drop_duplicates(subset='BP',keep='first') # Remove duplicates that arise when a SNP lies on border of two overlapping gene segments
 		#             BP  blue
 		# 0     34605531     1
 		# 1     34605604     1
