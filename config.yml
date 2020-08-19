@@ -31,8 +31,8 @@ SPECIFICITY_INPUT:
 # id: identifier for GWAS. MUST be unique and NO double underscores allowed
 # path: filepath for munged GWAS sumstats. Uncompressed / gz or bz2 compressed files allowed.
 GWAS_SUMSTATS:
-  - id: EA3_Lee2018
-    path: example/EA3_Lee2018.sumstats.gz 
+        #  - id: EA3_Lee2018
+        #    path: example/EA3_Lee2018.sumstats.gz 
   - id: BMI_Yengo2018
     path: example/BMI_Yengo2018.sumstats.gz
 
@@ -42,7 +42,7 @@ ANALYSIS_TYPE: # specify what analysis type to run. At least one analysis type n
   conditional: False # performs conditional analysis for selected annotations.
   heritability: False # [CELLECT-LDSC ONLY] estimates heritability for selected annotations. 
   heritability_intervals: False # [CELLECT-LDSC ONLY] estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
-  effector_genes: False # produce table with top MAGMA genes by p-value driving the genetic prioritization of each celltype through overlap with celltype ESmu genes 
+  effector_genes: False # produce table with top MAGMA genes by p-value driving the genetic prioritization of each celltype through overlap with celltype ESmu genes
 
 WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SNPs
   WINDOW_SIZE_KB:
@@ -79,7 +79,13 @@ CONDITIONAL_INPUT:
 HERITABILITY_INPUT:
   - id: mousebrain-test
     annotations: ['ABC']
-
+        
+############################################################################################################################
+####################################### EFFECTOR GENE ANALYSIS (MAGMA ONLY) #################################################
+############################################################################################################################
+# NOTE: you can delete or leave these dicts blank or as they are if the effector_genes analysis type is not activated
+N_GENES_MAGMA: 100 # number of top magma genes to include, sorted by p-value in ascending order
+PERCENTILE_ESMU: 10 # upper percentile cutoff for non-zero ESmu genes to include, sorted by ESmu value in descending order
 
 #############################################################################################################################
 ##################################################### CONSTANTS #############################################################
