@@ -85,7 +85,7 @@ HERITABILITY_INPUT:
 ############################################################################################################################
 # NOTE: you can delete or leave these dicts blank or as they are if the effector_genes analysis type is not activated
 N_GENES_MAGMA: 100 # number of top magma genes to include, sorted by p-value in ascending order
-PERCENTILE_ESMU: 10 # upper percentile cutoff for non-zero ESmu genes to include, sorted by ESmu value in descending order
+PERCENTILE_CUTOFF_ESMU: 90 # percentile cutoff for non-zero ESmu genes to include, sorted by ESmu value in descending order
 
 #############################################################################################################################
 ##################################################### CONSTANTS #############################################################
