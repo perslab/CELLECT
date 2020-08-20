@@ -22,6 +22,7 @@ CELLECT_GENES_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'],"CELLECT-GENES
 include: "rules/common_func2.smk"
 
 wildcard_constraints:
+        BASE_OUTPUT_DIR = BASE_OUTPUT_DIR,
         CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR,
         run_prefix = r"|".join(set(SPECIFICITY_INPUT.keys())),
         annotations = r"|".join(set(ANNOTATIONS_DICT)),
@@ -61,13 +62,13 @@ rule get_effector_genes:
         Take intersection
         '''        
         input: 
-                cellect_magma(expand(config['BASE_OUTPUT_DIR']+ "/CELLECT-MAGMA/precomputation/{gwas}/{gwas}.genes.out", gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
+                cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.genes.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR, gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
         output:
                 "{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv"
         conda:
                 "envs/cellectpy3.yml"
         log:
-                "{{CELLECT_GENES_OUTPUT_DIR}}/logs/log.get_effector_genes_snake.{run_prefix}.{gwas}.txt"
+                "{CELLECT_GENES_OUTPUT_DIR}/logs/log.get_effector_genes_snake.{run_prefix}.{gwas}.txt"
         params: 
                 magma_output_dir = BASE_OUTPUT_DIR,
                 cellect_genes_output_dir = CELLECT_GENES_OUTPUT_DIR,
