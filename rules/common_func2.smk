@@ -62,3 +62,12 @@ if config['ANALYSIS_TYPE']['conditional']:
                 list_target_files.extend(tmp)
         analysis_types_performed.extend(['conditional'])
 
+if config['ANALYSIS_TYPE']['effector_genes']:
+        tmp = CELLECT_GENES_OUTPUT_DIR+"/results/effector_genes.csv"
+        list_target_files.extend([tmp])
+        tmp = expand("{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv",
+                                CELLECT_GENES_OUTPUT_DIR=CELLECT_GENES_OUTPUT_DIR,
+                                run_prefix = list(SPECIFICITY_INPUT.keys()),
+                                gwas = list(GWAS_SUMSTATS.keys()))
+        list_target_files.extend(tmp)
+        analysis_types_performed.extend(['effector_genes'])
