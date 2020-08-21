@@ -48,7 +48,7 @@ rule all:
 	Defines the final target files to be generated.
 	'''
 	input:
-		expand("{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv", CELLECT_GENES_OUTPUT_DIR=CELLECT_GENES_OUTPUT_DIR, run_prefix=list(SPECIFICITY_INPUT.keys()), gwas=list(GWAS_SUMSTATS.keys()))
+		expand("{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv",  CELLECT_GENES_OUTPUT_DIR=CELLECT_GENES_OUTPUT_DIR, run_prefix=list(SPECIFICITY_INPUT.keys()), gwas=list(GWAS_SUMSTATS.keys()))
         #list_target_files
         
 subworkflow cellect_magma:
@@ -62,7 +62,7 @@ rule get_effector_genes:
         Take intersection
         '''        
         input: 
-                cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.genes.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR, gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
+                cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.genes.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR,gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
         output:
                 "{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv"
         conda:
@@ -78,5 +78,5 @@ rule get_effector_genes:
                 n_genes_magma = config['N_GENES_MAGMA'],
                 percentile_cutoff_esmu = config['PERCENTILE_CUTOFF_ESMU']
         script: 
-                "/scripts/get_effector_genes.py"
+                "scripts/get_effector_genes.py"
 
