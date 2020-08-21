@@ -23,8 +23,8 @@ BASE_OUTPUT_DIR: CELLECT-EXAMPLE
 SPECIFICITY_INPUT:
   - id: mousebrain-test
     path: example/mousebrain-test.csv # this test file contains 2 annotations
-#  - id: tabula_muris-test
-#    path: example/tabula_muris-test.csv # this test file contains 5 annotations
+  - id: tabula_muris-test
+    path: example/tabula_muris-test.csv # this test file contains 5 annotations
 
 
 ### GWAS_SUMSTATS: list of dictionaries
