@@ -27,7 +27,7 @@ def fnc_get_effector_genes(n_genes_magma, percentile_cutoff_esmu, specificity_id
 
     for annotation in es_mu.columns[1:]:
         # remove zero esmu values and sort by esmu
-        es_mu_annot_nonzero = es_mu[["gene", annotation]].query("{}>0".format(annotation))
+        es_mu_annot_nonzero = es_mu[["gene", annotation]][es_mu[annotation]>0]#.query("`{}`>0".format(annotation))
         es_mu_annot_nonzero.sort_values(by=annotation, ascending=False, inplace=True)
         # add percentile 
         es_mu_annot_nonzero["esmu_percentile"] = [i/es_mu_annot_nonzero.shape[0]*100 for i in reversed(range(es_mu_annot_nonzero.shape[0]))]
@@ -36,6 +36,8 @@ def fnc_get_effector_genes(n_genes_magma, percentile_cutoff_esmu, specificity_id
         # join the dataframes on gene
         df_join = pd.merge(es_mu_annot_nonzero_head, df_magma_sorted_head, left_on = "gene", right_on = "GENE", how="inner")
         # append the joined df for the annotation to the others
+        print("Got this far with: " + annotation)
+        
         df_append = pd.DataFrame({"gwas":[gwas]*df_join.shape[0], 
                                   "specificity_id":[specificity_id]*df_join.shape[0],
                                   "annotation":[annotation]*df_join.shape[0],
