@@ -15,7 +15,7 @@ include: "rules/common_func1.smk"
 ########################################################################################
 
 # Where all the output will be saved
-BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'],"CELLECT-MAGMA") # note the overwriting of this variable
+BASE_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'],"CELLECT-MAGMA") # note the overwriting of this variable, and that we use it to run CELLECT-MAGMA and the below variable for CELLECT-GENES workflow!
 CELLECT_GENES_OUTPUT_DIR = os.path.join(config['BASE_OUTPUT_DIR'],"CELLECT-GENES")
 
 # More overlapping functionality
@@ -28,6 +28,28 @@ wildcard_constraints:
         annotations = r"|".join(set(ANNOTATIONS_DICT)),
         gwas = r"|".join(set(GWAS_SUMSTATS.keys()))
 
+
+########################################################################################
+################################### Target files ##########################################
+########################################################################################
+
+# see also the *.smk files
+# put this here so it is possible to run other cellect workflows without having to set config['ANALYSIS_TYPE']['effector_genes'] to False
+
+
+list_target_files = []
+analysis_types_performed = []     # this is for parsing and compiling the results files
+
+if config['ANALYSIS_TYPE']['effector_genes']:
+        tmp = "{CELLECT_GENES_OUTPUT_DIR}/results/effector_genes.csv".format(CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR)
+        list_target_files.extend([tmp])
+        tmp = expand("{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt",
+                                CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR,
+                                run_prefix = list(SPECIFICITY_INPUT.keys()),
+                                gwas = list(GWAS_SUMSTATS.keys()))
+        list_target_files.extend(tmp)
+        analysis_types_performed.extend(['effector_genes'])
+        
 ########################################################################################
 ############################# Pre-check of inputs ######################################
 ########################################################################################
@@ -41,19 +63,30 @@ import pandas as pd
 ################################### PIPELINE ###########################################
 ########################################################################################
 
-
-
 rule all: 
 	'''
 	Defines the final target files to be generated.
 	'''
 	input:
-		expand("{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv",  CELLECT_GENES_OUTPUT_DIR=CELLECT_GENES_OUTPUT_DIR, run_prefix=list(SPECIFICITY_INPUT.keys()), gwas=list(GWAS_SUMSTATS.keys()))
-        #list_target_files
+		list_target_files #expand("{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt",  CELLECT_GENES_OUTPUT_DIR=CELLECT_GENES_OUTPUT_DIR, run_prefix=list(SPECIFICITY_INPUT.keys()), gwas=list(GWAS_SUMSTATS.keys()))
         
+     
+rule parse_results:
+	"""
+	Generates {CELLECT_GENES_OUTPUT_DIR}/results/<analysis_type>.csv by parsing ALL output files in {CELLECT_GENES_OUTPUT_DIR}/out/.
+	"""
+	input:
+		filter(lambda s: '.csv' not in s, list_target_files) #Not sure if strictly necessary, just to make sure that the .csv files are generated AFTER the analysis
+	output:
+		expand("{{CELLECT_GENES_OUTPUT_DIR}}/results/{analysis_type}.csv", analysis_type=analysis_types_performed)
+	shell:
+		"python3 scripts/parse_results.py --base_output_dir {CELLECT_GENES_OUTPUT_DIR}"
+
+
 subworkflow cellect_magma:
     snakefile:
         "cellect-magma.snakefile"
+
 
 rule get_effector_genes:
         '''
@@ -64,7 +97,7 @@ rule get_effector_genes:
         input: 
                 cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.genes.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR,gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
         output:
-                "{CELLECT_GENES_OUTPUT_DIR}/out/effector_genes/{run_prefix}__{gwas}.effector_genes.csv"
+                "{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt"
         conda:
                 "envs/cellectpy3.yml"
         log:
