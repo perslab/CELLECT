@@ -147,7 +147,7 @@ n_genes_magma = snakemake.params['n_genes_magma']
 percentile_cutoff_esmu = snakemake.params['percentile_cutoff_esmu']
 magma_output_dir = snakemake.params['magma_output_dir']
 cellect_genes_output_dir = snakemake.params['cellect_genes_output_dir']
-path_df_map = "data/maps/Homo_sapiens.GRCh38.ens_v90.ensembl2gene_name_version.txt.gz"
+path_df_map = "data/maps/Homo_sapiens.GRCh38.ens_v90.ensembl2gene_name_version.txt"
 print("Finding effector genes for '" + specificity_matrix_name + "' for GWAS '" + gwas_name + "': ")
 
 ### Load df_magma
@@ -158,7 +158,7 @@ df_magma = pd.read_csv(magma_output_dir + "/precomputation/" + gwas_name + "/" +
 ### Load esmu df
 es_mu = pd.read_csv(specificity_matrix_file, header = 0)
 
-df_map = pd.read_csv(path_df_map, compression='gzip', delim_whitespace=True)
+df_map = pd.read_csv(path_df_map, delim_whitespace=True)
 
 df_effector_genes = fnc_get_effector_genes(n_genes_magma=n_genes_magma, 
                                            percentile_cutoff_esmu=percentile_cutoff_esmu, 
