@@ -57,6 +57,22 @@ if config['ANALYSIS_TYPE']['effector_genes']:
 if not config['ANALYSIS_TYPE']['effector_genes']:
 	raise Exception("config.yml: ANALYSIS TYPE effector_genes must be True.")
 
+#if not type(config['N_GENES_MAGMA']) == "int":
+#    raise Exception("config.yml: N_GENES_MAGMA must be a positive integer.")
+    
+if not config['N_GENES_MAGMA']>0:
+	raise Exception("config.yml: N_GENES_MAGMA must be a positive integer.")
+
+#if not type(config['PERCENTILE_CUTOFF_ESMU']) == "int":
+#    raise Exception("config.yml: PERCENTILE_CUTOFF_ESMU must be an integer between 0 and 100.")
+
+if config['PERCENTILE_CUTOFF_ESMU']<0 or config['PERCENTILE_CUTOFF_ESMU']>100:
+	raise Exception("config.yml: PERCENTILE_CUTOFF_ESMU must be an integer between 0 and 100.")
+
+########################################################################################
+################################### MODULES ############################################
+########################################################################################
+
 import pandas as pd
 
 ########################################################################################
