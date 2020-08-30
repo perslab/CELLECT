@@ -40,31 +40,21 @@ wildcard_constraints:
 list_target_files = []
 analysis_types_performed = []     # this is for parsing and compiling the results files
 
-if config['ANALYSIS_TYPE']['effector_genes']:
-        tmp = "{CELLECT_GENES_OUTPUT_DIR}/results/effector_genes.csv".format(CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR)
-        list_target_files.extend([tmp])
-        tmp = expand("{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt",
-                                CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR,
-                                run_prefix = list(SPECIFICITY_INPUT.keys()),
-                                gwas = list(GWAS_SUMSTATS.keys()))
-        list_target_files.extend(tmp)
-        analysis_types_performed.extend(['effector_genes'])
+tmp = "{CELLECT_GENES_OUTPUT_DIR}/results/effector_genes.csv".format(CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR)
+list_target_files.extend([tmp])
+tmp = expand("{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt",
+                        CELLECT_GENES_OUTPUT_DIR = CELLECT_GENES_OUTPUT_DIR,
+                        run_prefix = list(SPECIFICITY_INPUT.keys()),
+                        gwas = list(GWAS_SUMSTATS.keys()))
+list_target_files.extend(tmp)
+analysis_types_performed.extend(['effector_genes'])
         
 ########################################################################################
 ############################# Pre-check of inputs ######################################
 ########################################################################################
 
-if not config['ANALYSIS_TYPE']['effector_genes']:
-	raise Exception("config.yml: ANALYSIS TYPE effector_genes must be True.")
-
-#if not type(config['N_GENES_MAGMA']) == "int":
-#    raise Exception("config.yml: N_GENES_MAGMA must be a positive integer.")
-    
 if not config['N_GENES_MAGMA']>0:
 	raise Exception("config.yml: N_GENES_MAGMA must be a positive integer.")
-
-#if not type(config['PERCENTILE_CUTOFF_ESMU']) == "int":
-#    raise Exception("config.yml: PERCENTILE_CUTOFF_ESMU must be an integer between 0 and 100.")
 
 if config['PERCENTILE_CUTOFF_ESMU']<0 or config['PERCENTILE_CUTOFF_ESMU']>100:
 	raise Exception("config.yml: PERCENTILE_CUTOFF_ESMU must be an integer between 0 and 100.")

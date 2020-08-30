@@ -42,7 +42,6 @@ ANALYSIS_TYPE: # specify what analysis type to run. At least one analysis type n
   conditional: False # performs conditional analysis for selected annotations.
   heritability: False # [CELLECT-LDSC ONLY] estimates heritability for selected annotations. 
   heritability_intervals: False # [CELLECT-LDSC ONLY] estimates heritability intervals for selected annotations. 'heritability' must be True when enabling heritability_intervals
-  effector_genes: True # produce table with top MAGMA genes by p-value driving the genetic prioritization of each celltype through overlap with celltype ESmu genes
 
 WINDOW_DEFINITION: # Window definition for mapping gene specificity values to SNPs
   WINDOW_SIZE_KB:
