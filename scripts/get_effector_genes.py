@@ -151,9 +151,9 @@ path_df_map = "data/maps/Homo_sapiens.GRCh38.ens_v90.ensembl2gene_name_version.t
 print("Finding effector genes for '" + specificity_matrix_name + "' for GWAS '" + gwas_name + "': ")
 
 ### Load df_magma
-#df_magma = pd.read_csv(base_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all.gsa.genes.out", sep= '\s+', header = 1)
-#NB : FOR TESTING WE USE THE UNCORRECTED PVALS UNTIL CORRECTED ARE AVAILABLE
-df_magma = pd.read_csv(magma_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".genes.out", sep= '\s+', header = 0)
+
+#df_magma = pd.read_csv(magma_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".genes.out", sep= '\s+', header = 0)
+df_magma = pd.read_csv(magma_output_dir + "/precomputation/" + gwas_name + "/" + gwas_name + ".resid_correct_all.gsa.genes.pvals.out", sep= '\s+', header = 0)
 
 ### Load esmu df
 es_mu = pd.read_csv(specificity_matrix_file, header = 0)
@@ -170,15 +170,7 @@ df_effector_genes = fnc_get_effector_genes(n_genes_magma=n_genes_magma,
 ### Save the results for the given specificity_id and GWAS
 outname = specificity_matrix_name + "__" + gwas_name + ".effector_genes.txt"
 outdir = cellect_genes_output_dir + "/out"
-
-
-# dirs should be created by snakemake in fact..
-# if not os.path.exists(outdir):              # create the directory manually (to_csv() creates a file if it does not exist, but not a directory)
-# 	print("Creating a directory " + outdir)
-# 	os.mkdir(outdir) 
-# if not os.path.exists(subdir):		    # add the subdirectory
-# 	print("Creating a directory " + subdir)
-# 	os.mkdir(subdir)	
+	
 fullname = os.path.join(outdir, outname)
 
 print("Saving the results...")

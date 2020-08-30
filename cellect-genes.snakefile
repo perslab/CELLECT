@@ -111,7 +111,7 @@ rule get_effector_genes:
         Take intersection
         '''        
         input: 
-                cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.genes.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR,gwas=list(GWAS_SUMSTATS.keys()))) #TODO update this to corrected p-values
+                cellect_magma(expand("{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.pvals.out", BASE_OUTPUT_DIR=BASE_OUTPUT_DIR,gwas=list(GWAS_SUMSTATS.keys()))) 
         output:
                 "{CELLECT_GENES_OUTPUT_DIR}/out/{run_prefix}__{gwas}.effector_genes.txt"
         conda:

@@ -232,9 +232,9 @@ rule get_uncorrected_pvals:
 
 ###################################### GENE-SET ANALYSIS ######################################
 
-rule get_corrected_pvals:
+rule get_corrected_zstats:
 	'''
-	Calculate gene-based P-vals (corrected) based on the dummy covar file
+	Calculate gene-based Z-stats (corrected) based on the dummy covar file
 	'''
 	input:
 		dummy_covar_file = "{BASE_OUTPUT_DIR}/precomputation/" + DUMMY_COVAR_FILE_NAME,
@@ -253,7 +253,22 @@ rule get_corrected_pvals:
                 --out {BASE_OUTPUT_DIR}/precomputation/{params.gwas_name}/{params.gwas_name}.resid_correct_all"
 
 
-
+rule get_corrected_pvals:
+	'''
+    Calculate gene-based p-values (corrected) from the corrected Z-stats. These are used only for cellect-genes, while prioritizing is done with Z stats. (results would be identical of course)
+	'''
+	input:
+            "{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.out"
+	output:
+            "{BASE_OUTPUT_DIR}/precomputation/{gwas}/{gwas}.resid_correct_all.gsa.genes.pvals.out"
+	conda:
+            "envs/cellectpy3.yml"
+	params:
+            gwas_name = lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['id'],
+            base_output_dir = "{BASE_OUTPUT_DIR}"
+	script:
+            "scripts/convert_zstat_to_pval.py"
+        
 ###################################### PRIORITIZATION + CONDITIONAL ANALYSIS ########################################
 
 rule prioritize_annotations:
