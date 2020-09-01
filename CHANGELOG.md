@@ -6,10 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- [Add option to exclude MHC region for CELLECT-MAGMA](https://github.com/perslab/CELLECT/issues/52)
 ### Changed
 ### Removed
 ### Fixed
+
+
+## [1.3.0] - 2020-09-01
+
+### Added
+- CELLECT-GENES: CELLECT-GENES is a workflow to identify genes 'driving' the prioritization of cell types. These genes are found by intersecting the top specifically expressed genes with genes enriched for genetic signal. See [CELLECT-GENES tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-GENES-Tutorial) for details
+- [Add option to exclude MHC region for CELLECT-MAGMA](https://github.com/perslab/CELLECT/issues/52)
+### Changed
+### Removed
+- Removed example config and references to it
+### Fixed
+- Fixed minor bugs with KEEP_ANNOTS - now prints genes correctly.
 
 ## [1.2.1] - 2020-05-21
 ### Changed
