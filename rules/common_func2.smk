@@ -61,4 +61,4 @@ if config['ANALYSIS_TYPE']['conditional']:
                                                                         annotation_cond = CONDITIONAL_INPUT[prefix])
                 list_target_files.extend(tmp)
         analysis_types_performed.extend(['conditional'])
-
+        

@@ -66,9 +66,10 @@ conda install -c bioconda -c conda-forge snakemake=5.4.5
 
 ## Getting started with CELLECT
 
-An example configuration file is provided, but requires additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial) or [CELLECT MAGMA Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-MAGMA-Tutorial)
 
-1. **Modify the `config.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see the respective tutorial for example.
+A configuration file is provided and includes paths to example data that require additional downloads and pre-processing. In order to run the example, please follow the [CELLECT LDSC Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-LDSC-Tutorial) or [CELLECT MAGMA Tutorial](https://github.com/perslab/CELLECT/wiki/CELLECT-MAGMA-Tutorial).
+
+1. **Modify the `config.yml` file**: specify the input GWAS summary stats and CELLEX cell-type expression specificity. These must be in the correct format - see the aforementioned tutorial for example.
 
 2. **Run the workflow**:
 
@@ -119,6 +120,7 @@ We gratefully acknowledge the developers of the genetic prioritization tools use
 - Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
 - Ben Nielsen (University of Copenhagen) 
 - Liubov Pashkova (University of Copenhagen) [@incorrigiblema3](https://twitter.com/incorrigiblema3)
+- Jonatan James Thompson (University of Copenhagen) [@JonThomps](https://twitter.com/jon_thomps)
 
 ## Contact
 

@@ -23,7 +23,8 @@ def main(BASE_OUTPUT_DIR, logger):
     result_path_cond = os.path.abspath(os.path.join(BASE_OUTPUT_DIR, 'out', 'conditional', '*cell_type_results.txt'))
     result_path_h2 = os.path.abspath(os.path.join(BASE_OUTPUT_DIR, 'out', 'h2', '*.results'))
     result_path_h2_int = os.path.abspath(os.path.join(BASE_OUTPUT_DIR, 'out', 'h2', '*results_intervals'))
-
+    result_path_effector_genes = os.path.abspath(os.path.join(BASE_OUTPUT_DIR, 'out', '*effector_genes.txt'))
+    
     result_files = glob(result_path_priori)
     if result_files:
         logger.info('Compiling prioritization result files from {} files'.format(len(result_files)))
@@ -102,13 +103,28 @@ def main(BASE_OUTPUT_DIR, logger):
             h2_int_combined = pd.concat([h2_int_combined, h2_int])
         h2_int_combined = h2_int_combined[['gwas', 'specificity_id', 'annotation', 'q', 'h2g', 'h2g_se', 'prop_h2g', 'prop_h2g_se', 'enr', 'enr_se', 'enr_pval']]
         h2_int_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'heritability_intervals.csv'), index = False)
+        
+    result_files = glob(result_path_effector_genes)
+    if result_files:
+        logger.info('Compiling effector genes result files from {} files'.format(len(result_files)))
+        effector_genes_combined = pd.DataFrame()
+        for f in result_files:
+            effector_genes = pd.read_csv(f, sep = '\t', header = 0)
+            f = f.split('/')
+            metadata = f[-1].replace('.effector_genes.txt', '') # modules.mousebrain_bmicelltypes__T1D_Bradfield2011        
+            metadata = metadata.split('__') # ['modules.mousebrain_bmicelltypes', 'T1D_Bradfield2011']
+            effector_genes['gwas'] = metadata[-1] # ['T1D_Bradfield2011']
+            effector_genes_combined = pd.concat([effector_genes_combined, effector_genes])
+        effector_genes_combined.sort_values(['gwas', 'specificity_id'])
+        effector_genes_combined.to_csv(os.path.join(RESULTS_OUTPUT_DIR, 'effector_genes.csv'), index = False)
 
+        
     logger.info('Result files done compiling.')
         
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--base_output_dir', type=str, help="""File path to base CELLECT-LDSC output dir""")
+parser.add_argument('--base_output_dir', type=str, help="""File path to base CELLECT output dir""")
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG)
