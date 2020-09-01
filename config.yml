@@ -20,6 +20,7 @@ BASE_OUTPUT_DIR: CELLECT-EXAMPLE
 ### SPECIFICITY_INPUT: list of dictionaries
 # id: identifier for the dataset. Output files will be prefixed with the id. MUST be unique and NO double underscores allowed
 # path: the path to the matrix containing specificity scores for each genomic region, does not need to be unique
+# the files can be uncompressed or compressed (gz/bz2 formats are supported).
 SPECIFICITY_INPUT:
   - id: mousebrain-test
     path: example/mousebrain-test.csv # this test file contains 2 annotations
