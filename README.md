@@ -107,14 +107,14 @@ See our Github wiki for the [CELLECT-MAGMA tutorial](https://github.com/perslab/
 
 ## Documentation
 
-Please see our [**Github wiki**](https://github.com/perslab/CELLECT/wiki) for full documentation of CELLECT. The Supplementary Notes in [Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1) also contains relevant information on the methodology.
+Please see our [**Github wiki**](https://github.com/perslab/CELLECT/wiki) for full documentation of CELLECT. The Appendix in [Timshel (eLife, 2020): _Genetic mapping of etiologic brain cell types for obesity_](https://elifesciences.org/articles/55851) also contains relevant information on the methodology.
 
 ## Acknowledgements
 
 We gratefully acknowledge the developers of the genetic prioritization tools used in  CELLECT: [LDSC](https://github.com/bulik/ldsc) and [MAGMA](http://ctglab.nl/software/magma). In particular, Christiaan de Leeuw and Steven Gazal for their generous support. 
 
 
-## Authors
+## Contributors
 
 - Pascal Nordgren Timshel (University of Copenhagen) [@ptimshel](https://twitter.com/ptimshel)
 - Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
@@ -129,4 +129,4 @@ Alternatively, you may write an email to timshel(at)sund.ku.dk
 
 ## Reference
 If you find CELLECT useful for your research, please consider citing the paper:  
-**[Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1)**
+**[Timshel (eLife, 2020): _Genetic mapping of etiologic brain cell types for obesity_](https://elifesciences.org/articles/55851)**
