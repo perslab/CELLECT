@@ -8,7 +8,7 @@ import csv
 import gzip
 import warnings
 
-min_version("5.4")
+min_version("5.27")
 
 
 

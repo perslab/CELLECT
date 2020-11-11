@@ -58,11 +58,18 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 
 **Step 3: Install Snakemake via conda**  
 
-CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
+CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to install [anaconda](https://docs.anaconda.com/anaconda/install/) or [miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then [install snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html):
    
 ```bash
-conda install -c bioconda -c conda-forge snakemake=5.4.5
+conda install -c bioconda -c conda-forge snakemake">=5.27.4"
 ```
+(Notice the version requirement for snakemake. This ensures snakemake [runs as fast as possible](https://snakemake.readthedocs.io/en/stable/project_info/history.html#id1))
+If you have trouble installing snakemake, using the above command, then try out:
+```bash
+conda install -c conda-forge mamba
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+```
+
 
 ## Getting started with CELLECT
 
