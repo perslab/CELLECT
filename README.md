@@ -127,7 +127,7 @@ We gratefully acknowledge the developers of the genetic prioritization tools use
 - Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
 - Ben Nielsen (University of Copenhagen) 
 - Liubov Pashkova (University of Copenhagen) [@incorrigiblema3](https://twitter.com/incorrigiblema3)
-- Jon Thompson
+- Jon Thompson (jjt3f2188@gmail.com)
 
 ## Contact
 
