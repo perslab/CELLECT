@@ -25,8 +25,6 @@ def check_safe_id(list_of_strings):
         '''
         for val in list_of_strings:
                 if not re.search(_ALLOWED_ID_PATTERN, val):
-                    continue
-                else:
                     return False
         return True
 
