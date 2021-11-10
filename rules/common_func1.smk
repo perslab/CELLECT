@@ -21,7 +21,7 @@ _ALLOWED_ID_PATTERN = "^(?!.*__.*)[a-z][a-z0-9_-]+$"
 
 def check_safe_id(list_of_strings):
         '''
-        Returns False if any string in list_of_strings contains the patterns defined in _ILLEGAL_ID_PATTERN.
+        Returns False if any string in list_of_strings contains the patterns defined in _ALLOWED_ID_PATTERN.
         '''
         for val in list_of_strings:
                 if re.search(_ALLOWED_ID_PATTERN, val):
