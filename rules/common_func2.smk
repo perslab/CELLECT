@@ -17,8 +17,10 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 ### Check names/ids
 if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
+        print(list(SPECIFICITY_INPUT.keys()))
         raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Only letters, numbers, and single underscores allowed.")
 if not check_safe_id(list(GWAS_SUMSTATS.keys())):
+        print(list(GWAS_SUMSTATS.keys()))
         raise Exception("Illegal charecters in GWAS SUMSTATS id's. Only letters, numbers, and single underscores allowed.")
 for key in ANNOTATIONS_DICT:
         if not check_safe_id(ANNOTATIONS_DICT[key]):
