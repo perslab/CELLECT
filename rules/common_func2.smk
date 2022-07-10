@@ -17,12 +17,14 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 ### Check names/ids
 if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
-        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+        print(list(SPECIFICITY_INPUT.keys()))
+        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Only letters, numbers, and single underscores allowed.")
 if not check_safe_id(list(GWAS_SUMSTATS.keys())):
-        raise Exception("Illegal charecters in GWAS SUMSTATS id's. Illegal charecters=[{}]".format(_ILLEGAL_ID_PATTERN))
+        print(list(GWAS_SUMSTATS.keys()))
+        raise Exception("Illegal charecters in GWAS SUMSTATS id's. Only letters, numbers, and single underscores allowed.")
 for key in ANNOTATIONS_DICT:
         if not check_safe_id(ANNOTATIONS_DICT[key]):
-                raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Illegal charecters=[{}]".format(key, _ILLEGAL_ID_PATTERN))
+                raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Only letters, numbers, and single underscores allowed.")
 
 
 if config['ANALYSIS_TYPE']['conditional']:

@@ -126,7 +126,7 @@ for gwas_name in list(GWAS_SUMSTATS.keys()):
 # see also the *.smk files
 
 if config['ANALYSIS_TYPE']['heritability']:
-	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR, run_prefix = prefix)
+	tmp = "{BASE_OUTPUT_DIR}/results/heritability.csv".format(BASE_OUTPUT_DIR = BASE_OUTPUT_DIR)
 	list_target_files.extend([tmp])
 	for prefix in HERITABILITY_INPUT:
 		tmp = expand("{BASE_OUTPUT_DIR}/out/h2/{run_prefix}__{gwas}__h2__{annotation}.results",
@@ -437,8 +437,7 @@ if config['ANALYSIS_TYPE']['conditional']: # needed to ensure CONDITIONAL_INPUT 
 			lambda wildcards: GWAS_SUMSTATS[wildcards.gwas]['path'],
 			expand("{{BASE_OUTPUT_DIR}}/precomputation/control.all_genes_in_dataset/all_genes_in_{{run_prefix}}.{chromosome}.l2.ldscore.gz", 
 																													chromosome=CHROMOSOMES),
-			lambda wildcards: expand("{{BASE_OUTPUT_DIR}}/precomputation/{run_prefix}/per_annotation/{run_prefix}__{annotation}.{chromosome}.{suffix}",
-									run_prefix=list(CONDITIONAL_INPUT.keys()), # should not be needed in most cases
+			lambda wildcards: expand("{{BASE_OUTPUT_DIR}}/precomputation/{{run_prefix}}/per_annotation/{{run_prefix}}__{annotation}.{chromosome}.{suffix}",
 									annotation=CONDITIONAL_INPUT[wildcards.run_prefix],
 									chromosome=CHROMOSOMES,
 									suffix=["l2.ldscore.gz", "l2.M", "l2.M_5_50"] # "annot.gz" not needed for CTS mode

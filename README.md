@@ -58,11 +58,18 @@ The `--recurse-submodules` is needed to clone the [git submodule](https://git-sc
 
 **Step 3: Install Snakemake via conda**  
 
-CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to [install miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then install snakemake:
+CELLECT uses the workflow management software [**Snakemake**](https://snakemake.readthedocs.io/en/stable/). To make things easier for you, CELLECT snakemake workflow utilises **conda environments** to avoid any issues with software dependencies and versioning. CELLECT snakemake workflow will automatically install all necessary dependencies. All you need to do is to install [anaconda](https://docs.anaconda.com/anaconda/install/) or [miniconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (if conda is not already present on your system) and then [install snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html):
    
 ```bash
-conda install -c bioconda -c conda-forge snakemake=5.4.5
+conda install -c bioconda -c conda-forge snakemake">=5.27.4"
 ```
+(Notice the version requirement for snakemake. This ensures snakemake [runs as fast as possible](https://snakemake.readthedocs.io/en/stable/project_info/history.html#id1))
+If you have trouble installing snakemake, using the above command, then try out:
+```bash
+conda install -c conda-forge mamba
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+```
+
 
 ## Getting started with CELLECT
 
@@ -107,20 +114,20 @@ See our Github wiki for the [CELLECT-MAGMA tutorial](https://github.com/perslab/
 
 ## Documentation
 
-Please see our [**Github wiki**](https://github.com/perslab/CELLECT/wiki) for full documentation of CELLECT. The Supplementary Notes in [Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1) also contains relevant information on the methodology.
+Please see our [**Github wiki**](https://github.com/perslab/CELLECT/wiki) for full documentation of CELLECT. The Appendix in [Timshel (eLife, 2020): _Genetic mapping of etiologic brain cell types for obesity_](https://elifesciences.org/articles/55851) also contains relevant information on the methodology.
 
 ## Acknowledgements
 
 We gratefully acknowledge the developers of the genetic prioritization tools used in  CELLECT: [LDSC](https://github.com/bulik/ldsc) and [MAGMA](http://ctglab.nl/software/magma). In particular, Christiaan de Leeuw and Steven Gazal for their generous support. 
 
 
-## Authors
+## Contributors
 
 - Pascal Nordgren Timshel (University of Copenhagen) [@ptimshel](https://twitter.com/ptimshel)
-- Tobi Alegbe (University of Copenhagen/University of Cambridge) [@tobialegbe](https://twitter.com/tobialegbe)
+- Tobi Alegbe (University of Cambridge) [@tobionformatics](https://twitter.com/tobionformatics)
 - Ben Nielsen (University of Copenhagen) 
 - Liubov Pashkova (University of Copenhagen) [@incorrigiblema3](https://twitter.com/incorrigiblema3)
-- Jonatan James Thompson (University of Copenhagen) [@JonThomps](https://twitter.com/jon_thomps)
+- Jon Thompson (jjt3f2188@gmail.com)
 
 ## Contact
 
@@ -129,4 +136,4 @@ Alternatively, you may write an email to timshel(at)sund.ku.dk
 
 ## Reference
 If you find CELLECT useful for your research, please consider citing the paper:  
-**[Timshel (bioRxiv, 2020): _Mapping heritability of obesity by cell types_](https://www.biorxiv.org/content/10.1101/2020.01.27.920033v1)**
+**[Timshel (eLife, 2020): _Genetic mapping of etiologic brain cell types for obesity_](https://elifesciences.org/articles/55851)**
