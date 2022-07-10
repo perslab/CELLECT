@@ -1,4 +1,4 @@
-gene,Bladder.bladder_cell,Bladder.bladder_urothelial_cell,Brain_Myeloid.macrophage,Brain_Myeloid.microglial_cell,Brain_Non-Myeloid.Bergmann_glial_cell
+gene,Bladder-bladder_cell,Bladder-bladder_urothelial_cell,Brain_Myeloid-macrophage,Brain_Myeloid-microglial_cell,Brain_Non-Myeloid-Bergmann_glial_cell
 ENSG00000081791,0.02842003853564547,0.0,0.0,0.04313098317041678,0.0
 ENSG00000162929,0.0,0.0,0.0,0.0,0.0
 ENSG00000168887,0.0,0.0,0.0,0.05648720211827008,0.0

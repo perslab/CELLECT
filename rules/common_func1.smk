@@ -13,7 +13,7 @@ min_version("5.27")
 
 
 _ALLOWED_ID_PATTERN = "^(?!.*__.*)[A-Za-z0-9_-]*$"
-
+_ALLOWED_ID_MSG = "Only letters, numbers, and single underscores (_) and hyphens (-) are allowed."
 
 ########################################################################################
 ################################### FUNCTIONS ##########################################
