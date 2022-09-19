@@ -11,6 +11,7 @@ SPECIFICITY_INPUT = build_dict_from_id_filepath_key_value_pairs(config['SPECIFIC
 ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 
 
+
 #########################################################################################
 ############################## Pre-check of inputs ######################################
 #########################################################################################
@@ -18,13 +19,14 @@ ANNOTATIONS_DICT = get_annots(SPECIFICITY_INPUT)
 ### Check names/ids
 if not check_safe_id(list(SPECIFICITY_INPUT.keys())):
         print(list(SPECIFICITY_INPUT.keys()))
-        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. Only letters, numbers, and single underscores allowed.")
+        raise Exception("Illegal charecters in SPECIFICITY_INPUT id's. {}".format(_ALLOWED_ID_MSG))
 if not check_safe_id(list(GWAS_SUMSTATS.keys())):
         print(list(GWAS_SUMSTATS.keys()))
-        raise Exception("Illegal charecters in GWAS SUMSTATS id's. Only letters, numbers, and single underscores allowed.")
+        raise Exception("Illegal charecters in GWAS SUMSTATS id's. {}".format(_ALLOWED_ID_MSG))
 for key in ANNOTATIONS_DICT:
-        if not check_safe_id(ANNOTATIONS_DICT[key]):
-                raise Exception("Illegal charecters in SPECIFICITY_INPUT={} annotation names. Only letters, numbers, and single underscores allowed.")
+        for annot in ANNOTATIONS_DICT[key]:
+                if not check_safe_id(list(annot)):
+                        raise Exception("Illegal charecters in SPECIFICITY_INPUT='{}' with annotation name '{}'. {}".format(key, annot, _ALLOWED_ID_MSG))
 
 
 if config['ANALYSIS_TYPE']['conditional']:
